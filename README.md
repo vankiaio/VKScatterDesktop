@@ -1,4 +1,4 @@
-# Scatter Desktop
+# Vankia Scatter Desktop
 
 ## Installation
 
