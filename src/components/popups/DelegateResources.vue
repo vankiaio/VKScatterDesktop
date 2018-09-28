@@ -65,8 +65,8 @@
 
                 <section v-if="inputsOnly">
                     <br>
-                    <cin :forced="parseFloat(cpu) > 0" :placeholder="`EOS to ${delegating ? 'stake' : 'unstake'} in CPU`" :text="cpu === 0 ? '' : cpu" type="number" v-on:changed="x => cpu = Math.abs(x)"></cin>
-                    <cin :forced="parseFloat(net) > 0" :placeholder="`EOS to ${delegating ? 'stake' : 'unstake'} in NET`" :text="net === 0 ? '' : net" type="number" v-on:changed="x => net = Math.abs(x)"></cin>
+                    <cin :forced="parseFloat(cpu) > 0" :placeholder="`VKT to ${delegating ? 'stake' : 'unstake'} in CPU`" :text="cpu === 0 ? '' : cpu" type="number" v-on:changed="x => cpu = Math.abs(x)"></cin>
+                    <cin :forced="parseFloat(net) > 0" :placeholder="`VKT to ${delegating ? 'stake' : 'unstake'} in NET`" :text="net === 0 ? '' : net" type="number" v-on:changed="x => net = Math.abs(x)"></cin>
                 </section>
 
 
@@ -98,7 +98,7 @@
         data(){ return {
             eos:null,
             fetchedBalance:false,
-            balance:'0.0000 EOS',
+            balance:'0.0000 VKT',
             accountData:null,
             delegating:true,
             cpu:0,
@@ -175,7 +175,7 @@
 
                 this.submitting = true;
 
-                const symbol = this.balance ? this.balance.split(' ')[1] : 'EOS';
+                const symbol = this.balance ? this.balance.split(' ')[1] : 'VKT';
 
                 const cpu = `${parseFloat(this.cpu).toFixed(4)} ${symbol}`;
                 const net = `${parseFloat(this.net).toFixed(4)} ${symbol}`;

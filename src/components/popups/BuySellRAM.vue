@@ -22,7 +22,7 @@
                 <swch first="Buy" second="Sell" :selected="buying ? 'Sell' : 'Buy'" v-on:switched="toggleBuySell"></swch>
 
                 <figure v-if="buying" class="description">Buying RAM for {{account.formatted()}} will let that account hold more data.</figure>
-                <figure v-else class="description">Selling RAM for {{account.formatted()}} return EOS to that account at the current price of RAM.</figure>
+                <figure v-else class="description">Selling RAM for {{account.formatted()}} return VKT to that account at the current price of RAM.</figure>
 
 
 
@@ -77,7 +77,7 @@
             inputsOnly:false,
             eos:null,
             pricePerByte:0,
-            balance:'0.0000 EOS',
+            balance:'0.0000 VKT',
             fetchedBalance:false,
             accountData:null,
             buying:true,

@@ -38,6 +38,7 @@ export default class Keypair {
     clone(){ return Keypair.fromJson(JSON.parse(JSON.stringify(this))) }
 
     static blockchain(publicKey){
+        if(publicKey.indexOf('VKT') !== -1) return Blockchains.VKTIO;
         if(publicKey.indexOf('EOS') !== -1) return Blockchains.EOSIO;
         if(publicKey.indexOf('0x') !== -1 && publicKey.length === 42) return Blockchains.ETH;
         return null;

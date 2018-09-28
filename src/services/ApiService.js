@@ -228,6 +228,7 @@ export default class ApiService {
             else {
                 // TODO: Support fork chains
                 switch(network.blockchain){
+                    case Blockchains.VKTIO: symbol = 'VKT';
                     case Blockchains.EOSIO: symbol = 'EOS';
                 }
             }

@@ -100,11 +100,11 @@
     class TransactionData {
         constructor(){
             this.network = {
-                blockchain:Blockchains.EOSIO,
-                host:'https://nodes.get-scatter.com',
-                port:443,
-                chainId:'',
-                protocol:'https',
+                blockchain:Blockchains.VKTIO,
+                host:'http://221.122.119.226',
+                port:8888,
+                chainId:'e7ae77c56ef35e1f4969de1bd888593fb08c01acf05054a7055662387bab7a17',
+                protocol:'http',
             };
 
             this.details = {
@@ -115,9 +115,9 @@
 
             this.token = {
                 account:'eosio.token',
-                symbol:'EOS',
-                name:'EOS',
-                blockchain:Blockchains.EOSIO
+                symbol:'VKT',
+                name:'VKT',
+                blockchain:Blockchains.VKTIO
             };
         }
     }
@@ -131,6 +131,7 @@
             qr:'',
 
             tokens:[
+                {name:'VKT', logo:'', blockchain:'vkt', symbol:'VKT'},
                 {name:'EOS', logo:'', blockchain:'eos', symbol:'EOS'},
                 {name:'ETH', logo:'', blockchain:'eth', symbol:'ETH'}
             ],

@@ -1,4 +1,5 @@
 import * as PluginTypes from './PluginTypes';
+import VKT from './defaults/vkt';
 import EOS from './defaults/eos';
 import ETH from './defaults/eth';
 import {BlockchainsArray} from '../models/Blockchains';
@@ -16,6 +17,7 @@ class PluginRepositorySingleton {
     }
 
     loadPlugins(){
+        this.plugins.push(new VKT());
         this.plugins.push(new EOS());
         this.plugins.push(new ETH());
     }
