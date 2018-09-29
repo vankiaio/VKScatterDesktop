@@ -3,17 +3,18 @@ import * as Actions from '../store/constants';
 import {Blockchains, BlockchainsArray} from '../models/Blockchains';
 import PluginRepository from '../plugins/PluginRepository'
 
-const cmc = x => `https://api.coinmarketcap.com/v2/ticker/${x}/`
+const api = "https://api.get-scatter.com";
 
 // Once every 30 minutes.
-const intervalTime = 60000 * 30;
+const intervalTime = 60000 * 10;
 let priceInterval;
 
 
 export default class PriceService {
 
-    static async watchPrices(){
+    static async watchPrices(enable = true){
         clearInterval(priceInterval);
+        if(!enable) return;
         return new Promise(async resolve => {
 
             const setPrices = async () => {
@@ -32,17 +33,7 @@ export default class PriceService {
     static getAll(){
         return Promise.race([
             new Promise(resolve => setTimeout(() => resolve(false), 1000)),
-            fetch('https://api.coinmarketcap.com/v2/ticker/').then(x => x.json()).then(res => {
-                return Object.keys(res.data).map(key => {
-                    const token = res.data[key];
-                    const {symbol, name, quotes} = token;
-                    const price = parseFloat(quotes.USD.price).toFixed(2);
-                    return { symbol, name, price };
-                }).reduce((acc, x) => {
-                    acc[x.symbol] = x;
-                    return acc;
-                }, {});
-            })
+            fetch(api+'/v1/prices').then(x => x.json())
         ])
     }
 
@@ -62,7 +53,11 @@ export default class PriceService {
 
         //TODO: Only fetching EOS Tokens for now.
         // const accounts = store.state.scatter.keychain.accounts;
-        const accounts = store.state.scatter.keychain.accounts.filter(x => x.blockchain() === Blockchains.EOSIO);
+        const accounts = store.state.scatter.keychain.accounts.filter(x => x.blockchain() === Blockchains.EOSIO)
+            .reduce((acc, account) => {
+                if(!acc.find(x => x.sendable() === account.sendable())) acc.push(account);
+                return acc;
+            }, []);
 
         const balances = {};
         const tokens = store.state.tokens;
@@ -76,11 +71,16 @@ export default class PriceService {
             balances[account.unique()] = [];
 
             return await Promise.all(tokens.map(async token => {
-                const balance = await plugin.balanceFor(account, token.account, token.symbol);
-                if(parseFloat(balance) > 0){
-                    balances[account.unique()].push({symbol:token.symbol, balance, account:token.account, blockchain:account.blockchain()});
-                }
-                return true;
+                return Promise.race([
+                    new Promise(resolve => setTimeout(() => resolve(true), 500)),
+                    (async () => {
+                        const balance = await plugin.balanceFor(account, token.account, token.symbol);
+                        if(parseFloat(balance) > 0){
+                            balances[account.unique()].push({symbol:token.symbol, balance, account:token.account, blockchain:account.blockchain()});
+                        }
+                        return true;
+                    })()
+                ])
             }));
         }));
 
@@ -119,11 +119,12 @@ export default class PriceService {
         return accountBalances;
     }
 
-    static toggleDisplayToken(token){
+    static async toggleDisplayToken(token){
         const scatter = store.state.scatter.clone();
         if(!scatter.settings.displayToken) scatter.settings.displayToken = token;
         else scatter.settings.displayToken = scatter.settings.displayToken.symbol !== token.symbol ? token : null;
-        store.dispatch(Actions.SET_SCATTER, scatter);
+        await this.watchPrices(!!token);
+        return store.dispatch(Actions.SET_SCATTER, scatter);
     }
 
 }

@@ -48,7 +48,7 @@
                 <section class="inline-inputs">
                     <section class="inputs half">
                         <label>Recipient</label>
-                        <input :class="{'with-action':!isAlreadyContact, 'with-icon':recipient.length}" v-model="recipient" placeholder="Enter and Address or Account Name" />
+                        <input :class="{'with-action':!isAlreadyContact, 'with-icon':recipient.length}" v-model="recipient" placeholder="Enter an Address or Account Name" />
                         <transition name="slide-down">
                             <figure class="prefix icon" v-if="recipient.length" @click="recipient = ''">
                                 <i class="fa fa-times"></i>
@@ -135,6 +135,7 @@
     import ContactService from '../services/ContactService'
     import {Blockchains} from '../models/Blockchains'
     import PopupService from '../services/PopupService'
+    import PasswordService from '../services/PasswordService'
     import {Popup} from '../models/popups/Popup';
 
     export default {
@@ -255,6 +256,8 @@
                 const account = this.sendingAccount(tokensToSend);
                 if(!account) return PopupService.push(Popup.prompt("Overspending balance.", "You don't have any account that has enough balance to make this transfer in it's base token.", "ban", "Okay"));
                 if(account.blockchain() !== Blockchains.EOSIO) return PopupService.push(Popup.prompt("Okay, this one is on us.", "Only EOSIO internal token transfers are supported right now.", "ban", "Okay"));
+
+                if(!await PasswordService.verifyPIN()) return;
 
                 this.sending = true;
                 await TransferService[account.blockchain()]({
