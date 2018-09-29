@@ -22,7 +22,7 @@
                 <swch first="Buy" second="Sell" :selected="buying ? 'Sell' : 'Buy'" v-on:switched="toggleBuySell"></swch>
 
                 <figure v-if="buying" class="description">Buying RAM for {{account.formatted()}} will let that account hold more data.</figure>
-                <figure v-else class="description">Selling RAM for {{account.formatted()}} return EOS to that account at the current price of RAM.</figure>
+                <figure v-else class="description">Selling RAM for {{account.formatted()}} return VKT to that account at the current price of RAM.</figure>
 
 
 
@@ -77,7 +77,7 @@
             inputsOnly:false,
             eos:null,
             pricePerByte:0,
-            balance:'0.0000 EOS',
+            balance:'0.0000 VKT',
             fetchedBalance:false,
             accountData:null,
             buying:true,
@@ -94,14 +94,12 @@
         },
         computed:{
             ...mapState([
-                'popups',
-                'balances',
+                'popups'
             ]),
             ...mapGetters([
-
+                'nextPopIn'
             ]),
             account(){
-                if(!this.nextPopIn) return null;
                 return this.nextPopIn.data.props.account;
             },
             pricePerKB(){
@@ -132,9 +130,6 @@
                 this[Actions.RELEASE_POPUP](this.nextPopIn);
             },
             async init(){
-                const plugin = PluginRepository.plugin(Blockchains.EOSIO);
-                this.balance = `${(await plugin.balanceFor(this.account, 'eosio.token', 'EOS')).toString()} EOS`;
-
                 const parseAsset = asset => asset.split(' ')[0];
                 const ramInfo = await this.eos.getTableRows({
                     json:true,
@@ -149,11 +144,15 @@
 
                 this.pricePerByte = (ramInfo[0] / ramInfo[1]).toFixed(8);
 
-                plugin.accountData(this.account, this.account.network()).then(data => {
+                PluginRepository.plugin(Blockchains.EOSIO).accountData(this.account, this.account.network()).then(data => {
                     this.fetchedBalance = true;
-                    if(!data) return null;
+                    if(!data) {
+                        this.balance = 'Error getting balance';
+                        return null;
+                    }
 
                     this.accountData = data;
+                    this.balance = data.core_liquid_balance;
                 });
 
             },
@@ -194,8 +193,7 @@
             ...mapActions([
                 Actions.RELEASE_POPUP
             ])
-        },
-        props:['nextPopIn'],
+        }
     }
 </script>
 

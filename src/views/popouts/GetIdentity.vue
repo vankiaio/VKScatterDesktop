@@ -16,8 +16,6 @@
                     </figure>
                 </section>
 
-
-
                 <!-- REQUIREMENTS -->
                 <section class="requirements" v-if="(!selectedIdentity && identityRequirements.length) || (selectedIdentity && printableAccountRequirements.length)">
                     <section v-if="!selectedIdentity">
@@ -45,7 +43,7 @@
                 <section class="list" v-if="!selectedIdentity || !accountRequirements.length">
 
 
-                    <section class="big-login" v-if="!error">
+                    <section class="big-login">
                         <section v-if="isValidIdentity">
                             <figure class="logo">S</figure>
                             <figure class="title">Do you want to log into <br><b>{{payload.origin}}</b>?</figure>
@@ -68,14 +66,7 @@
                     </section>
 
 
-                    <section class="big-login" v-if="error">
-                        <section>
-                            <figure class="logo">S</figure>
-                            <figure class="title">{{error.title}}</figure>
-                            <p style="font-size: 13px;">{{error.subtext}}</p>
-                            <p style="font-size: 11px;" v-for="item in error.list"><b>{{item}}</b></p>
-                        </section>
-                    </section>
+
 
                 </section>
 
@@ -118,7 +109,6 @@
             selectedIdentity:null,
             selectedAccounts:[],
             searchTerms:'',
-            error:null,
         }},
         computed:{
             ...mapState([
@@ -161,30 +151,6 @@
             }
         },
         mounted(){
-
-            if(!this.isValidIdentity){
-                this.error = {
-                    title:"Your Identity is missing some properties.",
-                    subtext:'You must fill out the following fields.',
-                    list:this.identityRequirements.split(', ')
-                };
-                return;
-            }
-
-            if(!this.validAccounts.length){
-                this.error = {
-                    title:"No available accounts.",
-                    subtext:`Missing Required Blockchains`,
-                    list:this.fields.accounts
-                        .filter(x => !this.networks.find(n => n.chainId === x.chainId))
-                        .map(x => {
-                            const chainId = x.chainId.length > 25 ? `${x.chainId.substr(0,10)}...${x.chainId.substr(x.chainId.length-4, x.chainId.length)}` : x.chainId;
-                            return `${x.blockchain.toUpperCase()} with ChainID "${chainId}"`
-                        })
-                };
-                return;
-            }
-
             this.checkWarning();
         },
         methods: {

@@ -233,6 +233,7 @@
         },
         created(){
             this.displayType = DISPLAY_TYPE.TOKENS;
+            console.log('this', this.prices);
         },
         methods:{
             formatNumber(num, commaOnly = false){

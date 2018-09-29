@@ -90,9 +90,9 @@ export default class ApiService {
             // Prevention of origins being able to send data buffers to be
             // signed by the identity which could change to a real balance holding
             // key in the future.
-            const data = Hasher.unsaltedQuickHash(
-                Hasher.unsaltedQuickHash(request.payload.origin) +
-                Hasher.unsaltedQuickHash(request.payload.nonce)
+            const data = Hasher.insecureHash(
+                Hasher.insecureHash(request.payload.origin) +
+                Hasher.insecureHash(request.payload.nonce)
             );
 
             const plugin = PluginRepository.plugin(Blockchains.EOSIO);
@@ -228,6 +228,7 @@ export default class ApiService {
             else {
                 // TODO: Support fork chains
                 switch(network.blockchain){
+                    case Blockchains.VKTIO: symbol = 'VKT';
                     case Blockchains.EOSIO: symbol = 'EOS';
                 }
             }
@@ -378,14 +379,12 @@ export default class ApiService {
             const keypair = KeyPairService.getKeyPairFromPublicKey(publicKey);
             if(!keypair) return resolve({id:request.id, result:Error.signatureError("signature_rejected", "User rejected the signature request")});
 
-            const blockchain = keypair.publicKeys.find(x => x.key === publicKey).blockchain;
-
             // Blockchain specific plugin
-            const plugin = PluginRepository.plugin(blockchain);
+            const plugin = PluginRepository.plugin(keypair.blockchain);
 
             // Convert buf and abi to messages
             payload.messages = [{
-                code:`${blockchain.toUpperCase()} Blockchain`,
+                code:`${keypair.blockchain.toUpperCase()} Blockchain`,
                 type:'Arbitrary Signature',
                 data:{
                     signing:data

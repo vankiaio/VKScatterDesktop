@@ -37,9 +37,9 @@ export const actions = {
 
         if(await PasswordService.verifyPassword()){
             const scatter = state.scatter.clone();
-            await migrate(scatter);
-            scatter.meta.regenerateVersion();
-            await dispatch(Actions.SET_SCATTER, scatter);
+            if(await migrate(scatter))
+                // return;
+                await dispatch(Actions.SET_SCATTER, scatter);
         }
     },
 
@@ -64,7 +64,7 @@ export const actions = {
             SocketService.initialize();
             SocketService.open();
 
-            await StorageService.setSalt(Hasher.unsaltedQuickHash(IdGenerator.text(32)));
+            await StorageService.setSalt(Hasher.insecureHash(IdGenerator.text(32)));
 
             dispatch(Actions.SET_SEED, password).then(mnemonic => {
                 dispatch(Actions.SET_SCATTER, scatter).then(_scatter => {

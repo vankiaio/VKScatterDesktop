@@ -59,8 +59,6 @@
             &:nth-child(4) {
                 display:block;
                 padding-top:0;
-                width:100%;
-                flex:0 0 auto;
 
                 section {
                     width:100%;
