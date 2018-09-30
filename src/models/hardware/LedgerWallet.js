@@ -23,7 +23,7 @@ const throwErr = () => PopupService.push(Popup.prompt(
 ));
 
 export const LEDGER_PATHS = {
-    [Blockchains.EOSIO]:"44'/194'/0'/0/0",
+    [Blockchains.VKTIO]:"44'/194'/0'/0/0",
 }
 
 const cache = {};

@@ -72,7 +72,7 @@
                         </section>
 
                         <transition name="slide-left" mode="out-in">
-                            <section class="inputs" v-if="transaction.token.blockchain === Blockchains.EOSIO">
+                            <section class="inputs" v-if="transaction.token.blockchain === Blockchains.VKTIO">
                                 <label>Memo ( Optional )</label>
                                 <input v-model="transaction.details.memo" />
                             </section>

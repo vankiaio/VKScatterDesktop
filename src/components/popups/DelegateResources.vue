@@ -193,7 +193,7 @@
                 const cpu = `${parseFloat(this.cpu).toFixed(4)} ${symbol}`;
                 const net = `${parseFloat(this.net).toFixed(4)} ${symbol}`;
 
-                PluginRepository.plugin(Blockchains.EOSIO).stakeOrUnstake(this.account, cpu, net, this.account.network(), this.delegating).then(res => {
+                PluginRepository.plugin(Blockchains.VKTIO).stakeOrUnstake(this.account, cpu, net, this.account.network(), this.delegating).then(res => {
                     if(!res || !res.hasOwnProperty('transaction_id')) {
                         this.submitting = false;
                         return false;

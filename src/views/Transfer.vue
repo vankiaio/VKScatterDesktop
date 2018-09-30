@@ -106,7 +106,7 @@
 
 
                 <transition name="slide-left">
-                    <section v-if="!isSimple && token.blockchain === Blockchains.EOSIO">
+                    <section v-if="!isSimple && token.blockchain === Blockchains.VKTIO">
                         <div class="breaker"></div>
                         <section class="inputs">
                             <input placeholder="Memo" v-model="memo" />
@@ -255,7 +255,7 @@
 
                 const account = this.sendingAccount(tokensToSend);
                 if(!account) return PopupService.push(Popup.prompt("Overspending balance.", "You don't have any account that has enough balance to make this transfer in it's base token.", "ban", "Okay"));
-                if(account.blockchain() !== Blockchains.EOSIO) return PopupService.push(Popup.prompt("Okay, this one is on us.", "Only EOSIO internal token transfers are supported right now.", "ban", "Okay"));
+                if(account.blockchain() !== Blockchains.VKTIO) return PopupService.push(Popup.prompt("Okay, this one is on us.", "Only VKTIO internal token transfers are supported right now.", "ban", "Okay"));
 
                 if(!await PasswordService.verifyPIN()) return;
 

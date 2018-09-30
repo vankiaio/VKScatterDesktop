@@ -95,7 +95,7 @@ export default class ApiService {
                 Hasher.unsaltedQuickHash(request.payload.nonce)
             );
 
-            const plugin = PluginRepository.plugin(Blockchains.EOSIO);
+            const plugin = PluginRepository.plugin(Blockchains.VKTIO);
             const signed = await plugin.signer({data}, identity.publicKey, true);
             resolve({id:request.id, result:signed});
         })
@@ -238,6 +238,7 @@ export default class ApiService {
             else {
                 // TODO: Support fork chains
                 switch(network.blockchain){
+                    case Blockchains.VKTIO: contract = 'eosio.token';break;
                     case Blockchains.EOSIO: contract = 'eosio.token';
                 }
             }
@@ -283,6 +284,7 @@ export default class ApiService {
 
             // Convert buf and abi to messages
             switch(blockchain){
+                case Blockchains.VKTIO: payload.messages = await plugin.requestParser(payload, network); break;
                 case Blockchains.EOSIO: payload.messages = await plugin.requestParser(payload, network); break;
                 case Blockchains.ETH: payload.messages = await plugin.requestParser(payload, payload.hasOwnProperty('abi') ? payload.abi : null); break;
             }

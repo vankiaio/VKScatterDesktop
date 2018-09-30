@@ -119,7 +119,7 @@
                 return this.accounts.filter(x => x.blockchain() === 'eos');
             },
             eosPlugin(){
-                return PluginRepository.plugin(Blockchains.EOSIO);
+                return PluginRepository.plugin(Blockchains.VKTIO);
             },
             route(){
                 return this.$route.name

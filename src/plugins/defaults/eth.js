@@ -88,7 +88,7 @@ export default class ETH extends Plugin {
         return privateKey;
     }
     convertsTo(){
-        return [Blockchains.EOSIO];
+        return [Blockchains.VKTIO];
     }
 
     async balanceFor(account, tokenAccount, symbol){

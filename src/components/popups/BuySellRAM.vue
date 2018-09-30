@@ -179,7 +179,7 @@
 
                 this.submitting = true;
 
-                PluginRepository.plugin(Blockchains.EOSIO).buyOrSellRAM(this.account, bytes, this.account.network(), this.buying).then(res => {
+                PluginRepository.plugin(Blockchains.VKTIO).buyOrSellRAM(this.account, bytes, this.account.network(), this.buying).then(res => {
                     if(!res || !res.hasOwnProperty('transaction_id')) {
                         this.submitting = false;
                         return false;

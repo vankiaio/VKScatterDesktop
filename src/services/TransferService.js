@@ -18,7 +18,7 @@ export default class TransferService {
         return blockchain;
     }
 
-    static async [Blockchains.EOSIO](params){
+    static async [Blockchains.VKTIO](params){
         let {account, recipient, amount, memo, token } = params;
         const network = account.network();
         const plugin = PluginRepository.plugin(account.blockchain());
@@ -40,7 +40,7 @@ export default class TransferService {
 
         if(transfer !== null) {
             if (transfer.hasOwnProperty('error')) PopupService.push(Popup.prompt("Transfer Error", transfer.error, "ban", "Okay"));
-            else PopupService.push(Popup.transactionSuccess(Blockchains.EOSIO, transfer.transaction_id))
+            else PopupService.push(Popup.transactionSuccess(Blockchains.VKTIO, transfer.transaction_id))
         }
 
         return true;
