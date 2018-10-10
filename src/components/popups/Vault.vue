@@ -440,7 +440,7 @@
             camera:false,
             hardwareReady:false,
             hardwareType:EXT_WALLET_TYPES.LEDGER,
-            hardwareBlockchain:Blockchains.VKTIO,
+            hardwareBlockchain:Blockchains.EOSIO,
         }},
         mounted(){
 

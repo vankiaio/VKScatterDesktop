@@ -8,7 +8,7 @@
                 <section class="head">
                     <figure class="logo" v-if="selectedIdentity">S</figure>
                     <figure class="info" v-if="selectedIdentity">
-                        <figure>Login with Scatter</figure>
+                        <figure>Login with VKScatter</figure>
                         <figure>{{payload.origin}}</figure>
                     </figure>
                     <figure class="close" @click="returnResult(null)">

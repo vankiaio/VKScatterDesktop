@@ -2,7 +2,8 @@
 export const Blockchains = {
     VKTIO:'vkt',
     EOSIO:'eos',
-    ETH:'eth'
+    ETH:'eth',
+    TRX:'trx'
 };
 
 export const BlockchainsArray =
@@ -10,8 +11,9 @@ export const BlockchainsArray =
 
 export const blockchainName = x => {
     switch(x){
-        case Blockchains.VKTIO: return 'VKT';
-        case Blockchains.EOSIO: return 'EOS';
+        case Blockchains.VKTIO: return 'VKTIO';
+        case Blockchains.EOSIO: return 'EOSIO';
         case Blockchains.ETH: return 'Ethereum';
+        case Blockchains.TRX: return 'Tron';
     }
 }

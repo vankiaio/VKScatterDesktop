@@ -119,7 +119,7 @@ export default class ETH extends Plugin {
 
 
     async transfer(account, to, amount, network, tokenAccount, symbol, memo){
-        PopupService.push(Popup.prompt("Ethereum transfers not enabled yet", "Sorry, but only EOS transfers are currently enabled", "ban", "Okay"))
+        PopupService.push(Popup.prompt("Ethereum transfers not enabled yet", "Sorry, but only VKT transfers are currently enabled", "ban", "Okay"))
         return null;
     }
 

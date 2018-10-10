@@ -17,7 +17,7 @@ export default class UpdateService {
         let lastSuggested = scatter.meta.lastSuggestedVersion;
 
         if(mathematicalVersion(scatter.meta.version) < version && (!lastSuggested || lastSuggested !== version)){
-            PopupService.push(Popup.prompt('New Update!', 'There is a new Scatter update available. Do you want to download it?', 'download', 'Yes', accepted => {
+            PopupService.push(Popup.prompt('New Update!', 'There is a new VKScatter update available. Do you want to download it?', 'download', 'Yes', accepted => {
                 if(accepted) ElectronHelpers.openLinkInBrowser(url);
                 else {
                     scatter.meta.lastSuggestedVersion = version;

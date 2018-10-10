@@ -15,6 +15,8 @@ import StorageService from '../../services/StorageService'
 import ApiService from '../../services/ApiService'
 import * as Actions from '../../models/api/ApiActions';
 import {store} from '../../store/store'
+import eosjs2 from 'eosjs2';
+import * as numeric from "eosjs2/dist/eosjs-numeric";
 
 
 let cachedInstances = {};
@@ -94,7 +96,7 @@ export default class VKT extends Plugin {
 
     async isEndorsedNetwork(network){
         const endorsedNetwork = await this.getEndorsedNetwork();
-        return network.hostport() === endorsedNetwork.hostport();
+        return network.blockchain === Blockchains.VKTIO && network.chainId === endorsedNetwork.chainId;
     }
 
     async getChainId(network){
@@ -103,12 +105,52 @@ export default class VKT extends Plugin {
     }
 
     usesResources(){ return true; }
-    async needsResources(account){
-        const data = await this.accountData(account, account.network());
 
-        // Older chains wont have this.
-        if(!data.hasOwnProperty('cpu_limit') || !data.cpu_limit.hasOwnProperty('available')) return false;
-        return data.cpu_limit.available < 6000;
+    async getResourcesFor(account){
+        const data = await this.accountData(account);
+        if(!data || !data.hasOwnProperty('cpu_limit') || !data.cpu_limit.hasOwnProperty('available')) return [];
+        return [{
+            name:'CPU',
+            available:data.cpu_limit.available,
+            max:data.cpu_limit.max,
+            percentage:(data.cpu_limit.used * 100) / data.cpu_limit.max
+        },{
+            name:'NET',
+            available:data.net_limit.available,
+            max:data.net_limit.max,
+            percentage:(data.net_limit.used * 100) / data.net_limit.max
+        },{
+            name:'RAM',
+            available:data.ram_usage,
+            max:data.ram_quota,
+            percentage:(data.ram_usage * 100) / data.ram_quota
+        }]
+    }
+
+    async moderateResource(resource, account){
+        return new Promise(resolve => {
+            const {name} = resource;
+
+            const returnResult = tx => {
+                if(!tx) return resolve(false);
+                // PopupService.push(Popup.transactionSuccess(account.blockchain(), tx.transaction_id));
+                resolve(true);
+            }
+
+            if(['CPU', 'NET'].includes(name))
+                PopupService.push(Popup.delegateResources(account, returnResult));
+
+            if(name === 'RAM')
+                PopupService.push(Popup.buySellRAM(account, returnResult));
+
+        })
+    }
+
+    async needsResources(account){
+        const resources = await this.getResourcesFor(account);
+        if(!resources.length) return false;
+
+        return resources.find(x => x.name === 'CPU').available < 6000;
     }
 
     async addResources(account){
@@ -123,7 +165,9 @@ export default class VKT extends Plugin {
     accountsAreImported(){ return true; }
     getImportableAccounts(keypair, network){
         return new Promise((resolve, reject) => {
-            const publicKey = keypair.publicKeys.find(x => x.blockchain === Blockchains.VKTIO).key;
+            let publicKey = keypair.publicKeys.find(x => x.blockchain === Blockchains.VKTIO);
+            if(!publicKey) return resolve([]);
+            publicKey = publicKey.key;
             getAccountsFromPublicKey(publicKey, network).then(accounts => {
                 resolve(accounts.map(account => Account.fromJson({
                     name:account.name,
@@ -138,7 +182,7 @@ export default class VKT extends Plugin {
 
     isValidRecipient(name){ return /(^[a-z1-5.]{1,11}[a-z1-5]$)|(^[a-z1-5.]{12}[a-j1-5]$)/g.test(name); }
     privateToPublic(privateKey, prefix = null){ return ecc.PrivateKey(privateKey).toPublic().toString(prefix ? prefix : Blockchains.VKTIO.toUpperCase()); }
-    validPrivateKey(privateKey){ return ecc.isValidPrivate(privateKey); }
+    validPrivateKey(privateKey){ return privateKey.length === 51 && ecc.isValidPrivate(privateKey); }
     validPublicKey(publicKey, prefix = null){ return ecc.PublicKey.fromStringOrThrow(publicKey, prefix ? prefix : Blockchains.VKTIO.toUpperCase()); }
 
     randomPrivateKey(){ return ecc.randomKey(); }
@@ -220,17 +264,17 @@ export default class VKT extends Plugin {
 
 
 
-    async passThroughProvider(payload, account, network, rejector){
+    async passThroughProvider(payload, account, rejector){
         return new Promise(async resolve => {
-            payload.messages = await this.requestParser(payload, Network.fromJson(network));
+            payload.messages = await this.requestParser(payload, Network.fromJson(account.network()));
             payload.identityKey = store.state.scatter.keychain.identities[0].publicKey;
             payload.participants = [account];
-            payload.network = network;
+            payload.network = account.network();
             payload.origin = 'Internal Scatter Transfer';
             const request = {
                 payload,
                 origin:payload.origin,
-                blockchain:'eos',
+                blockchain:'vkt',
                 requiredFields:{},
                 type:Actions.REQUEST_SIGNATURE,
                 id:1,
@@ -242,7 +286,7 @@ export default class VKT extends Plugin {
                 let signature = null;
                 if(KeyPairService.isHardware(account.publicKey)){
                     const keypair = KeyPairService.getKeyPairFromPublicKey(account.publicKey);
-                    signature = await keypair.external.interface.sign(account.publicKey, payload, payload.abi, network);
+                    signature = await keypair.external.interface.sign(account.publicKey, payload, payload.abi, account.network());
                 } else signature = await this.signer({data:payload.buf}, account.publicKey, true);
 
                 if(!signature) return rejector({error:'Could not get signature'});
@@ -285,16 +329,16 @@ export default class VKT extends Plugin {
         })
     }
 
-    async transfer(account, to, amount, network, tokenAccount, symbol, memo, promptForSignature = true){
+    async transfer({account, to, amount, contract, symbol, memo, promptForSignature = true}){
         return new Promise(async (resolve, reject) => {
             const signProvider = promptForSignature
-                ? payload => this.passThroughProvider(payload, account, network, reject)
+                ? payload => this.passThroughProvider(payload, account, reject)
                 : payload => this.signer(payload, account.publicKey);
 
-            const eos = Eos({httpEndpoint:network.fullhost(), chainId:network.chainId, signProvider});
-            const contract = await eos.contract(tokenAccount);
+            const eos = Eos({httpEndpoint:account.network().fullhost(), chainId:account.network().chainId, signProvider});
+            const contractObject = await eos.contract(contract);
             const amountWithSymbol = amount.indexOf(symbol) > -1 ? amount : `${amount} ${symbol}`;
-            resolve(await contract.transfer(account.name, to, amountWithSymbol, memo, { authorization:[account.formatted()] })
+            resolve(await contractObject.transfer(account.name, to, amountWithSymbol, memo, { authorization:[account.formatted()] })
                 .catch(error => {
                     console.log('error', error);
                     return {error:JSON.parse(error).error.details[0].message.replace('assertion failure with message:', '').trim()}
@@ -311,62 +355,6 @@ export default class VKT extends Plugin {
 
         if (arbitrary && isHash) return ecc.Signature.signHash(payload.data, privateKey).toString();
         return ecc.sign(Buffer.from(arbitrary ? payload.data : payload.buf, 'utf8'), privateKey);
-    }
-
-    async requestParser(signargs, network){
-        const eos = getCachedInstance(network);
-
-        const contracts = signargs.transaction.actions.map(action => action.account)
-            .reduce((acc, contract) => {
-                if(!acc.includes(contract)) acc.push(contract);
-                return acc;
-            }, []);
-
-        const staleAbi = +new Date() - (1000 * 60 * 60 * 24 * 2);
-        const abis = {};
-
-        await Promise.all(contracts.map(async contractAccount => {
-            const cachedABI = await StorageService.getCachedABI(contractAccount, network.chainId);
-
-            if(cachedABI === 'object' && cachedABI.timestamp > +new Date((await eos.getAccount(contractAccount)).last_code_update))
-                abis[contractAccount] = eos.fc.abiCache.abi(contractAccount, cachedABI.abi);
-
-            else {
-                abis[contractAccount] = (await eos.contract(contractAccount)).fc;
-                const savableAbi = JSON.parse(JSON.stringify(abis[contractAccount]));
-                delete savableAbi.schema;
-                delete savableAbi.structs;
-                delete savableAbi.types;
-                savableAbi.timestamp = +new Date();
-
-                await StorageService.cacheABI(contractAccount, network.chainId, savableAbi);
-            }
-        }));
-
-        return await Promise.all(signargs.transaction.actions.map(async (action, index) => {
-            const contractAccountName = action.account;
-
-            let abi = abis[contractAccountName];
-
-            const typeName = abi.abi.actions.find(x => x.name === action.name).type;
-            const data = abi.fromBuffer(typeName, action.data);
-            const actionAbi = abi.abi.actions.find(fcAction => fcAction.name === action.name);
-            let ricardian = actionAbi ? actionAbi.ricardian_contract : null;
-
-            if(ricardian){
-                const htmlFormatting = {h1:'div class="ricardian-action"', h2:'div class="ricardian-description"'};
-                const signer = action.authorization.length === 1 ? action.authorization[0].actor : null;
-                ricardian = ricardianParser.parse(action.name, data, ricardian, signer, htmlFormatting);
-            }
-
-            return {
-                data,
-                code:action.account,
-                type:action.name,
-                authorization:action.authorization,
-                ricardian
-            };
-        }));
     }
 
     async createTransaction(actions, account, network){
@@ -402,5 +390,129 @@ export default class VKT extends Plugin {
         }, {broadcast:false}).catch(() => {});
 
         return tx;
+    }
+
+
+
+
+
+
+    async getAbis(contracts, network, eos){
+        const abis = {};
+
+        await Promise.all(contracts.map(async contractAccount => {
+            const cachedABI = await StorageService.getCachedABI(contractAccount, network.chainId);
+
+            if(cachedABI === 'object' && cachedABI.timestamp > +new Date((await eos.getAccount(contractAccount)).last_code_update))
+                abis[contractAccount] = eos.fc.abiCache.abi(contractAccount, cachedABI.abi);
+
+            else {
+                abis[contractAccount] = (await eos.contract(contractAccount)).fc;
+                const savableAbi = JSON.parse(JSON.stringify(abis[contractAccount]));
+                delete savableAbi.schema;
+                delete savableAbi.structs;
+                delete savableAbi.types;
+                savableAbi.timestamp = +new Date();
+
+                await StorageService.cacheABI(contractAccount, network.chainId, savableAbi);
+            }
+        }));
+
+        return abis;
+    }
+
+    async parseEosjsRequest(payload, network){
+        const {transaction} = payload;
+
+        const eos = getCachedInstance(network);
+
+        const contracts = ObjectHelpers.distinct(transaction.actions.map(action => action.account));
+        const abis = await this.getAbis(contracts, network, eos);
+
+
+        return await Promise.all(transaction.actions.map(async (action, index) => {
+            const contractAccountName = action.account;
+
+            let abi = abis[contractAccountName];
+
+            const typeName = abi.abi.actions.find(x => x.name === action.name).type;
+            const data = abi.fromBuffer(typeName, action.data);
+            const actionAbi = abi.abi.actions.find(fcAction => fcAction.name === action.name);
+            let ricardian = actionAbi ? actionAbi.ricardian_contract : null;
+
+            if(ricardian){
+                const htmlFormatting = {h1:'div class="ricardian-action"', h2:'div class="ricardian-description"'};
+                const signer = action.authorization.length === 1 ? action.authorization[0].actor : null;
+                ricardian = ricardianParser.parse(action.name, data, ricardian, signer, htmlFormatting);
+            }
+
+            return {
+                data,
+                code:action.account,
+                type:action.name,
+                authorization:action.authorization,
+                ricardian
+            };
+        }));
+    }
+
+    async parseEosjs2Request(payload, network){
+        const {transaction} = payload;
+
+        const rpc = new eosjs2.Rpc.JsonRpc(network.fullhost());
+        const api = new eosjs2.Api({rpc});
+
+        const contracts = ObjectHelpers.distinct(transaction.abis.map(x => x.account_name));
+
+        const abis = await Promise.all(contracts.map(async accountName => {
+            const cachedABI = await StorageService.getCachedABI(accountName+'eosjs2', network.chainId);
+
+            const account = await rpc.get_account(accountName);
+            const lastUpdate = +new Date(account.last_code_update);
+
+            let rawAbiHex;
+            const fetchAbi = async () => {
+                const rawAbi = numeric.base64ToBinary((await rpc.get_raw_code_and_abi(accountName)).abi);
+                rawAbiHex = Buffer.from(rawAbi).toString('hex');
+                await StorageService.cacheABI(accountName+'eosjs2', network.chainId, {
+                    rawAbiHex,
+                    timestamp:+new Date()
+                });
+            };
+
+            if(!cachedABI) await fetchAbi();
+            else {
+                if(cachedABI.timestamp < lastUpdate) await fetchAbi();
+                else rawAbiHex = cachedABI.rawAbiHex;
+            }
+
+            const rawAbi = Buffer.from(rawAbiHex, 'hex');
+            const abi = api.rawAbiToJson(rawAbi);
+            api.cachedAbis.set(accountName, { rawAbi, abi });
+            return true;
+        }));
+
+        const buffer = Buffer.from(transaction.serializedTransaction, 'hex');
+        const parsed = await api.deserializeTransactionWithActions(buffer);
+        parsed.actions.map(x => {
+            x.code = x.account;
+            x.type = x.name;
+            delete x.account;
+            delete x.name;
+        });
+
+        payload.buf = Buffer.concat([
+            new Buffer(transaction.chainId, "hex"),         // Chain ID
+            buffer,                                         // Transaction
+            new Buffer(new Uint8Array(32)),                 // Context free actions
+        ]);
+
+        return parsed.actions;
+    }
+
+    async requestParser(payload, network){
+        if(payload.transaction.hasOwnProperty('serializedTransaction'))
+            return this.parseEosjs2Request(payload, network);
+        else return this.parseEosjsRequest(payload, network);
     }
 }

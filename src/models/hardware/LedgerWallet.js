@@ -336,7 +336,7 @@ class LedgerAPI {
             return true;
         }).catch(err => {
             delete cache[this.blockchain];
-            return `You must open the ${this.blockchain.toUpperCase()} Ledger App in order to use it with Scatter`;
+            return `You must open the ${this.blockchain.toUpperCase()} Ledger App in order to use it with VKScatter`;
         })
     }
 
@@ -347,7 +347,7 @@ class LedgerAPI {
             return true;
         }).catch(err => {
             delete cache[this.blockchain];
-            return `You must open the ${this.blockchain.toUpperCase()} Ledger App in order to use it with Scatter`;
+            return `You must open the ${this.blockchain.toUpperCase()} Ledger App in order to use it with VKScatter`;
         })
     }
 

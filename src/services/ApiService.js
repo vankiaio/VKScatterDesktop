@@ -309,7 +309,6 @@ export default class ApiService {
             if(!participants.length) return resolve({id:request.id, result:Error.signatureAccountMissing()});
             payload.participants = participants;
 
-
             // Getting the identity for this transaction
             const identity = store.state.scatter.keychain.identities.find(x => x.publicKey === possibleId.publicKey);
 

@@ -3,9 +3,9 @@
 
         <section class="networks" :class="{'working':working}">
             <section class="selected-item">
-                <figure class="name">Configure Scatter's Networks</figure>
+                <figure class="name">Configure VKScatter's Networks</figure>
                 <figure class="description">
-                    Networks inside of Scatter allow it to import accounts for various blockchains.
+                    Networks inside of VKScatter allow it to import accounts for various blockchains.
                     When you add or remove a network every item in your vault is affected.
                 </figure>
 

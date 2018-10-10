@@ -6,9 +6,9 @@
             <section class="onboarder" v-if="step === steps.BACKUP">
                 <h1>Set your Backup Location</h1>
                 <p>
-                    <b class="red">Scatter has no way to re-create your Secure Vault</b>
+                    <b class="red">VKScatter has no way to re-create your Secure Vault</b>
                     <br><br>
-                    Because of this we enforce automatic backups of your Scatter to your local device to make sure you always have a backup of your digital assets.
+                    Because of this we enforce automatic backups of your VKScatter to your local device to make sure you always have a backup of your digital assets.
                     Please choose a location to save these backups.
                 </p>
 

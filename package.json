@@ -1,16 +1,16 @@
 {
-  "name": "scatter",
+  "name": "vkscatter",
   "version": "9.3.1",
-  "description": "Scatter Desktop Companion",
+  "description": "VKScatter Desktop Companion",
   "private": true,
   "main": "electron.js",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/GetScatter/ScatterDesktop.git"
+    "url": "git+https://github.com/vankiaio/VKScatterDesktop.git"
   },
   "bugs": {
-    "url": "https://github.com/GetScatter/ScatterDesktop/issues"
+    "url": "https://github.com/vankiaio/VKScatterDesktop/issues"
   },
   "keywords": [
     "scatter",
@@ -21,7 +21,7 @@
   ],
   "homepage": "https://get-scatter.com",
   "author": {
-    "name": "GetScatter",
+    "name": "Vankia",
     "email": "support@get-scatter.com",
     "url": "https://get-scatter.com/"
   },
@@ -156,7 +156,7 @@
     "not ie <= 8"
   ],
   "build": {
-    "productName": "scatter",
+    "productName": "vkscatter",
     "appId": "com.get-scatter.server",
     "artifactName": "${os}-${productName}-${version}-${arch}.${ext}",
     "asar": true,
@@ -175,7 +175,7 @@
       "oneClick": false,
       "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
-      "shortcutName": "Scatter"
+      "shortcutName": "VKScatter"
     },
     "directories": {
       "buildResources": "build",
@@ -211,10 +211,10 @@
     "linux": {
       "category": "Network",
       "desktop": {
-        "Name": "Scatter",
-        "GenericName": "Scatter Desktop",
+        "Name": "VKScatter",
+        "GenericName": "VKScatter Desktop",
         "X-GNOME-FullName": "scatter",
-        "Comment": "Scatter desktop signature server.",
+        "Comment": "VKScatter desktop signature server.",
         "Type": "Application",
         "Terminal": "false",
         "StartupNotify": "false",

@@ -7,7 +7,7 @@
             </section>
 
             <section class="selected-item scrollable">
-                <figure class="name">Scatter Backup Settings</figure>
+                <figure class="name">VKScatter Backup Settings</figure>
                 <figure class="description">
                     Configure your automatic backups.
                 </figure>

@@ -7,24 +7,26 @@ import LiquidEOS from './hardware/LiquidEOS';
 
 export const EXT_WALLET_TYPES = {
     LEDGER:'Ledger Nano S',
-    LIQUID_EOS:'Scatter/LiquidEOS DIY Hardware Wallet'
+    LIQUID_EOS:'VKScatter/LiquidEOS DIY Hardware Wallet'
 };
 
 export const EXT_WALLET_TYPES_ARR = Object.keys(EXT_WALLET_TYPES).map(x => EXT_WALLET_TYPES[x]);
 
 export default class ExternalWallet {
 
-    constructor(_type = EXT_WALLET_TYPES.LEDGER, _blockchain = Blockchains.VKTIO){
+    constructor(_type = EXT_WALLET_TYPES.LEDGER, _blockchain = Blockchains.EOSIO){
         this.id = IdGenerator.text(64);
         this.type = _type;
         this.blockchain = _blockchain;
         this.interface = getInterface(_type, _blockchain);
+        this.addressIndex = 0;
     }
 
     static placeholder(){ return new ExternalWallet(); }
     static fromJson(json){
         let p = Object.assign(this.placeholder(), json);
         p.interface = getInterface(p.type, p.blockchain);
+        p.interface.setAddressIndex(p.addressIndex);
         return p;
     }
 }
@@ -52,6 +54,18 @@ export class ExternalWalletInterface {
 
     canConnect(){
         return this.handler.canConnect();
+    }
+
+    setAddressIndex(path){
+        return this.handler.setAddressIndex(path);
+    }
+
+    availableBlockchains(){
+        return this.handler.availableBlockchains();
+    }
+
+    reset(){
+        return this.handler.reset();
     }
 
 }

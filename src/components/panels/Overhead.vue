@@ -4,7 +4,7 @@
         <!-- HEAD -->
         <section class="head" v-if="notOnboarding">
             <figure class="bg"></figure>
-            <router-link :to="{name:'home'}" class="logo">Scatter</router-link>
+            <router-link :to="{name:'home'}" class="logo">VKScatter</router-link>
             <figure class="actions">
 
                 <!-- EXIT / QUIT -->

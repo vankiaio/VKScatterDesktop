@@ -26,6 +26,10 @@ export default class TransferService {
         return this.baseTransfer(params);
     }
 
+    static async [Blockchains.EOSIO](params){
+        return this.baseTransfer(params);
+    }
+
     static async [Blockchains.VKTIO](params){
         return this.baseTransfer(params);
     }

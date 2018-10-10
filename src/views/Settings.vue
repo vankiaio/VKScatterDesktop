@@ -22,7 +22,7 @@
 
         <section v-if="selectedOption" style="flex:3; overflow:hidden; display:flex; flex-direction: column;">
             <figure class="panel-head">
-                <span class="version">Scatter Desktop v{{version}}</span>
+                <span class="version">VKScatter Desktop v{{version}}</span>
                 <span class="console fa fa-code" @click="openConsole"></span>
             </figure>
             <section class="transitioner">
@@ -55,14 +55,14 @@
     import WindowService from '../services/WindowService'
 
     const SettingsOptions = {
-        LANGUAGE:{ flash:false, locked:false, name:'Language', description:'Set Scatter\s language.' },
+        LANGUAGE:{ flash:false, locked:false, name:'Language', description:'Set VKScatter\s language.' },
         EXPLORER:{ flash:false, locked:false, name:'Explorers', description:'Select Preferred Block Explorers.' },
         PIN:{ flash:false, locked:true, name:'PIN', description:'Set or disabled your secondary PIN.' },
         NETWORKS:{ flash:false, locked:true, name:'Networks', description:'Add or Remove Networks.' },
 //        NONCE:{ flash:false, locked:true, name:'Nonce', description:'Configure the popup nonce prefix.' },
         PASSWORD:{ flash:false, locked:true, name:'Password', description:'Change your password or regenerate your Mnemonic.' },
-        BACKUP:{ flash:false, locked:true, name:'Backup', description:'Create a backup of your Scatter.' },
-        DESTROY:{ flash:false, locked:true, name:'Destroy', description:'Destroy your instance of Scatter.' },
+        BACKUP:{ flash:false, locked:true, name:'Backup', description:'Create a backup of your VKScatter.' },
+        DESTROY:{ flash:false, locked:true, name:'Destroy', description:'Destroy your instance of VKScatter.' },
     };
 
     export default {

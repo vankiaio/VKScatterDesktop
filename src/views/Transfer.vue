@@ -253,7 +253,7 @@
 
                 const tokensToSend = this.isSimple ? await PriceService.valueToTokens(this.token, this.amount) : this.amount;
                 if(parseFloat(tokensToSend) <= 0) return PopupService.push(Popup.prompt("Could not calculate tokens from value.",
-                    "Scatter most likely couldn't fetch the token price from the server due to rate limiting or congestion. Please try again later.", "ban", "Okay"));
+                    "VKScatter most likely couldn't fetch the token price from the server due to rate limiting or congestion. Please try again later.", "ban", "Okay"));
 
                 const account = this.sendingAccount(tokensToSend);
                 if(!account) return PopupService.push(Popup.prompt("Overspending balance.", "You don't have any account that has enough balance to make this transfer in it's base token.", "ban", "Okay"));
