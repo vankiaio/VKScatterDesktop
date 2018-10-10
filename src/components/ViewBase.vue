@@ -22,7 +22,7 @@
 
                 </section>
 
-                <section v-if="!unlocked">
+                <section v-else>
                     <auth></auth>
                 </section>
             </section>
@@ -53,14 +53,14 @@
             steps: [
                 {
                     target: '#tour1',
-                    content: `This is your <b>Vault</b> <br><b>Open it.</b>`,
+                    content: `This is your <b>Vault</b> where all of your Keys are kept. <br><b>Open it.</b>`,
                     params: {
                         placement: 'bottom'
                     }
                 },
                 {
                     target: '#tour2',
-                    content: `Now click here to add a <b>Secret</b>`,
+                    content: `Now click here to add a <b>Vault Entry</b>`,
                     params: {
                         placement: 'left'
                     }
@@ -82,7 +82,7 @@
             },
             route(){
                 return this.$route.name
-            },
+            }
         },
         created(){
 
@@ -97,6 +97,7 @@
                 this[Actions.SET_SCATTER](scatter);
             },
             checkTour(){
+                if(!this.scatter) return;
                 if(!this.scatter.toured && !this.onboarding && this.unlocked && this.route === 'home'){
                     this.$tours['scatter'].start();
                 }

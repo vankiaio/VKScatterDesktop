@@ -157,11 +157,10 @@
                 return this.accountRequirements.map(x => this.networks.find(x => x.chainId === x.chainId).name).join(' / ')
             },
             shouldShowSearchbar(){
-                return this.selectedIdentity && this.validAccounts.length > 1;
+                return this.searchTerms.length || (this.selectedIdentity && this.validAccounts.length > 1);
             }
         },
         mounted(){
-
             if(!this.isValidIdentity){
                 this.error = {
                     title:"Your Identity is missing some properties.",
@@ -171,10 +170,10 @@
                 return;
             }
 
-            if(!this.validAccounts.length){
+            if(!this.validAccounts.length && this.accountRequirements.length){
                 this.error = {
                     title:"No available accounts.",
-                    subtext:`Missing Required Blockchains`,
+                    subtext:`Missing Required Networks`,
                     list:this.fields.accounts
                         .filter(x => !this.networks.find(n => n.chainId === x.chainId))
                         .map(x => {
@@ -185,7 +184,7 @@
                 return;
             }
 
-            this.checkWarning();
+//            this.checkWarning();
         },
         methods: {
             async checkWarning(){

@@ -18,32 +18,63 @@ export default class TransferService {
         return blockchain;
     }
 
+    static async [Blockchains.ETH](params){
+        return this.baseTransfer(params, false);
+    }
+
+    static async [Blockchains.TRX](params){
+        return this.baseTransfer(params);
+    }
+
     static async [Blockchains.VKTIO](params){
+        return this.baseTransfer(params);
+    }
+
+    static async baseTransfer(params, parseDecimals = true){
         let {account, recipient, amount, memo, token } = params;
-        const network = account.network();
         const plugin = PluginRepository.plugin(account.blockchain());
 
-        const decimals = PriceService.tokenDecimals(token);
 
-        amount = parseFloat(amount).toFixed(decimals);
-        this.amount = amount;
-        const transfer = await PluginRepository.plugin(account.blockchain())
-            .transfer(
-                account,
-                recipient,
-                amount,
-                network,
-                token.account,
-                token.symbol,
-                memo
-            ).catch(x => x);
-
-        if(transfer !== null) {
-            if (transfer.hasOwnProperty('error')) PopupService.push(Popup.prompt("Transfer Error", transfer.error, "ban", "Okay"));
-            else PopupService.push(Popup.transactionSuccess(Blockchains.VKTIO, transfer.transaction_id))
+        if(parseDecimals) {
+            const decimals = PriceService.tokenDecimals(token);
+            amount = parseFloat(amount).toFixed(decimals);
         }
 
-        return true;
+        const transfer = await PluginRepository.plugin(account.blockchain())
+            .transfer({
+                account,
+                to:recipient,
+                amount,
+                contract:token.account,
+                symbol:token.symbol,
+                memo
+            }).catch(x => x);
+
+        if(transfer !== null) {
+            if (transfer.hasOwnProperty('error')) {
+                PopupService.push(Popup.prompt("Transfer Error", transfer.error, "ban", "Okay"));
+                return false;
+            }
+            else {
+                switch(token.blockchain){
+		    case Blockchains.VKTIO:
+                        PopupService.push(Popup.transactionSuccess(token.blockchain, transfer.transaction_id))
+                        break;
+                    case Blockchains.EOSIO:
+                        PopupService.push(Popup.transactionSuccess(token.blockchain, transfer.transaction_id))
+                        break;
+                    case Blockchains.TRX:
+                        PopupService.push(Popup.transactionSuccess(token.blockchain, transfer.txID))
+                        break;
+                    case Blockchains.ETH:
+                        PopupService.push(Popup.transactionSuccess(token.blockchain, transfer.transactionHash))
+                        break;
+                }
+
+                return true;
+            }
+        }
+
     }
 
 }

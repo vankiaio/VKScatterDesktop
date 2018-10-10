@@ -254,7 +254,15 @@ export default class ApiService {
                 if(!result) return resolve({id:request.id, result:Error.signatureError("signature_rejected", "User rejected the transfer request")});
                 const account = Account.fromJson(result.account);
                 const plugin = PluginRepository.plugin(network.blockchain);
-                const sent = await PluginRepository.plugin(network.blockchain).transfer(account, to, result.amount, network, contract, symbol, request.payload.memo, false);
+                const sent = await PluginRepository.plugin(network.blockchain).transfer({
+                    account,
+                    to,
+                    amount:result.amount,
+                    contract,
+                    symbol,
+                    memo:request.payload.memo,
+                    promptForSignature:false
+                });
                 resolve({id:request.id, result:sent})
             }));
         })
@@ -286,7 +294,9 @@ export default class ApiService {
             switch(blockchain){
                 case Blockchains.VKTIO: payload.messages = await plugin.requestParser(payload, network); break;
                 case Blockchains.EOSIO: payload.messages = await plugin.requestParser(payload, network); break;
-                case Blockchains.ETH: payload.messages = await plugin.requestParser(payload, payload.hasOwnProperty('abi') ? payload.abi : null); break;
+                case Blockchains.ETH:
+                case Blockchains.TRX:
+                    payload.messages = await plugin.requestParser(payload, payload.hasOwnProperty('abi') ? payload.abi : null); break;
             }
 
 
@@ -326,7 +336,11 @@ export default class ApiService {
 
             const hasHardwareKeys = participants.some(x => KeyPairService.isHardware(x.publicKey));
             const needToSelectLocation = requiredFields.hasOwnProperty('location') && requiredFields.location.length && identity.locations.length > 1;
-            if(existingApp && !hasHardwareKeys && !needToSelectLocation && identity.locations.length === 1 && PermissionService.isWhitelistedTransaction(origin, identity, participants, payload.messages, requiredFields)){
+            if(existingApp
+                && !hasHardwareKeys
+                && (!needToSelectLocation
+                || needToSelectLocation && identity.locations.length === 1)
+                && PermissionService.isWhitelistedTransaction(origin, identity, participants, payload.messages, requiredFields)){
                 return await signAndReturn(identity.locations[0]);
             }
 
