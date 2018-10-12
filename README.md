@@ -5,7 +5,7 @@
 **None of these package are signed yet.** Make sure you only download 
 Scatter Desktop from this GitHub, and **NOWHERE ELSE**.
 
-### [CLICK HERE AND GRAB THE LATEST RELEASE](https://github.com/GetScatter/ScatterDesktop/releases)
+### [CLICK HERE AND GRAB THE LATEST RELEASE](https://github.com/vankiaio/VKScatterDesktop/releases)
 
 ## Running in development mode
 
@@ -15,7 +15,7 @@ Scatter Desktop from this GitHub, and **NOWHERE ELSE**.
 - run `electron .` or `./node_modules/bin/electron .` from the directory to start electron.
 
 ## Creating Apps for Scatter 
-### Check out the [Documentation](https://get-scatter.com/docs/examples-interaction-flow)
+### Check out the [Documentation](https://#)
 
 
 
