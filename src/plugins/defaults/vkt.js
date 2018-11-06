@@ -15,7 +15,7 @@ import StorageService from '../../services/StorageService'
 import ApiService from '../../services/ApiService'
 import * as Actions from '../../models/api/ApiActions';
 import {store} from '../../store/store'
-import eosjs2 from 'eosjs2';
+import { Api, JsonRpc, RpcError, JsSignatureProvider } from 'eosjs2';
 import * as numeric from "eosjs2/dist/eosjs-numeric";
 
 
@@ -32,7 +32,7 @@ const getCachedInstance = network => {
 
 const getAccountsFromPublicKey = (publicKey, network) => {
     return Promise.race([
-        new Promise(resolve => setTimeout(() => resolve([]), 2500)),
+        new Promise(resolve => setTimeout(() => resolve([]), 20000)),
         new Promise((resolve, reject) => {
             const eos = getCachedInstance(network);
             eos.getKeyAccounts(publicKey).then(res => {
@@ -56,15 +56,15 @@ const getAccountsFromPublicKey = (publicKey, network) => {
 const EXPLORERS = [
     {
         name:'VkT Tracker',
-        account:account => `http://221.122.119.226:4200/account/${account.name}`,
-        transaction:id => `http://221.122.119.226:4200/transaction/${id}`,
-        block:id => `http://221.122.119.226:4200/block/${id}`
+        account:account => `http://tracker.devicexx.com/accounts/${account.name}`,
+        transaction: id => `http://tracker.devicexx.com/transactions/blocks/${id}`,
+        block:id => `http://tracker.devicexx.com/blocks/${id}`
     },
     {
         name:'VKT Blocks',
-        account:account => `http://221.122.119.226:4200/account/${account.name}`,
-        transaction:id => `http://221.122.119.226:4200/transaction/${id}`,
-        block:id => `http://221.122.119.226:4200/block/${id}`
+        account:account => `http://tracker.devicexx.com/accounts/${account.name}`,
+        transaction: id => `http://tracker.devicexx.com/transactions/blocks/${id}`,
+        block:id => `http://tracker.devicexx.com/blocks/${id}`
     }
 ];
 
@@ -89,7 +89,7 @@ export default class VKT extends Plugin {
                 '221.122.119.226',
                 8888,
                 Blockchains.VKTIO,
-                'e7ae77c56ef35e1f4969de1bd888593fb08c01acf05054a7055662387bab7a17'
+                'e17abdaf44e2811b452ea15a0aeb7eff6eab9c5de4452e6fb7b552c5de9ddae7'
             ));
         });
     }
@@ -100,7 +100,7 @@ export default class VKT extends Plugin {
     }
 
     async getChainId(network){
-        const eos = Eos({httpEndpoint:`${network.protocol}://${network.hostport()}`});
+        const eos = Eos({httpEndpoint:network.fullhost()});
         return eos.getInfo({}).then(x => x.chain_id || '').catch(() => '');
     }
 
@@ -109,22 +109,41 @@ export default class VKT extends Plugin {
     async getResourcesFor(account){
         const data = await this.accountData(account);
         if(!data || !data.hasOwnProperty('cpu_limit') || !data.cpu_limit.hasOwnProperty('available')) return [];
-        return [{
-            name:'CPU',
-            available:data.cpu_limit.available,
-            max:data.cpu_limit.max,
-            percentage:(data.cpu_limit.used * 100) / data.cpu_limit.max
+
+        const refund = data.hasOwnProperty('refund_request') && data.refund_request ? {
+          type:'bar',
+          name:'Refund',
+          cpu:data.refund_request.cpu_amount,
+          net:data.refund_request.net_amount,
+          used:+new Date() - +new Date(data.refund_request.request_time),
+          total:(86400*3*1000),
+          text:(new Date((+new Date(data.refund_request.request_time)) + (86400*3*1000))).toLocaleString(),
+          color:'blue',
+        } : null;
+
+        const resources = [{
+          type:'radial',
+          name:'CPU',
+          available:data.cpu_limit.available,
+          max:data.cpu_limit.max,
+          percentage:(data.cpu_limit.used * 100) / data.cpu_limit.max
         },{
-            name:'NET',
-            available:data.net_limit.available,
-            max:data.net_limit.max,
-            percentage:(data.net_limit.used * 100) / data.net_limit.max
+          type:'radial',
+          name:'NET',
+          available:data.net_limit.available,
+          max:data.net_limit.max,
+          percentage:(data.net_limit.used * 100) / data.net_limit.max
         },{
-            name:'RAM',
-            available:data.ram_usage,
-            max:data.ram_quota,
-            percentage:(data.ram_usage * 100) / data.ram_quota
-        }]
+          type:'radial',
+          name:'RAM',
+          available:data.ram_usage,
+          max:data.ram_quota,
+          percentage:(data.ram_usage * 100) / data.ram_quota
+        }];
+
+        if(refund) resources.push(refund);
+
+        return resources;
     }
 
     async moderateResource(resource, account){
@@ -286,6 +305,7 @@ export default class VKT extends Plugin {
                 let signature = null;
                 if(KeyPairService.isHardware(account.publicKey)){
                     const keypair = KeyPairService.getKeyPairFromPublicKey(account.publicKey);
+                    keypair.external.interface.setAddressIndex(keypair.external.addressIndex);
                     signature = await keypair.external.interface.sign(account.publicKey, payload, payload.abi, account.network());
                 } else signature = await this.signer({data:payload.buf}, account.publicKey, true);
 
@@ -446,6 +466,10 @@ export default class VKT extends Plugin {
                 ricardian = ricardianParser.parse(action.name, data, ricardian, signer, htmlFormatting);
             }
 
+            if(transaction.hasOwnProperty('delay_sec') && parseInt(transaction.delay_sec) > 0){
+              data.delay_sec = transaction.delay_sec;
+            }
+
             return {
                 data,
                 code:action.account,
@@ -459,10 +483,13 @@ export default class VKT extends Plugin {
     async parseEosjs2Request(payload, network){
         const {transaction} = payload;
 
-        const rpc = new eosjs2.Rpc.JsonRpc(network.fullhost());
-        const api = new eosjs2.Api({rpc});
+        const rpc = new JsonRpc(network.fullhost());
+        const api = new Api({rpc});
 
-        const contracts = ObjectHelpers.distinct(transaction.abis.map(x => x.account_name));
+        const contracts = ObjectHelpers.distinct(transaction.abis.map(x => {
+            if(x.hasOwnProperty('account_name')) return x.account_name;
+            return x.accountName;
+        }));
 
         const abis = await Promise.all(contracts.map(async accountName => {
             const cachedABI = await StorageService.getCachedABI(accountName+'eosjs2', network.chainId);

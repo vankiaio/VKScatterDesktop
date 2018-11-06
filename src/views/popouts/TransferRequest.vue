@@ -9,7 +9,12 @@
                     <figure class="logo">S</figure>
                     <figure class="info">
                         <figure>Transfer Request</figure>
-                        <figure>{{pluginOrigin}} - {{payload.origin}}</figure>
+                        <figure>
+                            <b>{{network.name}}</b>
+                            <i class="endorsed-network" v-if="isEndorsedNetwork">
+                                <i class="fa fa-shield"></i>
+                            </i>
+                        </figure>
                     </figure>
                     <figure class="close" @click="returnResult(null)">
                         <i class="fa fa-times"></i>
@@ -62,7 +67,7 @@
                         <figure class="header">
                             <b>{{selectedAccount.formatted()}}</b>
                             <figure class="line"></figure>
-                            You are about to transfer <b>{{amount > 0 ? parseFloat(amount).toFixed(decimals) : parseFloat(customAmount).toFixed(decimals)}} {{symbol}}</b> to <b>{{to}}</b>.
+                            You are about to transfer <b>{{displayAmount}} {{symbol}}</b> to <b>{{to}}</b>.
                             Are you sure?
                         </figure>
                         <section class="action-buttons">
@@ -99,6 +104,7 @@
             searchTerms:'',
             balances:[],
             customAmount:0,
+            isEndorsedNetwork:false,
         }},
         computed:{
             ...mapState([
@@ -123,8 +129,13 @@
                     .filter(x => [this.network.blockchain].includes(x.blockchain().toLowerCase()))
                     .filter(id => JSON.stringify(id).toLowerCase().indexOf(this.searchTerms.toLowerCase()) > -1);
             },
+            displayAmount(){
+                const amount = this.amount > 0 ? parseFloat(this.amount).toFixed(this.decimals) : parseFloat(this.customAmount).toFixed(this.decimals)
+                return !isNaN(amount) ? amount : 0;
+            }
         },
         mounted(){
+            this.checkNetwork();
             this.checkWarning();
             this.validAccounts.map(async account => {
                 this.balances.push({
@@ -134,6 +145,10 @@
             })
         },
         methods: {
+            async checkNetwork(){
+                if(!this.network) return;
+                this.isEndorsedNetwork = await PluginRepository.plugin(this.network.blockchain).isEndorsedNetwork(this.network);
+            },
             async checkWarning(){
 //                const warn = await RIDLService.shouldWarn(RIDLService.buildEntityName('application', this.payload.origin));
 //                if(warn.length)
@@ -143,7 +158,8 @@
             returnResult(result){
                 let returned = null;
                 if(result){
-                    let amount = this.amount > 0 ? parseFloat(this.amount).toFixed(this.decimals).toString() : parseFloat(this.customAmount).toFixed(this.decimals).toString();
+                    let amount = this.displayAmount;
+                    if(parseFloat(amount) <= 0) return PopupService.push(Popup.prompt('Invalid Amount', `You can not send 0 ${this.symbol}`, 'exclamation-triangle', 'Okay'));
 
                     returned = {
                         account:this.selectedAccount,
@@ -175,6 +191,14 @@
 
     .pop-in {
         width:200px;
+    }
+
+    .endorsed-network {
+        display:inline-block;
+        font-size: 11px;
+        animation: attention 1s ease-out;
+        animation-iteration-count: infinite;
+        margin-left:3px;
     }
 
     .popup {

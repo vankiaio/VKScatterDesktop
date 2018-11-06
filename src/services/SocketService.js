@@ -2,12 +2,13 @@ import ApiService from '../services/ApiService';
 import AuthorizedApp from '../models/AuthorizedApp';
 import {store} from '../store/store';
 import * as Actions from '../store/constants';
-const fs = window.require('fs');
+const http = window.require('http');
+const https = window.require('https');
 
 import {Popup} from '../models/popups/Popup'
 import PopupService from '../services/PopupService';
 
-let io = null;
+let io = window.require('socket.io')();
 
 let rekeyPromise;
 const getNewKey = socket => new Promise((resolve, reject) => {
@@ -121,26 +122,47 @@ const socketHandler = (socket) => {
 };
 
 const getCerts = async () => {
-    return fetch('https://certs.get-scatter.com').then(res => res.json());
+    return fetch('https://certs.get-scatter.com')
+        .then(res => res.json())
+        .catch(() => console.error('Could not fetch certs. Probably due to a proxy, vpn, or firewall.'));
 };
+
+
+const ip = '127.0.0.1';
+const isPortOpen = async port => new Promise(resolve => {
+    const httpServer = http.createServer();
+    httpServer.on('error', error => {
+        resolve(false);
+    })
+
+    httpServer.listen(50005,ip);
+
+    setTimeout(() => {
+        httpServer.close();
+        resolve(true);
+    }, 400);
+});
+
+// Every 2 minutes.
+const reconnectTime = 1000*60*2;
+let initialConnection = true;
 
 export default class SocketService {
 
     static async initialize(){
 
-        io = window.require('socket.io')();
+        const recurse = () => setTimeout(() => {
+            this.initialize(true);
+        }, reconnectTime); // every ten minutes.
+
+        if(!(await isPortOpen(50005))) return recurse();
+
         const options = { pingTimeout:100000000000000000 };
-
-        const http = window.require('http');
-        const https = window.require('https');
-        const ip = '127.0.0.1';
-
 
         // HTTP protocol (port 50005)
         const httpServer = http.createServer();
         httpServer.listen(50005,ip);
         io.attach(httpServer,options);
-
 
         // HTTPS protocol (port 50006)
         const certs = await getCerts();
@@ -148,9 +170,16 @@ export default class SocketService {
             const httpsServer = https.createServer(certs);
             httpsServer.listen(50006, ip);
             io.attach(httpsServer,options);
+        } else {
+            if(initialConnection) PopupService.push(Popup.prompt("Couldn't fetch certificates",
+                'There was an issue trying to fetch the certificates which allow Scatter to run on SSL. This is usually caused by proxies, firewalls, and anti-viruses.',
+                'exclamation-triangle', 'Okay'))
         }
 
+	    initialConnection = false;
         this.open();
+        recurse();
+        return true;
     }
 
     static open(){

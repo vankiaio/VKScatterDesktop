@@ -8,7 +8,19 @@
                     <figure class="logo">S</figure>
                     <figure class="info">
                         <figure>{{isArbitrarySignature ? 'Arbitrary Data' : 'Actions' }}</figure>
-                        <figure>{{pluginOrigin}} : {{payload.origin}} {{isArbitrarySignature ? '' : `on ${network ? network.name : ''}`}}</figure>
+                        <figure>
+                            {{pluginOrigin}} : {{payload.origin}}
+                            <b>
+                                {{isArbitrarySignature ? '' : `on ${network ? network.name : ''}`}}
+                                <i class="endorsed-network" v-if="!isArbitrarySignature && isEndorsedNetwork">
+                                    <i class="fa fa-shield"></i>
+                                </i>
+                            </b>
+
+                        </figure>
+                        <figure v-if="!isArbitrarySignature">
+                            Involved Accounts: <b>{{participants}}</b>
+                        </figure>
                     </figure>
                     <section class="buttons">
                         <figure class="button red" @click="returnResult(false)"><i class="fa fa-times"></i></figure>
@@ -22,6 +34,13 @@
                 <section class="below-fold" v-if="belowFold && !seenAllActions">
                     <figure class="alert">
                         {{belowFold}} more actions below.
+                    </figure>
+                </section>
+
+                <section class="below-fold" v-if="isArbitrarySignature">
+                    <figure class="alert">
+                        <b style="color:yellow;">Warning, arbitrary signatures can be dangerous.</b> <b>DO NOT</b> sign anything which you can not read clearly in human language.
+                        If what you are signing is a random jumble of letters and numbers it's possible that it's a transaction that you can not read and could be a transfer of all of your funds.
                     </figure>
                 </section>
 
@@ -181,6 +200,7 @@
             scrollTop:0,
             belowFold:0,
             seenAllActions:false,
+            isEndorsedNetwork:false,
         }},
         computed:{
             ...mapState([
@@ -191,6 +211,10 @@
                 'accounts',
                 'networks',
             ]),
+            participants(){
+                if(!this.payload.hasOwnProperty('participants')) return '';
+                return this.payload.participants.map(x => Account.fromJson(x).sendable()).join(', ')
+            },
             messages(){
                 return this.payload.messages;
             },
@@ -210,6 +234,7 @@
         mounted(){
 //            WindowService.openTools()
             this.checkWarning();
+            this.checkNetwork();
 
             let id = this.scatter.keychain.identities.find(x => x.publicKey === this.payload.identityKey);
             if(!id) return this.returnResult(Error.identityMissing());
@@ -258,6 +283,10 @@
 
         },
         methods: {
+            async checkNetwork(){
+                if(!this.network) return;
+                this.isEndorsedNetwork = await PluginRepository.plugin(this.network.blockchain).isEndorsedNetwork(this.network);
+            },
             isShowingJson(message){
                 return this.showingJson.find(x => x === this.hash(message));
             },
@@ -551,20 +580,27 @@
                 text-align:left;
                 flex:1;
 
+                .endorsed-network {
+                    display:inline-block;
+                    font-size: 11px;
+                    animation: attention 1s ease-out;
+                    animation-iteration-count: infinite;
+                    margin-left:3px;
+                }
+
                 figure {
 
-                    &:first-child {
+                    &:nth-child(1) {
                         font-size:28px;
                         font-weight: 600;
                         width:100%;
                         padding-top:2px;
+                        color:$black;
                     }
 
-                    &:last-child {
-                        font-size:11px;
-                        color:$dark-grey;
-                        margin-top:2px;
-                    }
+                    font-size:11px;
+                    color:$dark-grey;
+                    margin-top:2px;
                 }
             }
 

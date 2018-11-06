@@ -1,8 +1,8 @@
 const { ipcRenderer, remote } = window.require('electron');
 const path = window.require("path");
 const url = window.require("url");
-import {store} from '../store/store'
-import * as Actions from '../store/constants'
+
+const LowLevelWindowService = remote.getGlobal('appShared').LowLevelWindowService;
 
 import WindowMessage from '../models/popups/WindowMessage';
 
@@ -53,50 +53,8 @@ export default class WindowService {
         ipcRenderer.on(type, (event, data) => handler(data))
     }
 
-    static openPopOut(onReady = () => {}, onClosed = () => {}, width = 800, height = 600){
-
-        const clone = store.state.scatter.clone();
-        clone.nonce++;
-        store.dispatch(Actions.SET_SCATTER, clone);
-
-        let win = new remote.BrowserWindow({
-            width,
-            height,
-            frame: false,
-            radii: [5,5,5,5],
-            icon:'assets/icon.png',
-            show:false,
-        });
-
-        win.once('ready-to-show', () => {
-            onReady(win);
-            win.show();
-            win.setAlwaysOnTop(true);
-            win.focus();
-            win.setAlwaysOnTop(false);
-        });
-
-        win.once('closed', () => {
-            onClosed(win);
-            win = null;
-            // remote.getCurrentWindow().hide();
-            // remote.getCurrentWindow().show();
-        });
-
-        if(remote.process.mainModule.filename.indexOf('app.asar') === -1){
-            win.loadURL('http://localhost:8080/#/popout');
-        } else {
-            win.loadURL(url.format({
-                pathname: path.join(remote.app.getAppPath(), "dist", "index.html"),
-                protocol: "file:",
-                slashes: true,
-                hash: '/popout'
-            }));
-        }
-
-
-
-        return win;
+    static async openPopOut(onReady = () => {}, onClosed = () => {}, width = 800, height = 600){
+        return LowLevelWindowService.openPopOut(onReady, onClosed, width, height);
     }
 
 }

@@ -2,6 +2,7 @@ import {store} from '../store/store';
 import * as Actions from '../store/constants';
 import {Blockchains, BlockchainsArray} from '../models/Blockchains';
 import PluginRepository from '../plugins/PluginRepository'
+import ObjectHelpers from '../util/ObjectHelpers'
 
 const api = "https://api.get-scatter.com";
 
@@ -32,7 +33,7 @@ export default class PriceService {
 
     static getAll(){
         return Promise.race([
-            new Promise(resolve => setTimeout(() => resolve(false), 1000)),
+            new Promise(resolve => setTimeout(() => resolve(false), 10000)),
             fetch(api+'/v1/prices').then(x => x.json())
         ])
     }
@@ -75,6 +76,8 @@ export default class PriceService {
                         if(parseFloat(balance) > 0){
                             balances[account.unique()].push({symbol:token.symbol, balance, account:token.account, blockchain:account.blockchain()});
                         }
+
+                        await store.dispatch(Actions.SET_BALANCES, balances);
                         return true;
                     })()
                 ])
@@ -85,15 +88,20 @@ export default class PriceService {
     }
 
     static tokenDecimals(token){
-        const tokenBalance = Object.keys(store.state.balances).map(x => store.state.balances[x]).find(x => x.symbol === token.symbol);
+        const tokenBalance = ObjectHelpers.flatten(Object.keys(store.state.balances).map(x => store.state.balances[x])).find(x => x.blockchain === token.blockchain && x.account === token.account && x.symbol === token.symbol);
         return tokenBalance ? tokenBalance.balance.toString().split('.')[1].length : PluginRepository.plugin(token.blockchain).defaultDecimals();
     }
 
     static async valueToTokens(token, value){
-        const balances = store.state.balances;
         const prices = await PriceService.getAll();
         if(!prices || !Object.keys(prices).length || !prices.hasOwnProperty(token.symbol)) return 0;
         return parseFloat(value / prices[token.symbol].price).toFixed(this.tokenDecimals(token));
+    }
+
+    static async tokensToValue(token, value){
+        const prices = await PriceService.getAll();
+        if(!prices || !Object.keys(prices).length || !prices.hasOwnProperty(token.symbol)) return 0;
+        return parseFloat(value * prices[token.symbol].price).toFixed(2);
     }
 
     static async getTokenInfo(token){
@@ -105,7 +113,7 @@ export default class PriceService {
         let accountBalances = [];
         Object.keys(store.state.balances).map(accountUnique => {
             const account = store.state.scatter.keychain.accounts.find(x => x.unique() === accountUnique);
-            const foundToken = store.state.balances[accountUnique].find(x => x.blockchain === token.blockchain && x.symbol === token.symbol);
+            const foundToken = store.state.balances[accountUnique].find(x => x.blockchain === token.blockchain && x.account === token.account && x.symbol === token.symbol);
             if(foundToken){
                 accountBalances.push({
                     account,

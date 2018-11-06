@@ -16,14 +16,16 @@ import TronWeb from 'tronweb';
 import * as utils from 'tronweb/src/utils/crypto';
 const ethUtil = require('ethereumjs-util');
 const toBuffer = key => ethUtil.toBuffer(ethUtil.addHexPrefix(key));
+import Web3 from 'web3';
+// import Ethers from 'ethers';
+import ethabi from 'ethereumjs-abi';
 
 let cachedInstances = {};
 const getCachedInstance = network => {
     if(cachedInstances.hasOwnProperty(network.unique())) return cachedInstances[network.unique()];
     else {
-        const HttpProvider = TronWeb.providers.HttpProvider;
-        const fullNode = new HttpProvider(network.fullhost());
-        const tronWeb = new TronWeb(fullNode, fullNode, `${network.protocol}://${network.host}`);
+        const provider = new TronWeb.providers.HttpProvider(network.fullhost());
+        const tronWeb = new TronWeb(provider, provider, network.fullhost());
         cachedInstances[network.unique()] = tronWeb;
         return tronWeb;
     }
@@ -31,7 +33,7 @@ const getCachedInstance = network => {
 
 const EXPLORERS = [
     {
-        name:'Etherscan',
+        name:'Tronscan',
         account:account => `https://tronscan.org/#/address/${account.formatted()}`,
         transaction:id => `https://tronscan.org/#/transaction/${id}`,
         block:id => `https://tronscan.org/#/block/${id}`
@@ -81,7 +83,7 @@ export default class TRX extends Plugin {
     async balanceFor(account){
         const tron = getCachedInstance(account.network());
         const balance = await tron.trx.getBalance(account.publicKey);
-        return tron.toBigNumber(balance).div(6).toFixed(6).toString(10);
+        return tron.toBigNumber(balance).div(1000000).toFixed(6).toString(10);
     }
 
     defaultDecimals(){ return 6; }
@@ -150,6 +152,7 @@ export default class TRX extends Plugin {
                 let signature = null;
                 if(KeyPairService.isHardware(account.publicKey)){
                     const keypair = KeyPairService.getKeyPairFromPublicKey(account.publicKey);
+                    keypair.external.interface.setAddressIndex(keypair.external.addressIndex);
                     signature = await keypair.external.interface.sign(account.publicKey, payload, payload.abi, account.network());
                 } else signature = await this.signer(payload, account.publicKey);
 
@@ -160,21 +163,41 @@ export default class TRX extends Plugin {
         })
     }
 
-    async requestParser(transaction, abi){
+    async requestParser(transaction, abiData){
+        const network = Network.fromJson(transaction.network);
         const txID = transaction.transaction.transaction.txID;
         transaction = transaction.transaction.transaction.raw_data;
-        // const buf = Buffer.from(JSON.stringify(transaction));
-        // console.log('test', Hasher.unsaltedQuickHash(buf))
-        // console.log('hash', txID, transaction);
+
+        const tron = getCachedInstance(network);
         return transaction.contract.map(contract => {
 
-            const data = contract.parameter.value;
+            let data = contract.parameter.value;
+            const address = data.hasOwnProperty('contract_address') ? data.contract_address : 'system';
+
+            const quantity = data.hasOwnProperty('call_value') ? {paying:tron.fromSun(data.call_value) + ' TRX'} : {};
+
+            let params = {};
+            let methodABI;
+            if(abiData){
+                const {abi, address, method} = abiData;
+                methodABI = abi.find(x => x.name === method);
+                if(!methodABI) throw Error.signatureError('no_abi_method', "No method signature on the abi you provided matched the data for this transaction");
+                const names = methodABI.inputs.map(x => x.name);
+                const types = methodABI.inputs.map(x => x.type);
+
+                data = tron.utils.abi.decodeParams(names, types, data.data, true);
+                data = Object.assign(data, quantity);
+
+                Object.keys(data).map(key => {
+                    if(tron.utils.isBigNumber(data[key])) data[key] = data[key].toString();
+                });
+            }
 
 
             return {
                 data,
-                code:contract.type,
-                type:contract.type,
+                code:address,
+                type:methodABI ? methodABI.name : 'transfer',
             };
 
         })

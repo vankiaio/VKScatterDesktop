@@ -207,7 +207,7 @@
                     .filter(x => this.balances.hasOwnProperty(x.unique()) && this.balances[x.unique()].length)
                     .filter(x => x.name.toLowerCase().indexOf(terms) > -1 || x.keypair().name.toLowerCase().indexOf(terms) > -1)
                     .reduce((acc,x) => {
-                        if(!acc.map(y => y.sendable()).includes(x.sendable())) acc.push(x);
+                        if(!acc.map(y => y.unique()).includes(x.unique())) acc.push(x);
                         return acc;
                     }, [])
             },
@@ -215,14 +215,9 @@
                 if(!this.selected) return [];
                 if(this.displayType !== DISPLAY_TYPE.TOKENS) return [];
                 return PriceService.tokensFor(this.selected).reduce((acc,x) => {
-                    if(!acc.map(y => y.account.sendable()).includes(x.account.sendable())) acc.push(x);
+                    if(!acc.map(y => y.account.unique()).includes(x.account.unique())) acc.push(x);
                     return acc;
                 }, []);
-            },
-            tokenHasPrice(){
-                if(!this.selected) return false;
-                if(this.displayType !== DISPLAY_TYPE.TOKENS) return false;
-                return this.prices.hasOwnProperty(this.selected.symbol);
             },
             isDisplayToken(){
                 if(!this.selected) return false;

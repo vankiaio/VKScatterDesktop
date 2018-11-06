@@ -8,15 +8,28 @@
                 <transition name="fade" mode="out-in">
 
                     <!-- TITLE HEAD -->
-                    <section key="noerror" v-if="!status && !error && !selectedAccount">
+                    <section key="noerror" v-if="!status && !error && !selectedAccount && !exportType">
                         <figure class="title">Vault</figure>
                         <figure class="description">View and manage all your Keys</figure>
+                    </section>
+
+                    <!-- TITLE HEAD -->
+                    <section key="noerror" v-if="exporting && exportType === EXPORT_TYPES.KEY">
+                        <figure class="title">Save Key</figure>
+                        <figure class="description">Select a blockchain to export this key for. <b style="color:red;">You should always keep a backup of your Private Keys.</b></figure>
+                    </section>
+
+                    <!-- TITLE HEAD -->
+                    <section key="noerror" v-if="exporting && exportType === EXPORT_TYPES.QR">
+                        <figure class="title">Save Key</figure>
+                        <figure class="description">This QR is encrypted, and you will need your password to unlock it.</figure>
                     </section>
 
                     <!-- ACCOUNT HEAD -->
                     <section key="account" v-if="!status && !error && selectedAccount">
                         <figure class="title">{{blockchainName(selectedAccount.blockchain())}}</figure>
-                        <figure class="description">{{selectedAccount.sendable()}}</figure>
+                        <figure class="description"><b>{{selectedAccount.sendable()}}</b></figure>
+                        <figure class="description" style="font-size: 11px;">{{selectedAccount.network().name}}</figure>
                     </section>
 
                     <!-- ERROR -->
@@ -49,7 +62,7 @@
                 </figure>
 
                 <!-- EXPORT SECRET -->
-                <figure class="export-keypair" :class="{'show':selected && !selected.external && !isNew && !exporting && !status}" v-tooltip="'Export Private Key'" @click="exporting = true">
+                <figure class="export-keypair" :class="{'show':selected && !selected.external && !isNew && !exporting && !status}" v-tooltip="'Export Private Key'" @click="enableExportKey">
                     <i class="fa fa-key"></i>
                 </figure>
 
@@ -75,12 +88,12 @@
                 <section key="nokey" v-if="!selected" class="scroller">
                     <section class="search">
                         <figure class="icon"><i class="fa fa-search"></i></figure>
-                        <input placeholder="Search..." />
+                        <input placeholder="Search..." v-model="searchTerms" />
                     </section>
 
                     <!-- KEYPAIRS -->
                     <section class="accounts scroller">
-                        <section class="account" v-for="keypair in keypairs" @click="selectKeypair(keypair)">
+                        <section class="account" v-for="keypair in vaultEntries" @click="selectKeypair(keypair)">
                             <section class="info">
                                 <figure class="name">{{keypair.name}}</figure>
                                 <figure class="description">{{keypair.accounts().length}} linked accounts</figure>
@@ -108,8 +121,9 @@
                                     <section class="keypair">
 
                                         <section class="stats">
-                                            <section class="stat" v-for="resource in resources">
-                                                <radial-progress inner-stroke-color="#eee"
+                                            <section class="stat" :class="{'bar':resource.type === 'bar'}" v-for="resource in resources">
+                                                <radial-progress v-if="resource.type === 'radial'"
+                                                                 inner-stroke-color="#eee"
                                                                  start-color="#ff4645"
                                                                  stop-color="#ff4645"
                                                                  :diameter="130"
@@ -118,10 +132,19 @@
                                                                  :stroke-width="18">
                                                     <figure class="button" @click="moderateResource(resource)">
                                                         <i class="fa fa-exclamation-triangle" v-if="resource.percentage > 80"></i>
-                                                        Moderate <b>{{resource.name}}</b>
+                                                        Manage <b>{{resource.name}}</b>
                                                     </figure>
                                                 </radial-progress>
-                                                <figure class="percentage" :class="{'warning':resource.percentage > 80}">
+
+                                                <p-bar v-if="resource.type === 'bar'"
+                                                       :used="resource.used"
+                                                       :total="resource.total"
+                                                       :l-text="resource.name"
+                                                       :r-text="resource.text"
+                                                       :color="resource.color"
+                                                ></p-bar>
+
+                                                <figure class="percentage" v-if="resource.hasOwnProperty('percentage')" :class="{'warning':resource.percentage > 80}">
                                                     {{parseFloat(resource.percentage).toFixed(2)}}%
                                                 </figure>
                                             </section>
@@ -157,8 +180,8 @@
                                             <section key="showkey" v-if="!isNew" class="scroller">
 
                                                 <!-- PUBLIC KEYS -->
-                                                <section class="accounts" :class="{'hidden':!showingSecrets}">
-                                                    <section class="account copy" v-for="pkey in selected.publicKeys" @click="copy(pkey.key, `Copied ${blockchainName(pkey.blockchain)} Public Key to Clipboard.`)">
+                                                <section class="accounts slider" :class="{'hidden':!showingSecrets}">
+                                                    <section class="account copy" v-for="pkey in visiblePublicKeys" @click="copy(pkey.key, `Copied ${blockchainName(pkey.blockchain)} Public Key to Clipboard.`)">
                                                         <section class="info">
                                                             <figure class="description linked-account">Shareable Key</figure>
                                                             <figure class="name">{{blockchainName(pkey.blockchain)}}</figure>
@@ -167,30 +190,42 @@
                                                     </section>
                                                 </section>
 
-                                                <!-- PUBLIC KEYS LIST TOGGLER -->
-                                                <section class="breaker" @click="showingSecrets = !showingSecrets">
-                                                    {{showingSecrets ? 'Hide' : 'Show Public Keys'}}
+                                                <!-- PUBLIC KEYS -->
+                                                <section class="accounts slider" :class="{'hidden':!showingBlockchains}">
+                                                    <section class="account copy" v-for="blockchain in Blockchains" @click="addOrRemoveBlockchain(blockchain)">
+                                                        <section class="info">
+                                                            <figure class="icon" :class="{'hide':!selected.blockchains.includes(blockchain)}"><i class="fa fa-check-circle"></i></figure>
+                                                            <figure class="name">{{blockchainName(blockchain)}}</figure>
+                                                        </section>
+                                                    </section>
+                                                </section>
+
+                                                <section class="breaker-container">
+                                                    <!-- PUBLIC KEYS LIST TOGGLER -->
+                                                    <section class="breaker" :class="{'active':showingSecrets}" @click="showingSecrets = !showingSecrets; showingBlockchains = false;">
+                                                        {{showingSecrets ? 'Hide Public Keys' : 'Show Public Keys'}}
+                                                    </section>
+
+                                                    <!-- PUBLIC KEYS LIST TOGGLER -->
+                                                    <section class="breaker" :class="{'active':showingBlockchains}" @click="showingBlockchains = !showingBlockchains; showingSecrets = false;">
+                                                        {{showingBlockchains ? 'Hide Blockchains' : 'Show Blockchains'}}
+                                                    </section>
                                                 </section>
 
                                                 <!-- ACCOUNTS -->
                                                 <section class="accounts">
 
-                                                    <!--<section class="account" style="border-bottom:3px solid rgba(0,0,0,0.1);" @click="linkManually">-->
-                                                        <!--<section class="info">-->
-                                                            <!--<figure class="name">Link or Create Account</figure>-->
-                                                            <!--<figure class="description">-->
-                                                                <!--Click here if you want to either create a new account on top of this Key or-->
-                                                                <!--manually add an existing account that can't be linked automatically.-->
-                                                            <!--</figure>-->
-                                                        <!--</section>-->
-                                                    <!--</section>-->
-
                                                     <section class="account" :class="{'static':!usesResources(account)}" v-for="account in uniqueAccounts" @click="selectAccount(account)">
                                                         <section class="info">
                                                             <figure class="description linked-account">{{blockchainName(account.blockchain())}} Account</figure>
                                                             <figure class="name">{{account.sendable()}}</figure>
-                                                            <figure class="description" v-if="account.authority.length"><i class="fa fa-id-card"></i> {{authorities(account)}}</figure>
-                                                            <figure class="description"><i class="fa fa-globe"></i> {{account.network().name}}</figure>
+
+                                                            <figure class="description">
+                                                                <i class="fa fa-globe"></i> {{account.network().name}}
+                                                                <span v-if="account.authority.length" style="margin-left:15px;"><i class="fa fa-id-card"></i> {{authorities(account)}}</span>
+                                                            </figure>
+                                                            <figure class="description" style="margin-top:10px;"
+                                                                    v-if="account.blockchain() === Blockchains.VKTIO"><i class="fa fa-mouse-pointer"></i> <b>Click to Manage Account</b></figure>
                                                         </section>
                                                     </section>
                                                     <div style="height:50px;"></div>
@@ -235,7 +270,7 @@
                                                     <section v-if="!camera" key="inputsecret" class="input-keypair">
                                                         <section class="inputs">
                                                             <label><i class="fa fa-key"></i> Enter a Private Key</label>
-                                                            <input class="pad-right" v-model="selected.privateKey" :type="displayPrivateKeyField ? 'text' : 'password'" />
+                                                            <input ref="focuser" class="pad-right" v-model="selected.privateKey" :type="displayPrivateKeyField ? 'text' : 'password'" />
                                                             <figure class="eye-icon" @click="displayPrivateKeyField = !displayPrivateKeyField">
                                                                 <i class="fa fa-eye" v-tooltip="'Show Input'" v-if="!displayPrivateKeyField"></i>
                                                                 <i class="fa fa-eye-slash" v-tooltip="'Hide Input'" v-if="displayPrivateKeyField"></i>
@@ -326,10 +361,7 @@
 
                                         <transition name="slide-left" mode="out-in">
                                             <section key="selectkeyformat" class="keypair" v-if="!exposedPrivateKey">
-                                                <section class="export">
-                                                    <figure class="name">Select a Key Format</figure>
-                                                </section>
-                                                <section class="accounts" style="border-top:1px solid rgba(0,0,0,0.05);">
+                                                <section class="accounts">
                                                     <section class="account" v-for="(value, key) in Blockchains" @click="exportKeyFor(value)">
                                                         <section class="info">
                                                             <figure class="name">{{key}}</figure>
@@ -341,7 +373,20 @@
                                             </section>
 
                                             <section class="new-keypair" key="exposedkey" v-else>
+
+                                                <section class="input-keypair" style="background:transparent; padding:0; margin-bottom:20px;">
+                                                    <section class="inputs">
+                                                        <label><i class="fa fa-key"></i> View this Private Key</label>
+                                                        <input ref="focuser" class="pad-right" v-model="exposedPrivateKey" :type="displayPrivateKeyField ? 'text' : 'password'" />
+                                                        <figure class="eye-icon" @click="displayPrivateKeyField = !displayPrivateKeyField">
+                                                            <i class="fa fa-eye" v-tooltip="'Show Input'" v-if="!displayPrivateKeyField"></i>
+                                                            <i class="fa fa-eye-slash" v-tooltip="'Hide Input'" v-if="displayPrivateKeyField"></i>
+                                                        </figure>
+                                                    </section>
+                                                </section>
+
                                                 <section class="button wide" @click="copyKey">
+
                                                     <figure class="name">Click to Copy</figure>
                                                     <figure class="description">When you click this button your key will be copied to your clipboard.</figure>
                                                 </section>
@@ -412,6 +457,7 @@
 
     export default {
         data(){ return {
+            searchTerms:'',
             displayPrivateKeyField:false,
 
             BlockchainsArray,
@@ -422,6 +468,7 @@
             status:null,
             isNew:false,
             showingSecrets:false,
+            showingBlockchains:false,
             flashingNameError:false,
 
             selectedAccount:null,
@@ -458,6 +505,14 @@
                 'keypairs',
                 'accounts',
             ]),
+            vaultEntries(){
+                const terms = this.searchTerms.toLowerCase().trim();
+                return this.keypairs.filter(keypair => {
+                    if(keypair.name.toLowerCase().indexOf(terms) > -1) return true;
+                    if(keypair.accounts().some(x => x.name.toLowerCase().indexOf(terms) > -1)) return true;
+                    return false;
+                });
+            },
             keyNameError(){
                 if(this.flashingNameError) return false;
                 if(!this.selected) return false;
@@ -467,7 +522,7 @@
             },
             uniqueAccounts(){
                 return this.selected.accounts().reduce((acc, account) => {
-                    if(!acc.find(x => account.sendable() === x.sendable())) acc.push(account);
+                    if(!acc.find(x => account.network().unique() === x.network().unique() && account.sendable() === x.sendable())) acc.push(account);
                     return acc;
                 }, [])
             },
@@ -476,13 +531,16 @@
                 const cpu = this.resources.find(x => x.name === 'CPU');
                 if(!cpu) return false;
                 return cpu.available <= 6000;
+            },
+            visiblePublicKeys(){
+            	return this.selected.publicKeys.filter(x => this.selected.blockchains.includes(x.blockchain));
             }
         },
         methods:{
             blockchainName,
             linkManually(){
                 PopupService.push(Popup.linkOrCreateAccount(this.selected, done => {
-                    console.log('done', done);
+
                 }));
             },
             usesResources(account){
@@ -498,6 +556,10 @@
             copy(text, note){
                 ElectronHelpers.copy(text);
                 PopupService.push(Popup.snackbar(note));
+            },
+	        async addOrRemoveBlockchain(blockchain){
+            	await KeyPairService.addOrRemoveBlockchain(this.selected, blockchain);
+            	await PriceService.getBalances();
             },
             qrScanned(qr){
                 this.camera = false;
@@ -566,22 +628,25 @@
                 this.qr = await QRService.createQR(this.selected.privateKey);
                 this.exportType = EXPORT_TYPES.QR;
             },
-            exportKeyFor(blockchain){
-                PopupService.push(
-                    Popup.textPrompt("Confirm Password", "Enter your current password.", "unlock", "Okay", {
-                        placeholder:'Enter Password',
-                        type:'password'
-                    }, async password => {
-                        if(!password || !password.length) return;
-                        if(!await PasswordService.verifyPassword(password)){
-                            this.close();
-                            this.$router.push('/');
-                            return PopupService.push(Popup.prompt("Bad Password", "The password you entered was incorrect.", "ban", "Okay"));
-                        }
+            enableExportKey(){
+	            PopupService.push(
+		            Popup.textPrompt("Confirm Password", "Enter your current password.", "unlock", "Okay", {
+			            placeholder:'Enter Password',
+			            type:'password'
+		            }, async password => {
+			            if(!password || !password.length) return;
+			            if(!await PasswordService.verifyPassword(password)){
+				            this.close();
+				            this.$router.push('/');
+				            return PopupService.push(Popup.prompt("Bad Password", "The password you entered was incorrect.", "ban", "Okay"));
+			            }
 
-                        this.selected.decrypt(this.seed);
-                        this.exposedPrivateKey = Crypto.bufferToPrivateKey(this.selected.privateKey, blockchain);
-                    }))
+			            this.exporting = true;
+		            }))
+            },
+            exportKeyFor(blockchain){
+	            this.selected.decrypt(this.seed);
+	            this.exposedPrivateKey = Crypto.bufferToPrivateKey(this.selected.privateKey, blockchain);
             },
             copyKey(){
                 ElectronHelpers.copy(this.exposedPrivateKey);
@@ -596,6 +661,7 @@
                     if(accepted) {
                         await KeyPairService.removeKeyPair(this.selected);
                         this.selectKeypair();
+	                    PriceService.getBalances();
                     }
                 });
 
@@ -604,7 +670,11 @@
                 this.status = 'Generating new Keys';
                 setTimeout(async () => {
                     await KeyPairService.generateKeyPair(this.selected);
-                    this.keyImported("A new Key was generated.");
+                    await this.keyImported("A new Key was generated.");
+	                this.importType = null;
+	                this.importing = false;
+	                this.exporting = true;
+	                this.exportType = EXPORT_TYPES.KEY;
                 }, 1000);
             },
             async keyImported(snackbar){
@@ -638,6 +708,7 @@
                 this.importing = false;
                 this.selected = this.keypairs.find(x => x.id === this.selected.id).clone();
                 await PriceService.getBalances();
+                return true;
 
             },
             async testKey(){
@@ -649,6 +720,8 @@
                 }
 
                 if(!KeyPairService.isValidPrivateKey(this.selected)) return this.status = null;
+
+                this.selected.blockchains = KeyPairService.getImportedKeyBlockchains(this.selected.privateKey);
 
                 setTimeout(async () => {
                     this.status = 'Creating multi-blockchain profile from Private Key.';
@@ -711,7 +784,8 @@
                     this.resources = await ResourceService.getResourcesFor(this.selectedAccount);
             },
             ...mapActions([
-                Actions.RELEASE_POPUP
+                Actions.RELEASE_POPUP,
+                Actions.SET_SCATTER,
             ])
         },
         watch:{
@@ -740,6 +814,15 @@
                 } else {
                     this.hardwareReady = false;
                     this.selected.external = null;
+
+                    if(this.importType === IMPORT_TYPES.TEXT){
+                        this.$nextTick(() => {
+                            setTimeout(() => {
+                                if(this.$refs.focuser)
+                                    this.$refs.focuser.focus();
+                            }, 500)
+                        })
+                    }
                 }
             },
             ['hardwareType'](){
@@ -1003,13 +1086,15 @@
 
         .accounts {
             flex:0 0 auto;
-            /*overflow-y:auto;*/
-            max-height:1200px;
-            transition:max-height 0.5s ease;
+            max-height:300px;
+            transition:max-height 0.2s ease;
 
 
             &.hidden {
                 max-height:0;
+            }
+
+            &.slider {
                 overflow:hidden;
             }
 
@@ -1061,6 +1146,21 @@
                             margin-right:3px;
                         }
                     }
+
+                    .icon {
+                        color:$dark-blue;
+                        margin-right:10px;
+                        font-size: 16px;
+                        margin-left:-10px;
+                        overflow:hidden;
+                        max-width:20px;
+                        transition:all 0.2s ease;
+                        transition-property: max-width;
+
+                        &.hide {
+                            max-width:0;
+                        }
+                    }
                 }
 
                 .icon {
@@ -1086,8 +1186,14 @@
             }
         }
 
-        .breaker {
+        .breaker-container {
+            display:flex;
+            margin-bottom:10px;
             flex:0 0 auto;
+        }
+
+        .breaker {
+            flex:1 1 auto;
             border-top:1px solid rgba(0,0,0,0.4);
             border-bottom:1px solid rgba(0,0,0,0.05);
             height:40px;
@@ -1104,7 +1210,7 @@
             transition: all 0.2s ease;
             transition-property: background, border, color;
 
-            &:hover {
+            &:hover, &.active {
                 background:$light-blue;
                 border-top:1px solid $dark-blue;
                 border-bottom:1px solid $dark-blue;
@@ -1320,6 +1426,12 @@
 
         .stat {
             flex:1;
+
+            &.bar {
+              width:100%;
+              margin-top:20px;
+              flex:1 1 auto;
+            }
 
             .percentage {
                 font-family: 'Open Sans', sans-serif;

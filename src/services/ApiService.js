@@ -13,16 +13,68 @@ import PermissionService from '../services/PermissionService';
 import KeyPairService from '../services/KeyPairService';
 import ResourceService from '../services/ResourceService';
 import PluginRepository from '../plugins/PluginRepository';
-import {Blockchains} from '../models/Blockchains';
+import {Blockchains, BlockchainsArray} from '../models/Blockchains';
 
 import Keypair from '../models/Keypair';
 import Identity from '../models/Identity';
-import {IdentityRequiredFields} from '../models/Identity';
 import Account from '../models/Account';
 import Error from '../models/errors/Error'
 import Network from '../models/Network'
 
+const {remote} = window.require('electron');
+const NotificationService = remote.getGlobal('appShared').NotificationService;
+remote.getGlobal('appShared').ApiWatcher = (deepLink) => {
+    ApiService.handleDeepLink(deepLink);
+};
+
 export default class ApiService {
+
+    static async handleDeepLink(deepLink){
+        if(!deepLink) return;
+        let [type, payload] = deepLink.toString().split('scatter://')[1].split('/?payload=');
+        type = type.replace('/', '');
+        if(payload) payload = decodeURI(payload);
+
+        try { payload = JSON.parse(payload); } catch(e){}
+
+        // Special case for transfers which just makes URLs prettier
+        if(type === 'transfer'){
+            type = 'requestTransfer';
+            let [to, amount, memo, chainId] = payload.split('/');
+            if(!to || !to.length) return false;
+
+            // Inferring blockchain from recipient
+            let blockchain, plugin;
+            BlockchainsArray.map(({value}) => {
+                if(blockchain) return;
+                plugin = PluginRepository.plugin(value);
+                if(plugin.isValidRecipient(to)) blockchain = value;
+            });
+            if(!blockchain) return false;
+
+            if(!chainId || !chainId.length) chainId = (await PluginRepository.plugin(blockchain).getEndorsedNetwork()).chainId;
+            if(!memo) memo = '';
+            if(!amount || !amount.length) amount = 0;
+
+            const token = plugin.defaultToken();
+            const decimals = plugin.defaultDecimals();
+
+            const network = store.state.scatter.settings.networks.find(x => x.blockchain === blockchain && x.chainId === chainId);
+            if(!network) return;
+
+            payload = {
+                type,
+                payload:{
+                    network,
+                    to,
+                    amount,
+                    options:{contract:token.account, symbol:token.symbol, memo, decimals}
+                }
+            };
+        }
+
+        if(typeof ApiService[type] !== 'undefined') ApiService[type](payload);
+    }
 
     static async handler(request){
         const action = Action.fromJson(request);
@@ -279,7 +331,7 @@ export default class ApiService {
         return new Promise(async resolve => {
 
             const {payload} = request;
-            const {origin, requiredFields, blockchain} = request.payload;
+            const {origin, requiredFields, blockchain} = payload;
 
             const possibleId = PermissionService.identityFromPermissions(origin, false);
             if(!possibleId) return resolve({id:request.id, result:Error.identityMissing()});
@@ -317,6 +369,7 @@ export default class ApiService {
                 const signatures = await Promise.all(participants.map(x => {
                     if(KeyPairService.isHardware(x.publicKey)){
                         const keypair = KeyPairService.getKeyPairFromPublicKey(x.publicKey);
+                        keypair.external.interface.setAddressIndex(keypair.external.addressIndex);
                         return keypair.external.interface.sign(x.publicKey, payload, payload.abi, network);
                     } else return plugin.signer(payload, x.publicKey)
                 }));
@@ -340,6 +393,10 @@ export default class ApiService {
                 && (!needToSelectLocation
                 || needToSelectLocation && identity.locations.length === 1)
                 && PermissionService.isWhitelistedTransaction(origin, identity, participants, payload.messages, requiredFields)){
+
+                if(store.state.scatter.settings.showNotifications)
+                    NotificationService.pushNotification('Signed Transaction', `${origin} - ${participants.map(x => x.sendable()).join(',')}`);
+
                 return await signAndReturn(identity.locations[0]);
             }
 

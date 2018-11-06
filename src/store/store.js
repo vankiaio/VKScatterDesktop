@@ -8,8 +8,6 @@ import {PopupDisplayTypes} from '../models/popups/Popup'
 import Scatter from '../models/Scatter';
 import PluginRepository from '../plugins/PluginRepository'
 
-import * as HARDWARE_STATES from '../models/hardware/constants';
-
 Vue.use(Vuex);
 
 const state = {
@@ -62,6 +60,8 @@ const getters = {
     nextPopIn:state =>      state.popups.filter(x => x.displayType === PopupDisplayTypes.POP_IN)[0] || null,
     snackbars:state =>      state.popups.filter(x => x.displayType === PopupDisplayTypes.SNACKBAR) || [],
 
+    showNotifications:state => state.scatter.settings.showNotifications,
+
     totalTokenBalance:state => {
         let total = 0;
         Object.keys(state.balances).map(acc => {
@@ -92,6 +92,8 @@ const getters = {
         if(!displayToken){
             Object.keys(state.balances).map(acc => {
                 state.balances[acc].map(t => {
+                    const defaultToken = PluginRepository.plugin(t.blockchain).defaultToken();
+                    if(defaultToken.symbol !== t.symbol) return;
                     totals[t.symbol] = (totals[t.symbol] || 0) + parseFloat(t.balance)
                 })
             });
@@ -107,12 +109,9 @@ const getters = {
             Object.keys(state.balances).map(acc => {
                 state.balances[acc].filter(t => t.symbol === displayToken.symbol).map(t => {
                     total += parseFloat(t.balance)
-                    // totals[t.symbol] = (totals[t.symbol] || 0) + parseFloat(t.balance)
                 })
             });
         }
-
-
 
         return [parseFloat(total).toFixed(2).toString(), symbol];
     }

@@ -29,7 +29,7 @@
                 <!-- INPUT -->
                 <section class="input">
                     <figure class="icon"><i class="fa fa-search"></i></figure>
-                    <input placeholder="Search Permissions..." v-model="searchTerms" />
+                    <input placeholder="Search Applications..." v-model="searchTerms" />
                 </section>
 
                 <!-- ACTIONS -->
@@ -63,7 +63,7 @@
                         <section class="details">
                             <figure class="name" @click="openApp(origin)">{{getAppData(origin).name}}</figure>
                             <figure class="type" v-if="getAppData(origin).type.length">{{getAppData(origin).type}}</figure>
-                            <figure class="description" v-if="getAppData(origin).description.length"><b>{{getAppData(origin).description}}</b></figure>
+                            <figure class="description" v-if="getAppData(origin).description.length"><b>{{getAppData(origin).description.substr(0,200)}}{{getAppData(origin).description.length > 200 ? '...':''}}</b></figure>
                             <figure class="description">Link Permission
                                 <span v-if="permCount - 1 > 0"> and {{permCount - 1}} Action Permission{{permCount -1 > 0 ? 's' : ''}}</span>
                                 <span v-else>only</span>
@@ -134,6 +134,7 @@
             }
         },
         mounted(){
+
             fetch(`https://rawgit.com/GetScatter/ScatterApps/master/apps.json?rand=${Math.random() * 10000 + 1}`).then(res => res.json()).then(res => {
                 let allApps = [];
                 BlockchainsArray.map(({value}) => {
@@ -174,7 +175,7 @@
                 return this.dappLogos[origin];
             },
             openApps(){
-                ElectronHelpers.openLinkInBrowser('https://github.com/GetScatter/ScatterApps/')
+                ElectronHelpers.openLinkInBrowser('https://github.com/vankiaio/VKScatterDesktop/releases/')
             },
             openApp(origin){
                 const data = this.getAppData(origin);
@@ -202,7 +203,7 @@
 
     .identity {
         background:#fff;
-        height:100px;
+        height:70px;
         padding:0 50px;
         overflow: hidden;
         display:flex;
@@ -214,12 +215,12 @@
             float:left;
 
             .name {
-                font-size: 24px;
+                font-size: 18px;
                 font-weight: bold;
             }
 
             .description {
-                font-size: 13px;
+                font-size: 11px;
             }
         }
 
@@ -442,6 +443,7 @@
 
                     .details {
                         float:left;
+                        width:calc(100% - 80px);
 
                         .type {
                             font-size: 9px;

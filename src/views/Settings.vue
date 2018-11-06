@@ -22,11 +22,10 @@
 
         <section v-if="selectedOption" style="flex:3; overflow:hidden; display:flex; flex-direction: column;">
             <figure class="panel-head">
-                <span class="version">VKScatter Desktop v{{version}}</span>
-                <span class="console fa fa-code" @click="openConsole"></span>
             </figure>
             <section class="transitioner">
                 <transition name="slide-left" mode="out-in">
+                    <settings-general v-if="selectedOption.name === settingsOptions.GENERAL.name"></settings-general>
                     <settings-language v-if="selectedOption.name === settingsOptions.LANGUAGE.name"></settings-language>
                     <settings-explorer v-if="selectedOption.name === settingsOptions.EXPLORER.name"></settings-explorer>
                     <settings-networks v-if="selectedOption.name === settingsOptions.NETWORKS.name"></settings-networks>
@@ -52,9 +51,12 @@
     import {Popup} from '../models/popups/Popup'
     import PopupService from '../services/PopupService'
     import PasswordService from '../services/PasswordService'
+    import UpdateService from '../services/UpdateService'
     import WindowService from '../services/WindowService'
+    import ElectronHelpers from '../util/ElectronHelpers'
 
     const SettingsOptions = {
+        GENERAL:{ flash:false, locked:false, name:'General', description:'General VKScatter settings.' },
         LANGUAGE:{ flash:false, locked:false, name:'Language', description:'Set VKScatter\s language.' },
         EXPLORER:{ flash:false, locked:false, name:'Explorers', description:'Select Preferred Block Explorers.' },
         PIN:{ flash:false, locked:true, name:'PIN', description:'Set or disabled your secondary PIN.' },
@@ -80,10 +82,9 @@
             ])
         },
         mounted(){
-            this.selectedOption = SettingsOptions.LANGUAGE;
+            this.selectedOption = SettingsOptions.GENERAL;
         },
         methods: {
-            openConsole(){ WindowService.openTools(); },
             selectOption(option){
                 if((option.locked || false) && !this.unlocked) {
                     return this.unlock(option);
@@ -93,7 +94,7 @@
             unlock(option){
                 PopupService.push(
                     Popup.textPrompt("Confirm Password", "Enter your current password.", "unlock", "Okay", {
-                        placeholder:'Enter Password',
+                        placeholder:'Enter Password or Backup Phrase',
                         type:'password'
                     }, async password => {
                         if(!password || !password.length) return;
@@ -133,6 +134,23 @@
                 bottom:15px;
                 left:15px;
                 font-family: 'Open Sans', sans-serif;
+
+                .update-button {
+                    cursor: pointer;
+                    border-radius:4px;
+                    display:inline-block;
+                    padding:2px 5px 3px;
+                    margin-left:10px;
+                    background:$red;
+                    border:2px solid #fff;
+                    font-size: 11px;
+                    font-weight: bold;
+                    transition: background 0.2s ease;
+
+                    &:hover {
+                        background:transparent;
+                    }
+                }
             }
 
             .console {

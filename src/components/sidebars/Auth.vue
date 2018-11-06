@@ -16,14 +16,14 @@
                 </section>
 
                 <section class="inputs" v-if="isNewScatter">
-                    <cin big="1" placeholder="Password" type="password" v-on:enter="create" :text="password" v-on:changed="changed => bind(changed, 'password')"></cin>
+                    <cin :focus="true" big="1" placeholder="Password" type="password" v-on:enter="create" :text="password" v-on:changed="changed => bind(changed, 'password')"></cin>
                     <cin style="margin-top:35px;" big="1" placeholder="Confirm Password" type="password" v-on:enter="create" :text="confirmPassword" v-on:changed="changed => bind(changed, 'confirmPassword')"></cin>
                     <btn class="dropped" v-on:clicked="create" text="Create new VKScatter" full="true" large="true"></btn>
                     <btn text="Import from Backup" v-on:clicked="importBackup" full="true"></btn>
                 </section>
 
                 <section class="inputs" v-else>
-                    <cin big="1" placeholder="Password" type="password" :text="password" v-on:enter="unlock" v-on:changed="changed => bind(changed, 'password')"></cin>
+                    <cin :focus="true" big="1" placeholder="Password or Backup Phrase" type="password" :text="password" v-on:enter="unlock" v-on:changed="changed => bind(changed, 'password')"></cin>
                     <btn v-on:clicked="unlock" text="Unlock VKScatter" full="true" large="true"></btn>
                 </section>
             </section>
@@ -95,38 +95,37 @@
                 this.pushTo(RouteNames.ONBOARDING);
             },
             async unlock(){
-                const showIntro = true;
-
+                const showIntro = false;
                 this.leaving = true;
+
+                const logIn = async () => {
+                    await this[Actions.SET_SPLASH](true);
+                    await SocketService.initialize();
+                    this.pushTo(RouteNames.HOME);
+                };
+
                 setTimeout(async () => {
                     await this[Actions.SET_SEED](this.password);
                     await this[Actions.LOAD_SCATTER]();
 
                     if(typeof this.scatter === 'object' && !this.scatter.isEncrypted()){
-                        const logIn = async () => {
-                            await this[Actions.SET_SPLASH](true);
-                            await SocketService.initialize();
-                            this.pushTo(RouteNames.HOME);
-                        };
-                        if(showIntro){
-                            this.loggingIn = true;
-                            this.$nextTick(() => {
-                                const vid = document.getElementById('intro');
-                                vid.playbackRate = 2;
-                                vid.play();
-                                setTimeout(() => {
-                                    SocketService.initialize();
-                                }, 1000);
-                                setTimeout(async () => {
-                                    await this[Actions.SET_SPLASH](true);
-                                    this.pushTo(RouteNames.HOME);
-                                }, 5000)
-                            })
-                        } else {
-                            await this[Actions.SET_SPLASH](true);
-                            await SocketService.initialize();
-                            this.pushTo(RouteNames.HOME);
-                        }
+                        if(!showIntro) return logIn();
+
+                        const canPlayIntro = !!document.createElement('video').canPlayType &&
+                            !!document.createElement('video').canPlayType('video/mp4');
+
+                        if(!canPlayIntro) return logIn();
+
+                        this.loggingIn = true;
+                        this.$nextTick(() => {
+                            const vid = document.getElementById('intro');
+                            if(!vid) return logIn();
+
+                            vid.playbackRate = 2;
+                            vid.play();
+
+                            setTimeout(async () => logIn(), 5000)
+                        })
 
                     } else {
                         this.leaving = false;

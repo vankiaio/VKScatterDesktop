@@ -103,7 +103,7 @@
                 blockchain:Blockchains.VKTIO,
                 host:'http://221.122.119.226',
                 port:8888,
-                chainId:'e7ae77c56ef35e1f4969de1bd888593fb08c01acf05054a7055662387bab7a17',
+                chainId:'e17abdaf44e2811b452ea15a0aeb7eff6eab9c5de4452e6fb7b552c5de9ddae7',
                 protocol:'http',
             };
 
