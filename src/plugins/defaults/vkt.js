@@ -139,7 +139,12 @@ const getAccountsFromPublicKey = async (publicKey, network, process, progressDel
 
 const popupError = result => {
 	console.log('result', result);
-	const error = ({error:JSON.parse(result).error.details[0].message.replace('assertion failure with message:', '').trim()});
+	const json = JSON.parse(result);
+	let error;
+	if(json.hasOwnProperty('error') && json.error.hasOwnProperty('details') && json.error.details.length) {
+		error = ({error: JSON.parse(result).error.details[0].message.replace('assertion failure with message:', '').trim()});
+	} else error = result;
+
 	PopupService.push(Popup.prompt('Transaction Error', error));
 }
 
@@ -482,13 +487,16 @@ export default class VKT extends Plugin {
 	async balanceFor(account, token){
 		const eos = getCachedInstance(account.network());
 
-		const balances = await eos.getTableRows({
-			json:true,
-			code:token.contract,
-			scope:account.name,
-			table:'accounts',
-			limit:500
-		}).then(res => res.rows).catch(() => []);
+		const balances = await Promise.race([
+			new Promise(resolve => setTimeout(() => resolve([]), 2000)),
+			eos.getTableRows({
+				json:true,
+				code:token.contract,
+				scope:account.name,
+				table:'accounts',
+				limit:500
+			}).then(res => res.rows).catch(() => [])
+		]);
 
 		const row = balances.find(row => row.balance.split(" ")[1].toLowerCase() === token.symbol.toLowerCase());
 		return row ? row.balance.split(" ")[0] : 0;
@@ -593,247 +601,259 @@ export default class VKT extends Plugin {
 				id:1,
 			}
 
-            PopupService.push(Popup.popout(request, async ({result}) => {
-                if(!result || (!result.accepted || false)) return rejector({error:'Could not get signature'});
+			PopupService.push(Popup.popout(request, async ({result}) => {
+				if(!result || (!result.accepted || false)) return rejector({error:'Could not get signature'});
 
-                let signature = null;
-                if(KeyPairService.isHardware(account.publicKey)){
-                    const keypair = KeyPairService.getKeyPairFromPublicKey(account.publicKey);
-                    keypair.external.interface.setAddressIndex(keypair.external.addressIndex);
-                    signature = await keypair.external.interface.sign(account.publicKey, payload, payload.abi, account.network());
-                } else signature = await this.signer({data:payload.buf}, account.publicKey, true);
+				let signature = null;
+				if(KeyPairService.isHardware(account.publicKey)){
+					signature = await HardwareService.sign(account, payload);
+				} else signature = await this.signer({data:payload.buf}, account.publicKey, true);
 
-                if(!signature) return rejector({error:'Could not get signature'});
+				if(!signature) return rejector({error:'Could not get signature'});
 
-                if(result.needResources) await await ResourceService.addResources(account);
+				if(result.needResources) await await ResourceService.addResources(account);
 
-                resolve(signature);
-            }));
-        })
-    }
+				resolve(signature);
+			}, true));
+		})
+	}
 
 
-    async stakeOrUnstake(account, cpu, net, network, staking = true){
-        return new Promise(async (resolve, reject) => {
-            const signProvider = payload => this.passThroughProvider(payload, account, network, reject);
+	async stakeOrUnstake(account, cpu, net, network, staking = true){
+		return new Promise(async (resolve, reject) => {
+			const signProvider = payload => this.passThroughProvider(payload, account, reject);
 
-            const eos = Eos({httpEndpoint:network.fullhost(), chainId:network.chainId, signProvider});
-            if(staking) resolve(eos.delegatebw(account.name, account.name, net, cpu, 0, { authorization:[account.formatted()] })
-                .catch(error => ({error:JSON.parse(error).error.details[0].message.replace('assertion failure with message:', '').trim()}))
-                .then(res => res));
+			const eos = Eos({httpEndpoint:network.fullhost(), chainId:network.chainId, signProvider});
+			if(staking) resolve(await eos.delegatebw(account.name, account.name, net, cpu, 0, { authorization:[account.formatted()] })
+				.then(res => res)
+				.catch(res => {
+					popupError(res);
+					return false;
+				}))
 
-            else resolve(eos.undelegatebw(account.name, account.name, net, cpu, { authorization:[account.formatted()] })
-                .catch(error => ({error:JSON.parse(error).error.details[0].message.replace('assertion failure with message:', '').trim()}))
-                .then(res => res));
-        })
-    }
+			else resolve(await eos.undelegatebw(account.name, account.name, net, cpu, { authorization:[account.formatted()] })
+				.then(res => res)
+				.catch(res => {
+					popupError(res);
+					return false;
+				}))
+		})
+	}
 
-    async buyOrSellRAM(account, bytes, network, buying = true){
-        return new Promise(async (resolve, reject) => {
-            const signProvider = payload => this.passThroughProvider(payload, account, network, reject);
+	async buyOrSellRAM(account, bytes, network, buying = true){
+		return new Promise(async (resolve, reject) => {
+			const signProvider = payload => this.passThroughProvider(payload, account, reject);
 
-            const eos = Eos({httpEndpoint:network.fullhost(), chainId:network.chainId, signProvider});
-            if(buying) resolve(eos.buyrambytes(account.name, account.name, bytes, { authorization:[account.formatted()] })
-                .catch(error => ({error:JSON.parse(error).error.details[0].message.replace('assertion failure with message:', '').trim()}))
-                .then(res => res));
+			const eos = Eos({httpEndpoint:network.fullhost(), chainId:network.chainId, signProvider});
 
-            else resolve(eos.sellram(account.name, bytes, { authorization:[account.formatted()] })
-                .catch(error => ({error:JSON.parse(error).error.details[0].message.replace('assertion failure with message:', '').trim()}))
-                .then(res => res));
-        })
-    }
+			if(buying) resolve(await eos.buyrambytes(account.name, account.name, bytes, { authorization:[account.formatted()] })
+				.then(res => res)
+				.catch(res => {
+					popupError(res);
+					return false;
+				}))
 
-    async transfer({account, to, amount, contract, symbol, memo, promptForSignature = true}){
-        return new Promise(async (resolve, reject) => {
-            const signProvider = promptForSignature
-                ? payload => this.passThroughProvider(payload, account, reject)
-                : payload => this.signer(payload, account.publicKey);
+			else resolve(await eos.sellram(account.name, bytes, { authorization:[account.formatted()] })
+				.then(res => res)
+				.catch(res => {
+					popupError(res);
+					return false;
+				}))
+		})
+	}
 
-            const eos = Eos({httpEndpoint:account.network().fullhost(), chainId:account.network().chainId, signProvider});
-            const contractObject = await eos.contract(contract);
-            const amountWithSymbol = amount.indexOf(symbol) > -1 ? amount : `${amount} ${symbol}`;
-            resolve(await contractObject.transfer(account.name, to, amountWithSymbol, memo, { authorization:[account.formatted()] })
-                .catch(error => {
-                    console.log('error', error);
-                    return {error:JSON.parse(error).error.details[0].message.replace('assertion failure with message:', '').trim()}
-                })
-                .then(result => result));
-        })
-    }
+	async transfer({account, to, amount, token, memo, promptForSignature = true}){
+		const {contract, symbol} = token;
+		return new Promise(async (resolve, reject) => {
+			const signProvider = promptForSignature
+				? payload => this.passThroughProvider(payload, account, reject)
+				: payload => this.signer(payload, account.publicKey);
 
-    async signer(payload, publicKey, arbitrary = false, isHash = false){
-        let privateKey = KeyPairService.publicToPrivate(publicKey);
-        if (!privateKey) return;
+			const eos = Eos({httpEndpoint:account.network().fullhost(), chainId:account.network().chainId, signProvider});
+			const contractObject = await eos.contract(contract);
+			const amountWithSymbol = amount.indexOf(symbol) > -1 ? amount : `${amount} ${symbol}`;
+			resolve(await contractObject.transfer(account.name, to, amountWithSymbol, memo, { authorization:[account.formatted()] })
+				.catch(error => {
+					console.log('error', error);
+					return {error:JSON.parse(error).error.details[0].message.replace('assertion failure with message:', '').trim()}
+				})
+				.then(result => result));
+		})
+	}
 
-        if(typeof privateKey !== 'string') privateKey = this.bufferToHexPrivate(privateKey);
+	async signer(payload, publicKey, arbitrary = false, isHash = false){
+		let privateKey = KeyPairService.publicToPrivate(publicKey);
+		if (!privateKey) return;
 
-        if (arbitrary && isHash) return ecc.Signature.signHash(payload.data, privateKey).toString();
-        return ecc.sign(Buffer.from(arbitrary ? payload.data : payload.buf, 'utf8'), privateKey);
-    }
+		if(typeof privateKey !== 'string') privateKey = this.bufferToHexPrivate(privateKey);
 
-    async createTransaction(actions, account, network){
-        let tx = {};
-        const formatContract = x => x.replace('.', '_');
-        const actionOptions = { authorization:[`${account.name}@${account.authority}`] };
+		if (arbitrary && isHash) return ecc.Signature.signHash(payload.data, privateKey).toString();
+		return ecc.sign(Buffer.from(arbitrary ? payload.data : payload.buf, 'utf8'), privateKey);
+	}
 
-        const signProvider = x => {
-            tx.buf = x.buf;
-            tx.transaction = x.transaction;
-            return [];
-        };
+	async createTransaction(actions, account, network){
+		let tx = {};
+		const formatContract = x => x.replace('.', '_');
+		const actionOptions = { authorization:[`${account.name}@${account.authority}`] };
 
-        const options = {
-            httpEndpoint:network.fullhost(),
-            chainId:network.chainId,
-            broadcast: false,
-            sign: true,
-            signProvider
-        };
+		const signProvider = x => {
+			tx.buf = x.buf;
+			tx.transaction = x.transaction;
+			return [];
+		};
 
-        const contractNames = actions.map(x => x.contract);
-        const eos = Eos(options);
+		const options = {
+			httpEndpoint:network.fullhost(),
+			chainId:network.chainId,
+			broadcast: false,
+			sign: true,
+			signProvider
+		};
 
-        await eos.transaction(contractNames, contracts => {
-            actions.map(action => {
-                try {
-                    contracts[formatContract(action.contract)][action.action](...action.params, actionOptions);
-                } catch(e){
-                    console.log('err', e);
-                }
-            });
-        }, {broadcast:false}).catch(() => {});
+		const contractNames = actions.map(x => x.contract);
+		const eos = Eos(options);
 
-        return tx;
-    }
+		await eos.transaction(contractNames, contracts => {
+			actions.map(action => {
+				try {
+					contracts[formatContract(action.contract)][action.action](...action.params, actionOptions);
+				} catch(e){
+					console.log('err', e);
+				}
+			});
+		}, {broadcast:false}).catch(() => {});
 
-
-
-
-
-
-    async getAbis(contracts, network, eos){
-        const abis = {};
-
-        await Promise.all(contracts.map(async contractAccount => {
-            const cachedABI = await StorageService.getCachedABI(contractAccount, network.chainId);
-
-            if(cachedABI === 'object' && cachedABI.timestamp > +new Date((await eos.getAccount(contractAccount)).last_code_update))
-                abis[contractAccount] = eos.fc.abiCache.abi(contractAccount, cachedABI.abi);
-
-            else {
-                abis[contractAccount] = (await eos.contract(contractAccount)).fc;
-                const savableAbi = JSON.parse(JSON.stringify(abis[contractAccount]));
-                delete savableAbi.schema;
-                delete savableAbi.structs;
-                delete savableAbi.types;
-                savableAbi.timestamp = +new Date();
-
-                await StorageService.cacheABI(contractAccount, network.chainId, savableAbi);
-            }
-        }));
-
-        return abis;
-    }
-
-    async parseEosjsRequest(payload, network){
-        const {transaction} = payload;
-
-        const eos = getCachedInstance(network);
-
-        const contracts = ObjectHelpers.distinct(transaction.actions.map(action => action.account));
-        const abis = await this.getAbis(contracts, network, eos);
+		return tx;
+	}
 
 
-        return await Promise.all(transaction.actions.map(async (action, index) => {
-            const contractAccountName = action.account;
 
-            let abi = abis[contractAccountName];
 
-            const typeName = abi.abi.actions.find(x => x.name === action.name).type;
-            const data = abi.fromBuffer(typeName, action.data);
-            const actionAbi = abi.abi.actions.find(fcAction => fcAction.name === action.name);
-            let ricardian = actionAbi ? actionAbi.ricardian_contract : null;
 
-            if(ricardian){
-                const htmlFormatting = {h1:'div class="ricardian-action"', h2:'div class="ricardian-description"'};
-                const signer = action.authorization.length === 1 ? action.authorization[0].actor : null;
-                ricardian = ricardianParser.parse(action.name, data, ricardian, signer, htmlFormatting);
-            }
 
-            if(transaction.hasOwnProperty('delay_sec') && parseInt(transaction.delay_sec) > 0){
-              data.delay_sec = transaction.delay_sec;
-            }
+	async getAbis(contracts, network, eos){
+		const abis = {};
 
-            return {
-                data,
-                code:action.account,
-                type:action.name,
-                authorization:action.authorization,
-                ricardian
-            };
-        }));
-    }
+		await Promise.all(contracts.map(async contractAccount => {
+			const cachedABI = await StorageService.getCachedABI(contractAccount, network.chainId);
 
-    async parseEosjs2Request(payload, network){
-        const {transaction} = payload;
+			if(cachedABI === 'object' && cachedABI.timestamp > +new Date((await eos.getAccount(contractAccount)).last_code_update))
+				abis[contractAccount] = eos.fc.abiCache.abi(contractAccount, cachedABI.abi);
 
-        const rpc = new JsonRpc(network.fullhost());
-        const api = new Api({rpc});
+			else {
+				abis[contractAccount] = (await eos.contract(contractAccount)).fc;
+				const savableAbi = JSON.parse(JSON.stringify(abis[contractAccount]));
+				delete savableAbi.schema;
+				delete savableAbi.structs;
+				delete savableAbi.types;
+				savableAbi.timestamp = +new Date();
 
-        const contracts = ObjectHelpers.distinct(transaction.abis.map(x => {
-            if(x.hasOwnProperty('account_name')) return x.account_name;
-            return x.accountName;
-        }));
+				await StorageService.cacheABI(contractAccount, network.chainId, savableAbi);
+			}
+		}));
 
-        const abis = await Promise.all(contracts.map(async accountName => {
-            const cachedABI = await StorageService.getCachedABI(accountName+'eosjs2', network.chainId);
+		return abis;
+	}
 
-            const account = await rpc.get_account(accountName);
-            const lastUpdate = +new Date(account.last_code_update);
+	async parseEosjsRequest(payload, network){
+		const {transaction} = payload;
 
-            let rawAbiHex;
-            const fetchAbi = async () => {
-                const rawAbi = numeric.base64ToBinary((await rpc.get_raw_code_and_abi(accountName)).abi);
-                rawAbiHex = Buffer.from(rawAbi).toString('hex');
-                await StorageService.cacheABI(accountName+'eosjs2', network.chainId, {
-                    rawAbiHex,
-                    timestamp:+new Date()
-                });
-            };
+		const eos = getCachedInstance(network);
 
-            if(!cachedABI) await fetchAbi();
-            else {
-                if(cachedABI.timestamp < lastUpdate) await fetchAbi();
-                else rawAbiHex = cachedABI.rawAbiHex;
-            }
+		const contracts = ObjectHelpers.distinct(transaction.actions.map(action => action.account));
+		const abis = await this.getAbis(contracts, network, eos);
 
-            const rawAbi = Buffer.from(rawAbiHex, 'hex');
-            const abi = api.rawAbiToJson(rawAbi);
-            api.cachedAbis.set(accountName, { rawAbi, abi });
-            return true;
-        }));
 
-        const buffer = Buffer.from(transaction.serializedTransaction, 'hex');
-        const parsed = await api.deserializeTransactionWithActions(buffer);
-        parsed.actions.map(x => {
-            x.code = x.account;
-            x.type = x.name;
-            delete x.account;
-            delete x.name;
-        });
+		return await Promise.all(transaction.actions.map(async (action, index) => {
+			const contractAccountName = action.account;
 
-        payload.buf = Buffer.concat([
-            new Buffer(transaction.chainId, "hex"),         // Chain ID
-            buffer,                                         // Transaction
-            new Buffer(new Uint8Array(32)),                 // Context free actions
-        ]);
+			let abi = abis[contractAccountName];
 
-        return parsed.actions;
-    }
+			const typeName = abi.abi.actions.find(x => x.name === action.name).type;
+			const data = abi.fromBuffer(typeName, action.data);
+			const actionAbi = abi.abi.actions.find(fcAction => fcAction.name === action.name);
+			let ricardian = actionAbi ? actionAbi.ricardian_contract : null;
 
-    async requestParser(payload, network){
-        if(payload.transaction.hasOwnProperty('serializedTransaction'))
-            return this.parseEosjs2Request(payload, network);
-        else return this.parseEosjsRequest(payload, network);
-    }
+			if(ricardian){
+				const htmlFormatting = {h1:'div class="ricardian-action"', h2:'div class="ricardian-description"'};
+				const signer = action.authorization.length === 1 ? action.authorization[0].actor : null;
+				ricardian = ricardianParser.parse(action.name, data, ricardian, signer, htmlFormatting);
+			}
+
+			if(transaction.hasOwnProperty('delay_sec') && parseInt(transaction.delay_sec) > 0){
+				data.delay_sec = transaction.delay_sec;
+			}
+
+			return {
+				data,
+				code:action.account,
+				type:action.name,
+				authorization:action.authorization,
+				ricardian
+			};
+		}));
+	}
+
+	async parseEosjs2Request(payload, network){
+		const {transaction} = payload;
+
+		const rpc = new JsonRpc(network.fullhost());
+		const api = new Api({rpc});
+
+		const contracts = ObjectHelpers.distinct(transaction.abis.map(x => {
+			if(x.hasOwnProperty('account_name')) return x.account_name;
+			return x.accountName;
+		}));
+
+		const abis = await Promise.all(contracts.map(async accountName => {
+			const cachedABI = await StorageService.getCachedABI(accountName+'eosjs2', network.chainId);
+
+			const account = await rpc.get_account(accountName);
+			const lastUpdate = +new Date(account.last_code_update);
+
+			let rawAbiHex;
+			const fetchAbi = async () => {
+				const rawAbi = numeric.base64ToBinary((await rpc.get_raw_code_and_abi(accountName)).abi);
+				rawAbiHex = Buffer.from(rawAbi).toString('hex');
+				await StorageService.cacheABI(accountName+'eosjs2', network.chainId, {
+					rawAbiHex,
+					timestamp:+new Date()
+				});
+			};
+
+			if(!cachedABI) await fetchAbi();
+			else {
+				if(cachedABI.timestamp < lastUpdate) await fetchAbi();
+				else rawAbiHex = cachedABI.rawAbiHex;
+			}
+
+			const rawAbi = Buffer.from(rawAbiHex, 'hex');
+			const abi = api.rawAbiToJson(rawAbi);
+			api.cachedAbis.set(accountName, { rawAbi, abi });
+			return true;
+		}));
+
+		const buffer = Buffer.from(transaction.serializedTransaction, 'hex');
+		const parsed = await api.deserializeTransactionWithActions(buffer);
+		parsed.actions.map(x => {
+			x.code = x.account;
+			x.type = x.name;
+			delete x.account;
+			delete x.name;
+		});
+
+		payload.buf = Buffer.concat([
+			new Buffer(transaction.chainId, "hex"),         // Chain ID
+			buffer,                                         // Transaction
+			new Buffer(new Uint8Array(32)),                 // Context free actions
+		]);
+
+		return parsed.actions;
+	}
+
+	async requestParser(payload, network){
+		if(payload.transaction.hasOwnProperty('serializedTransaction'))
+			return this.parseEosjs2Request(payload, network);
+		else return this.parseEosjsRequest(payload, network);
+	}
 }

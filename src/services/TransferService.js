@@ -25,7 +25,6 @@ export default class TransferService {
         return this.baseTransfer(params);
     }
 
-
     static async baseTransfer(params){
         let {account, recipient, amount, memo, token } = params;
         const plugin = PluginRepository.plugin(account.blockchain());
@@ -55,7 +54,7 @@ export default class TransferService {
 
     static transferSuccessPopup(transfer, blockchain){
 	    switch(blockchain){
-            case Blockchains.VKTIO:
+        case Blockchains.VKTIO:
 			    PopupService.push(Popup.transactionSuccess(blockchain, transfer.transaction_id))
 			    break;
 		    case Blockchains.EOSIO:

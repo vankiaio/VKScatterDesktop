@@ -8,6 +8,7 @@ import BalanceService from "./BalanceService";
 import {localizedState} from "../localization/locales";
 import LANG_KEYS from "../localization/keys";
 
+
 export default class NetworkService {
 
     static async addNetwork(network){

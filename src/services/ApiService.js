@@ -140,6 +140,12 @@ export default class ApiService {
             const possibleId = PermissionService.identityFromPermissions(request.payload.origin);
             if(possibleId) return resolve({id:request.id, result:possibleId});
 
+            const requiredNetworks = (request.payload.fields.hasOwnProperty('accounts') ? request.payload.fields.accounts : []).map(x => Network.fromJson(x)).map(x => x.unique());
+            const existingNetworkIds = store.state.scatter.settings.networks.map(x => x.unique());
+            if(!requiredNetworks.every(x => existingNetworkIds.includes(x))){
+	            return resolve({id:request.id, result:Error.noNetwork()});
+            }
+
             PopupService.push(Popup.popout(request, async ({result}) => {
                 if(!result) return resolve({id:request.id, result:Error.signatureError("identity_rejected", "User rejected the provision of an Identity")});
 
@@ -403,16 +409,26 @@ export default class ApiService {
 			if(!request.payload.hasOwnProperty('nonce')) return resolve({id:request, result:nonceError});
 			if(request.payload.nonce.length !== 12) return resolve({id:request, result:nonceError});
 
+			const publicKey = request.payload.hasOwnProperty('publicKey') && request.payload.publicKey && request.payload.publicKey.length
+				? request.payload.publicKey
+				: identity.publicKey;
+
+			const keypair = KeyPairService.getKeyPairFromPublicKey(publicKey);
+			if(!keypair) return resolve({id:request.id, result:Error.noKeypair()});
+
+			const isHash = request.payload.hasOwnProperty('data') && request.payload.data && request.payload.data.length;
+			const toSign = isHash ? request.payload.data : origin;
+
 			// Prevention of origins being able to send data buffers to be
 			// signed by the identity which could change to a real balance holding
 			// key in the future.
 			const data = Hasher.unsaltedQuickHash(
-				Hasher.unsaltedQuickHash(request.payload.origin) +
+				Hasher.unsaltedQuickHash(toSign) +
 				Hasher.unsaltedQuickHash(request.payload.nonce)
 			);
 
 			const plugin = PluginRepository.plugin(Blockchains.EOSIO);
-			const signed = await plugin.signer({data}, identity.publicKey, true);
+			const signed = await plugin.signer({data}, publicKey, true, !!isHash);
 			resolve({id:request.id, result:signed});
 		})
 	}
@@ -436,7 +452,7 @@ export default class ApiService {
 	        network = store.state.scatter.settings.networks.find(x => x.unique() === Network.fromJson(network).unique());
 	        if(!network) return resolve({id:request.id, result:Error.noNetwork()});
 
-            const keypair = scatter.keychain.keypairs.find(x => x.publicKeys.some(x => x.key === account.publicKey));
+            const keypair = scatter.keychain.keypairs.find(x => x.publicKeys.some(y => y.key === account.publicKey));
             if(!keypair) return resolve({id:request.id, result:Error.noKeypair()});
 
             const newAccount = Account.fromJson({
