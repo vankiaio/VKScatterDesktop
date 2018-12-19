@@ -1,8 +1,9 @@
 import {store} from '../store/store'
 import * as Actions from '../store/constants'
-const {remote, BrowserWindow, ipcMain, ipcRenderer} = window.require('electron');
 import WindowService from '../services/WindowService';
 import {PopupDisplayTypes, Popup} from '../models/popups/Popup';
+import {RUNNING_TESTS, SHOW_POPUPS_AS_CONSOLE} from "../util/TestingHelper";
+import AppsService from "./AppsService";
 
 let popouts = [];
 
@@ -13,6 +14,9 @@ export default class PopupService {
     }
 
     static push(popup){
+        // Allows showing popups as a console log for unit testing.
+        if(RUNNING_TESTS && SHOW_POPUPS_AS_CONSOLE) return console.log(popup);
+
         if(store.state.popups.find(x => JSON.stringify(x.data) === JSON.stringify(popup.data)))
             return false;
 
@@ -29,7 +33,6 @@ export default class PopupService {
     static openPopOut(popup){
         let responded = false;
         const scatter = store.state.scatter;
-        const {width, height} = popup.dimensions();
 
         const respond = result => {
             popouts = popouts.filter(x => x.id !== popup.id);
@@ -40,20 +43,25 @@ export default class PopupService {
         if(popouts.find(x => x.data.props.payload.origin === popup.data.props.payload.origin))
             return false;
 
+	    popup.data.props.appData = AppsService.getAppData(popup.data.props.payload.origin);
+
         popouts.push(popup);
 
-
+	    const {width, height} = popup.dimensions();
         WindowService.openPopOut(
             readyWindow => WindowService.sendAndWait(readyWindow.id, 'popup', {scatter, popup}).then(result => {
                 responded = true;
                 respond(result);
             }),
             closedWithoutAction => { if(!responded) respond(null); },
-            width, height
+            width, height,
+	        popup.internal
         );
     }
 
     static promptGuard(prompt, callback){
+        if(RUNNING_TESTS) return callback(true);
+
         prompt.data.callback = callback;
         this.push(prompt);
     }

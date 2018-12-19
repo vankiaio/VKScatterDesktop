@@ -1,133 +1,193 @@
 <template>
-    <section class="transfer">
+    <section>
+        <back-bar v-on:back="back"
+                  :text="account ? account.sendable() : null"
+                  :subtext="account ? account.network().name : null" />
 
-        <!-- ADDRESS BOOK -->
-        <section class="address-book">
-            <figure class="bg"></figure>
-
-            <section class="head">Contacts</section>
-
-            <section class="search">
-                <!-- INPUT -->
-                <section class="input">
-                    <figure class="icon"><i class="fa fa-search"></i></figure>
-                    <input placeholder="Search..." />
-                </section>
-
-            </section>
-
-            <section class="addresses">
-                <section class="address" v-for="contact in contacts" @click="recipient = contact.recipient">
-                    <figure class="name">{{contact.name}}</figure>
-                    <figure class="remove" @click="removeContact(contact)">
-                        <i class="fa fa-ban"></i>
-                    </figure>
-                </section>
-
-            </section>
-        </section>
+        <section class="full-panel inner limited" v-if="token">
+            <section style="display:flex; flex-direction: column; flex:1;">
+                <section class="split-panel" :class="{'recipient':!!account}">
 
 
+                    <!----------------------->
+                    <!--------- FROM -------->
+                    <!----------------------->
+                    <section class="panel">
+                        <h4 class="padded" style="padding-bottom:0;">{{locale(langKeys.TRANSFER.FROM.FromLabel)}}</h4>
 
-        <!-- TRANSFER DETAILS -->
-        <section class="details" v-if="token">
-            <section class="actions">
-                <figure class="action" @click="switchSimple">
-                    {{isSimple ? 'Customize' : 'Simple'}}
-                </figure>
-                <figure class="action" @click="sending ? null : send()">
-                    <span v-if="!sending">Send</span>
-                    <span v-else>
-                        <i class="fa fa-circle-o-notch fa-spin"></i>
-                    </span>
-                </figure>
-            </section>
-
-            <section class="data">
-
-                <section class="inline-inputs">
-                    <section class="inputs half">
-                        <label>Recipient</label>
-                        <input :class="{'with-action':!isAlreadyContact, 'with-icon':recipient.length}" v-model="recipient" placeholder="Enter an Address or Account Name" />
-                        <transition name="slide-down">
-                            <figure class="prefix icon" v-if="recipient.length" @click="recipient = ''">
-                                <i class="fa fa-times"></i>
-                            </figure>
-                        </transition>
-                        <transition name="slide-down">
-                            <figure v-if="!isAlreadyContact" class="action" v-tooltip="'Add Contact'" @click="addContact">
-                                <i class="fa fa-address-card"></i>
-                            </figure>
-                        </transition>
-                    </section>
-
-                    <section class="inputs third">
-                        <label>{{isSimple ? `Value ( ${token.symbol} )` : `Amount of ${token.name}`}}</label>
-                        <input v-model="amount" :class="{'with-prefix':isSimple}" placeholder="0" type="number" />
-                        <transition name="slide-down">
-                            <figure class="prefix" v-if="isSimple">$</figure>
-                        </transition>
-                    </section>
-                </section>
-
-                <div style="height:30px; clear:both;"></div>
-
-                <transition name="slide-left" mode="out-in">
-                    <section key="complex" v-if="!isSimple">
-                        <div class="breaker"></div>
-                        <section class="inline-inputs">
-                            <section class="inputs half">
-                                <label>From Account</label>
-                                <sel :selected="account"
-                                     :options="[null].concat(filteredAccounts)"
-                                     :parser="accountFormatter"
-                                     :grouper="grouper"
-                                     v-on:changed="selectAccount"></sel>
-                            </section>
-
-                            <section class="inputs third">
-                                <label>Token Type</label>
-                                <sel :selected="token" style="width:calc(100% - 55px);"
-                                     :options="filteredTokens"
-                                     :parser="t => showingAll ? t.name : `${t.name} (${availableBalance(t)})`"
-                                     :img-parser="t => t.logo"
-                                     v-on:changed="selectToken"></sel>
-
-                                <section class="action" style="top:30px; height:49px; width:49px; line-height:48px; font-size: 24px;"
-                                         v-tooltip="showingAll ? 'Show Mainnet' : 'Show All'" @click="showingAll = !showingAll">
-                                    <i v-if="!showingAll" class="fa fa-eye"></i>
-                                    <i v-else class="fa fa-eye-slash"></i>
-                                </section>
+                        <section class="split-inputs">
+                            <SearchBar style="flex:1;" short="1" placeholder="Search Accounts" v-on:terms="x => searchTerms = x" />
+                            <section class="padded" style="padding:0 30px; flex:1;" v-if="fullNetworks.length > 1">
+                                <sel :options="[null].concat(fullNetworks)" style="margin-bottom:0;"
+                                     :selected="networkFilter"
+                                     v-on:changed="x => networkFilter = x"
+                                     :parser="x => x ? x.name : 'All Networks'" />
                             </section>
 
                         </section>
+                        <br>
+
+                        <FlatList :label="locale(langKeys.TRANSFER.FROM.SendingAccountsLabel)"
+                                  style="padding-top:0;"
+                                  :items="senderAccounts"
+                                  :selected="account ? account.unique() : null"
+                                  v-on:selected="selectAccount" />
+                    </section>
 
 
-                        <transition name="slide-left">
-                            <section v-if="!isSimple && token.blockchain === Blockchains.VKTIO">
-                                <div class="breaker"></div>
-                                <section class="inputs">
-                                    <input placeholder="Memo" v-model="memo" />
-                                </section>
+
+                    <!----------------------->
+                    <!------- TOKENS -------->
+                    <!----------------------->
+                    <section class="panel padded" style="flex:1; display:flex; flex-direction: column; overflow:auto;">
+                        <h4>Amount</h4>
+
+                        <!-- AMOUNT TO SEND -->
+                        <cin :placeholder="parseFloat(1).toFixed(token.decimals)"
+                             :text="amount"
+                             :error="amountError"
+                             v-on:changed="x => amount = x"
+                             :label="locale(langKeys.TRANSFER.TOKENS.AmountLabel)"
+                             big="1" type="number"
+                             :right-text="tokenBalance"
+                             v-on:right="sendAllBalance"
+                             v-on:blur="amount = amount.toString().length ? parseFloat(amount).toFixed(token.decimals) : ''" />
+
+
+                        <sel :disabled="!account" :selected="token"
+                             :parser="x => x.name"
+                             :items="[]" as-button="1"
+                             v-on:clicked="openTokenSelector" />
+                        <br>
+
+                        <section class="custom-token" v-if="token.id === 'custom'">
+                            <section class="split-inputs">
+                                <cin style="flex:1; margin-bottom:0;"
+                                     :placeholder="contractPlaceholder"
+                                     v-if="token.needsContract()"
+                                     :label="locale(langKeys.GENERIC.Blockchain)"
+                                     :text="token.contract"
+                                     v-on:changed="x => token.contract = x" />
                             </section>
-                        </transition>
+                            <br>
+                            <section class="split-inputs">
+                                <cin placeholder="XXX"
+                                     :label="locale(langKeys.GENERIC.Symbol)"
+                                     :text="token.symbol"
+                                     v-on:changed="x => token.symbol = x" />
+
+                                <cin placeholder="4" type="number"
+                                     :label="locale(langKeys.GENERIC.Decimals)"
+                                     :text="token.decimals"
+                                     v-on:changed="x => token.decimals = x" />
+
+                                <btn :text="locale(langKeys.TRANSFER.TOKENS.SaveTokenButton)" v-on:clicked="addToken" />
+                            </section>
+                        </section>
+
+                        <cin v-if="token.blockchain === Blockchains.VKTIO"
+                             :label="locale(langKeys.GENERIC.Memo)" textarea="1"
+                             :text="memo"
+                             v-on:changed="x => memo = x" />
                     </section>
 
-                    <section key="simple" v-else>
-                        <b>Value Transfers</b>
-                        <p style="margin-top:5px;">
-                            Value transfers automatically convert the value you specify into tokens that the account you are sending to accepts.
-                            The tokens that are sent will always be value-paired tokens like EOS, ETH, TRX, and other tokens we provide fiat pairs to.
-                        </p>
+
+
+                    <!----------------------->
+                    <!--------- TO ---------->
+                    <!----------------------->
+                    <section class="panel">
+                        <h4 class="padded" style="padding-bottom:0;">{{locale(langKeys.TRANSFER.RECIPIENT.RecipientLabel)}}</h4>
+                        <section class="panel-switch" v-if="formattedContacts.length || formattedSelfContacts.length">
+                            <figure class="button" v-if="formattedContacts.length"
+                                    :class="{'active':recipientState === RECIPIENT_STATES.CONTACT}"
+                                    @click="recipientState = RECIPIENT_STATES.CONTACT">
+                                {{locale(langKeys.TRANSFER.RECIPIENT.SendToContact)}}
+                            </figure>
+                            <figure class="button"
+                                    :class="{'active':recipientState === RECIPIENT_STATES.DIRECT}"
+                                    @click="recipientState = RECIPIENT_STATES.DIRECT">
+                                {{locale(langKeys.TRANSFER.RECIPIENT.SendDirectly)}}
+                            </figure>
+                            <figure class="button" v-if="formattedSelfContacts.length"
+                                    :class="{'active':recipientState === RECIPIENT_STATES.SELF}"
+                                    @click="recipientState = RECIPIENT_STATES.SELF">
+                                {{locale(langKeys.TRANSFER.RECIPIENT.SendSelf)}}
+                            </figure>
+                        </section>
+
+
+                        <!--------- CONTACTS ---------->
+
+                        <SearchBar v-if="recipientState === RECIPIENT_STATES.CONTACT"
+                                   :placeholder="locale(langKeys.TRANSFER.RECIPIENT.SearchContactsPlaceholder)"
+                                   v-on:terms="x => searchTermsContacts = x" />
+
+                        <FlatList style="padding-top:0;" v-if="recipientState === RECIPIENT_STATES.CONTACT"
+                                  :label="locale(langKeys.TRANSFER.RECIPIENT.ContactsLabel)"
+                                  :items="filteredContacts"
+                                  :selected="recipient"
+                                  selected-icon="icon-check"
+                                  icon="icon-cancel"
+                                  v-on:action="removeContact"
+                                  v-on:selected="selectRecipient" />
+
+                        <!--------- SELF CONTACTS ---------->
+
+                        <SearchBar v-if="recipientState === RECIPIENT_STATES.SELF"
+                                   :placeholder="locale(langKeys.TRANSFER.RECIPIENT.SearchSelfPlaceholder)"
+                                   v-on:terms="x => searchTermsContacts = x" />
+
+                        <FlatList style="padding-top:0;" v-if="recipientState === RECIPIENT_STATES.SELF"
+                                  :label="recipientLabel"
+                                  :items="formattedSelfContacts"
+                                  :selected="recipient"
+                                  selected-icon="icon-check"
+                                  v-on:selected="selectRecipient" />
+
+
+                        <!--------- DIRECT TO ADDRESS/ACCOUNT ---------->
+                        <section v-if="recipientState === RECIPIENT_STATES.DIRECT" class="padded">
+                            <cin :placeholder="locale(langKeys.TRANSFER.RECIPIENT.VerifyRecipient)"
+                                 :error="recipient.length > 0 ? recipientError : null"
+                                 :label="recipientLabel"
+                                 :text="recipient"
+                                 v-on:changed="x => recipient = x" />
+
+                            <transition name="slide-right" mode="out-in">
+                                recipientError:{{recipientError}}
+                                <section class="split-inputs" v-if="recipient.length > 0 && !isAlreadyContact && !recipientError">
+                                    <cin style="flex:1;" :placeholder="locale(langKeys.TRANSFER.RECIPIENT.ContactNamePlaceholder)"
+                                         :label="locale(langKeys.TRANSFER.RECIPIENT.ContactNameLabel, recipientLabel)"
+                                         :text="newContactName"
+                                         v-on:changed="x => newContactName = x" />
+                                    <btn style="width:50px;" icon="icon-user-add" v-on:clicked="addContact" />
+                                </section>
+                            </transition>
+                        </section>
                     </section>
-                </transition>
+                </section>
 
 
 
+                <section class="transfer-details">
+                    <section style="font-size: 18px;">
+                        Sending <b :class="{'red':!!amountError}">{{parseFloat(amount ? amount : 0).toFixed(token.decimals)}} {{token ? token.symbol : ''}}</b>
+                        from <b :class="{'red':!account}">{{account ? account.sendable() : 'Select Account'}}</b>
+                        to <b :class="{'red':!recipient}">{{recipient ? recipient : 'Select Recipient'}}</b>
+                    </section>
+                </section>
             </section>
 
-        </section>
 
+            <section class="action-bar short bottom centered">
+                <btn :loading="sending"
+                     :disabled="!canSend"
+                     blue="1"
+                     :text="locale(langKeys.TRANSFER.SendButton)"
+                     v-on:clicked="send" />
+            </section>
+        </section>
     </section>
 </template>
 
@@ -135,8 +195,6 @@
     import { mapActions, mapGetters, mapState } from 'vuex'
     import * as Actions from '../store/constants';
 
-    import ResourceService from '../services/ResourceService'
-    import PriceService from '../services/PriceService'
     import PluginRepository from '../plugins/PluginRepository'
     import TransferService from '../services/TransferService'
     import ContactService from '../services/ContactService'
@@ -145,166 +203,327 @@
     import PasswordService from '../services/PasswordService'
     import KeyPairService from '../services/KeyPairService'
     import {Popup} from '../models/popups/Popup';
+    import Token from "../models/Token";
+    import TokenService from "../services/TokenService";
+    import BalanceService from "../services/BalanceService";
 
-    const uniqueToken = x => `${x.account}${x.blockchain}${x.name}${x.symbol}`;
+    import FlatList from "../components/reusable/FlatList";
+    import SearchBar from "../components/reusable/SearchBar";
+    import HardwareService from "../services/HardwareService";
+
+    const RECIPIENT_STATES = {
+    	CONTACT:'contact',
+        DIRECT:'directly',
+        SELF:'self',
+    }
 
     export default {
-        data () {return {
-            Blockchains:Blockchains,
-            isSimple:false,
+	    components: {
+		    FlatList,
+            SearchBar
+        },
+	    data () {return {
+	    	recipientState:RECIPIENT_STATES.DIRECT,
+		    RECIPIENT_STATES,
+
+		    searchTerms:'',
+		    searchTermsContacts:'',
+            networkFilter:null,
+
+		    Blockchains,
+		    BlockchainsArray,
             sending:false,
             token:null,
-            showingAll:false,
 
             account:null,
             recipient:'',
             amount:0,
             memo:'',
+
+            newContactName:'',
         }},
         computed:{
             ...mapState([
                 'scatter',
                 'balances',
-                'tokens',
             ]),
             ...mapGetters([
                 'accounts',
                 'contacts',
+                'networks',
+                'tokens',
+                'networkTokens',
+                'totalBalances'
             ]),
-            filteredTokens(){
-                if(this.showingAll) return this.tokens;
-                if(!this.account) return this.tokens
-                    .filter(x => PriceService.tokensFor(x).length);
-                return this.tokens
-                    .filter(x => PriceService.tokensFor(x).some(y => y.account.unique() === this.account.unique()))
-                    .filter(x => x.blockchain === this.account.blockchain())
+
+            /**************************/
+            /**   LISTS AND FILTERS  **/
+	        /**************************/
+
+            fullNetworks(){
+                return this.networks.filter(net => {
+                	return !!this.accounts.find(acc => acc.networkUnique === net.unique())
+                })
             },
-            filteredAccounts(){
-            	const reducer = accs => accs.reduce((acc,x) => {
-		            if(!acc.find(y => `${y.networkUnique}${y.sendable()}` === `${x.networkUnique}${x.sendable()}`)) acc.push(x);
-		            return acc;
-	            }, []);
-                if(this.showingAll) return reducer(this.accounts);
-                return reducer(this.accounts
-                    .filter(x => this.balances.hasOwnProperty(x.unique()) && this.balances[x.unique()].length));
+
+	        senderAccounts(){
+		        const reducer = accs => accs.reduce((acc,x) => {
+			        if(!acc.find(y => `${y.networkUnique}${y.sendable()}` === `${x.networkUnique}${x.sendable()}`)) acc.push(x);
+			        return acc;
+		        }, []);
+
+		        const terms = this.searchTerms.trim().toLowerCase();
+
+		        return reducer(this.accounts)
+                    .filter(x => {
+                    	return x.blockchain().toLowerCase().match(terms)
+                            || x.sendable().toLowerCase().match(terms)
+                            || x.keypair().name.toLowerCase().match(terms)
+                    })
+                    .filter(x => !this.networkFilter ? true : x.networkUnique === this.networkFilter.unique())
+                    .filter(x => x.authority !== 'watch')
+                    .sort((a,b) => b.logins - a.logins)
+                    .map(account => ({
+                        id:account.unique(),
+                        title:account.sendable(),
+                        description:`${account.network().name} - ${account.keypair().name}`,
+                    }))
             },
-            isAlreadyContact(){
-                return this.contacts.find(x => x.recipient.toLowerCase() === this.recipient.toLowerCase())
+	        filteredTokens(){
+		        const standardTokens = this.networkTokens.filter(x => {
+			        return !this.account ? true : x.network().unique() === this.account.network().unique()
+                }).concat(this.tokens);
+
+		        const tokensFromBalances = (() => {
+		        	if(!this.account) return [];
+			        const accountBalances = this.balances[this.account.identifiable()].filter(x => x.chainId === this.account.network().chainId);
+			        return accountBalances || [];
+                })().sort((a,b) => b.amount - a.amount);
+            	const allTokens = standardTokens.concat(tokensFromBalances);
+
+            	const uniqueTokens = allTokens.reduce((acc,token) => {
+            		if(!acc.find(x => x.unique() === token.unique())) acc.push(token);
+            		return acc;
+                }, [])
+
+		        if(this.account) return uniqueTokens.filter(x => x.blockchain === this.account.blockchain());
+		        return uniqueTokens;
+	        },
+	        formattedContacts(){
+		        const contacts = this.contacts.filter(x => {
+			        if(!this.account) return false;
+			        return PluginRepository.plugin(this.account.blockchain()).isValidRecipient(x.recipient);
+		        });
+
+		        return contacts.map(x => ({
+			        id:x.recipient,
+			        title:x.name,
+			        description:x.recipient,
+		        }));
+	        },
+            formattedSelfContacts(){
+	            const otherAccounts = !this.account ? [] : this.accounts
+		            .filter(x => x.sendable() !== this.account.sendable())
+		            .filter(x => x.networkUnique === this.account.networkUnique)
+		            .reduce((acc,account) => {
+			            if(!acc.find(x => x.sendable() === account.sendable())) acc.push(account);
+			            return acc;
+		            }, []);
+
+	            return otherAccounts.map(x => ({
+		            id:x.sendable(),
+		            title:x.sendable(),
+		            description:x.keypair().name
+	            })).filter(x => JSON.stringify(x).match(this.searchTermsContacts));
             },
+	        filteredContacts(){
+		        const terms = this.searchTermsContacts.trim().toLowerCase();
+		        return this.formattedContacts.filter(x => {
+			        return x.id.toLowerCase().match(terms)
+				        || x.title.toLowerCase().match(terms)
+		        })
+	        },
+
+
+
+	        /**************************/
+	        /**         MISC         **/
+	        /**************************/
+
+            contractPlaceholder(){
+            	return PluginRepository.plugin(this.token.blockchain).contractPlaceholder();
+            },
+            recipientLabel(){
+	            return PluginRepository.plugin(this.token.blockchain).recipientLabel();
+            },
+            isValidRecipient(){
+            	return PluginRepository.plugin(this.token.blockchain).isValidRecipient(this.recipient);
+            },
+	        isAlreadyContact(){
+		        return this.contacts.find(x => x.recipient.toLowerCase() === this.recipient.toLowerCase())
+	        },
+	        tokenBalance(){
+            	if(!this.account) return;
+
+            	const balanceToken = this.totalBalanceFor(this.token);
+            	if(!balanceToken) return;
+            	return balanceToken.formatted();
+	        },
+            canSend(){
+            	return parseFloat(this.amount) > 0
+                    && this.isValidRecipient
+                    && this.account
+                    && this.token
+                    && !this.sending
+            },
+
+
+	        /**************************/
+	        /**        ERRORS        **/
+	        /**************************/
+	        recipientError(){
+		        if(!this.isValidRecipient) return this.locale(this.langKeys.TRANSFER.ERRORS.InvalidRecipient);
+		        return null;
+	        },
+	        amountError(){
+	        	if(this.account && this.amount === '') return this.locale(this.langKeys.TRANSFER.ERRORS.InvalidAmount);
+		        if(parseFloat(this.amount) <= 0) return this.locale(this.langKeys.TRANSFER.ERRORS.InvalidAmount);
+		        return null;
+	        },
+
+
+
         },
         mounted(){
-            this.token = this.tokens[0];
+            this.token = this.filteredTokens[0];
         },
         methods:{
-            accountFormatter(account){
-                if(account) return `${account.network().name} - ${account.sendable()}`;
-                else return 'Any account with sufficient balance'
+	    	back(){
+	    		if(this.account) return this.account = null;
+	    	    this.$router.push({name:this.RouteNames.HOME})
             },
-            grouper(account){
-                if(account) return account.keypair().name;
-                return 'General'
+            openTokenSelector(){
+	    		if(!this.account) return;
+
+	    		let items = [{id:'custom', name:this.locale(this.langKeys.TRANSFER.TOKENS.CustomTokenLabel)}].concat(this.filteredTokens)
+                    .map(token => {
+	                    const balance = this.totalBalanceFor(token.id) ? this.totalBalanceFor(token.id).formatted() ? this.totalBalanceFor(token.id).formatted() :'' :'';
+	                    const description = token.id === 'custom' ? null : balance
+                    	return {
+		                    id: token.id,
+		                    title: token.name,
+                            description
+	                    }
+                    })
+
+	    	    PopupService.push(Popup.selector('Select a Token', items, token => {
+	    	    	if(!token) return;
+	    	    	this.selectToken(token);
+                }))
             },
-            selectAccount(account){
-                this.account = account;
-                if(this.token && this.token.blockchain === account.blockchain()) {
-                    const hasToken = !!this.filteredTokens.find(x => uniqueToken(x) === uniqueToken(this.token));
-                    if(hasToken) return;
+            tokenFromId(id){
+	    	    return this.filteredTokens.find(x => x.id === id);
+            },
+	        totalBalanceFor(token){
+		        if(typeof token === 'string'){
+			        token = this.tokenFromId(token);
+		        }
+
+		        if(!this.account) return null;
+		        if(!token) return null;
+		        const accountBalances = this.balances[this.account.identifiable()];
+		        if(!accountBalances) return null;
+		        return this.balances[this.account.identifiable()].find(x => x.unique() === token.unique());
+	        },
+	        async addToken(){
+	    		const token = new Token(
+				    this.token.blockchain,
+				    this.token.contract,
+				    this.token.symbol,
+				    this.token.symbol,
+				    this.token.decimals
+			    );
+		        if(await TokenService.addToken(token)) this.token = token;
+	        },
+	        selectRecipient(item){
+	    		this.recipient = item.id;
+            },
+            selectAccount(item){
+	            this.account = this.account && item.id === this.account.unique()
+                    ? null
+                    : this.accounts.find(x => x.unique() === item.id);
+
+	            if(!this.account || this.token.blockchain !== this.account.blockchain()){
+		            this.token = this.filteredTokens[0];
                 }
-                this.token = this.filteredTokens[0];
+
+	            if(this.account && this.formattedContacts.length){
+		            this.recipientState = RECIPIENT_STATES.CONTACT;
+	            } else {
+		            this.recipientState = RECIPIENT_STATES.DIRECT;
+                }
             },
             selectToken(token){
-                this.token = token;
+	            this.token = token.id === 'custom'
+		            ? Token.fromJson({id:token.id, name:token.title, blockchain:this.account ? this.account.blockchain() : Blockchains.VKTIO})
+		            : this.filteredTokens.find(x => x.id === token.id);
+	    		if(this.token.id === 'custom'){
+				    this.token.blockchain = this.account.blockchain();
+				    this.token.decimals = PluginRepository.plugin(this.token.blockchain).defaultDecimals();
+                }
             },
             async addContact(){
                 if(!this.recipient.length) return;
-                await ContactService.add(this.recipient, name);
+                if(!this.newContactName.length) return;
+                if(await ContactService.add(this.recipient, this.newContactName)){
+                	this.recipientState = RECIPIENT_STATES.CONTACT;
+                }
             },
-            async removeContact(contact){
+            async removeContact(item){
+	    		const contact = this.contacts.find(x => x.name === item.title);
                 await ContactService.remove(contact);
-            },
-            availableBalance(token){
-                if(!this.account) return PriceService.tokensFor(token).reduce((acc, x) => acc += parseFloat(x.balance), 0);
-                const bal = this.balances[this.account.unique()].find(x => x.symbol === token.symbol);
-                return bal ? bal.balance : 0;
+                if(!this.contacts.length) this.recipientState = RECIPIENT_STATES.DIRECT;
             },
 
-            /***
-             * Returns an account if pre-selected,
-             * If not then gets any account based on tokens needed or null if none found with
-             * sufficient value/token balance.
-             * @param tokensToSend
-             * @returns {*}
-             */
-            sendingAccount(tokensToSend){
-                if(this.account) return this.account;
-
-                let blockchain;
-                if(this.isSimple) {
-                    blockchain = TransferService.blockchainFromRecipient(this.recipient);
-                    if (!blockchain) return PopupService.push(Popup.prompt("Invalid Recipient", "You must enter a valid recipient", "ban", "Okay"));
-                } else {
-                    blockchain = this.token.blockchain;
-                }
-
-                const plugin = PluginRepository.plugin(blockchain);
-                if(this.isSimple) this.token = plugin.defaultToken();
-
-                let account;
-                this.accounts.filter(x => x.blockchain() === blockchain).map(acc => {
-                    if(account) return;
-                    const balance = this.balances.hasOwnProperty(acc.unique()) ? this.balances[acc.unique()].find(x => x.symbol === this.token.symbol) : null;
-                    if(balance && parseFloat(balance.balance) > tokensToSend) account = acc;
-                })
-
-                return account;
+	        sendAllBalance(){
+	    		this.amount = parseFloat(this.tokenBalance.split(' ')[0]).toFixed(this.token.decimals);
             },
 
 
-            async switchSimple(){
-                if(this.amount > 0) {
-                    this.amount = this.isSimple ? await PriceService.valueToTokens(this.token, this.amount) : await PriceService.tokensToValue(this.token, this.amount);
-                }
-                this.isSimple = !this.isSimple;
-            },
 
             async send(){
-                if(this.sending) return false;
-                if(parseFloat(this.amount) <= 0) return PopupService.push(Popup.prompt("Invalid Amount", "You must send an amount greater than 0", "ban", "Okay"));
-                if(!this.recipient.trim().length) return PopupService.push(Popup.prompt("Invalid Recipient", "You must enter a valid recipient", "ban", "Okay"));
+	            const reset = () => this.sending = false;
 
-                const tokensToSend = this.isSimple ? await PriceService.valueToTokens(this.token, this.amount) : this.amount;
-                if(parseFloat(tokensToSend) <= 0) return PopupService.push(Popup.prompt("Could not calculate tokens from value.",
-                    "VKScatter most likely couldn't fetch the token price from the server due to rate limiting or congestion. Please try again later.", "ban", "Okay"));
+	    		if(!this.canSend) return;
+	    		this.sending = true;
 
-                const account = this.sendingAccount(tokensToSend);
-                if(!account) return PopupService.push(Popup.prompt("Overspending balance.", "You don't have any account that has enough balance to make this transfer in it's base token.", "ban", "Okay"));
+	            if(!await PasswordService.verifyPIN()) return reset();
 
-                if(!await PasswordService.verifyPIN()) return;
-
-                if(KeyPairService.isHardware(account.publicKey)){
-                    const canConnect = await account.keypair().external.interface.canConnect();
-                    if(canConnect !== true){
-                        PopupService.push(Popup.prompt('Hardware Error', canConnect, 'exclamation-triangle', 'Cancel'))
-                        account.keypair().resetExternal();
-                        return;
-                    }
-                }
-
-                this.sending = true;
-                const sent = await TransferService[account.blockchain()]({
-                    account,
+                const sent = await TransferService[this.account.blockchain()]({
+                    account:this.account,
                     recipient:this.recipient,
-                    amount:tokensToSend,
+                    amount:this.amount,
                     memo:this.memo,
                     token:this.token,
                 }).catch(() => false);
-                this.sending = false;
 
-                if(sent) await PriceService.getBalances();
+                reset();
+                if(sent) {
+                	await BalanceService.loadBalancesFor(this.account);
+                	this.account = null;
+                }
+
             },
 
         },
         watch:{
+	    	['account'](){
+	    	    if(this.account){
+			        if(this.token.blockchain === this.account.blockchain() && this.filteredTokens.find(x => x.unique() === this.token.unique())) return;
+			        const token = this.filteredTokens.find(x => x.blockchain === this.account.blockchain());
+			        if(token) this.selectToken(token);
+                }
+            },
             ['recipient'](){
                 BlockchainsArray.map(({value}) => {
                     const plugin = PluginRepository.plugin(value);
@@ -314,6 +533,16 @@
                         if(token) this.selectToken(token);
                     }
                 });
+            },
+            ['token.decimals'](){
+            	if(this.token.decimals > 20) this.token.decimals = 20;
+            },
+            ['token'](){
+            	this.amount = '';
+            },
+            ['networkFilter'](){
+	            const token = this.filteredTokens[0];
+	            if(token) this.selectToken(token);
             }
         }
     }
@@ -322,277 +551,69 @@
 <style scoped lang="scss" rel="stylesheet/scss">
     @import "../_variables";
 
-    .transfer {
-        flex:1;
+    .transfer-details {
+        border-top:2px solid #f4f4f4;
+        background:rgba(0,0,0,0.01);
         display:flex;
-        flex-direction: row;
-        background:rgba(255,255,255,0.5);
+        justify-content: center;
+        align-items: center;
+        padding:30px 50px;
+        text-align:center;
 
-        .address-book {
-            flex:1;
-            display:flex;
-            flex-direction: column;
-            background:$light-blue;
-            position: relative;
-            z-index:2;
+        b {
+            color:$dark-blue;
 
-            .bg {
-                position:absolute;
-                top:10px; bottom:0; left:0; right:0;
-                background:#fff;
-                z-index:-1;
-            }
-
-            .head {
-                padding:20px 30px;
-                background:#fff;
-                font-size: 16px;
-                font-weight: 600;
-                color:$medium-grey;
-                border-top-right-radius:8px;
-                box-shadow:10px -10px 20px rgba(0,0,0,0.01);
-            }
-
-            .search {
-                flex:0 0 auto;
-                padding:0 30px;
-                overflow: hidden;
-                height:40px;
-                background:#f3f3f3;
-                border-top:1px solid #e1e1e1;
-                border-bottom:1px solid #e1e1e1;
-
-                .input {
-
-                    .icon {
-                        float:left;
-                        font-size: 13px;
-                        line-height:40px;
-                        color: #aeaeae;
-                    }
-
-                    input {
-                        margin-left:10px;
-                        font-size: 11px;
-                        float:left;
-                        outline:0;
-                        border:0;
-                        height:40px;
-                        background:transparent;
-
-                    }
-                }
-
-            }
-
-            .addresses {
-                display:flex;
-                flex-direction: column;
-                overflow-y:auto;
-                overflow-x:hidden;
-                background:rgba(0,0,0,0.02);
-
-                .address {
-                    height:40px;
-                    line-height:40px;
-                    padding:0 10px 0 30px;
-                    border-bottom:1px solid rgba(0,0,0,0.05);
-                    background:rgba(0,0,0,0);
-                    transition: all 0.2s ease;
-                    transition-property: background, padding;
-                    cursor: pointer;
-                    font-size: 13px;
-                    overflow: hidden;
-
-                    &:hover {
-                        background:#fff;
-                        padding-left:35px;
-                    }
-
-                    .name {
-                        width:calc(100% - 25px);
-                        float:left;
-                    }
-
-                    .remove {
-                        width:25px;
-                        height:25px;
-                        line-height:24px;
-                        margin-top:6px;
-                        float:left;
-                        text-align:center;
-                        border:1px solid rgba(0,0,0,0.1);
-                        border-radius: 2px;
-                        color:rgba(0,0,0,0.2);
-                        transition: all 0.2s ease;
-                        transition-property: background, border, color;
-
-                        &:hover {
-                            border:1px solid $red;
-                            background:$red;
-                            color:#fff;
-                        }
-                    }
-                }
+            &.red {
+                color:$red;
+                animation: blink 1s ease infinite;
             }
         }
+    }
 
-        .details {
-            float:left;
-            flex:2.5;
-            display:flex;
-            flex-direction: column;
-            box-shadow: inset 1px 0 3px rgba(0,0,0,0.1);
+    .full-panel {
+        min-height:calc(100vh - 250px);
+        display:flex;
+        flex-direction: column;
 
-            .actions {
-                flex:0 0 auto;
-                height:80px;
-                display: flex;
-                justify-content: space-between;
-                background:$light-blue;
-                padding:0 50px 0 30px;
-                float:left;
-                width:100%;
-
-                .action {
-                    margin-left:10px;
-                    cursor: pointer;
-                    border-radius: 2px;
-                    border:1px solid #fff;
-                    height:50px;
-                    line-height:48px;
-                    padding:0 20px;
-                    text-align:center;
-                    font-size: 24px;
-                    color:#fff;
-
-                    transition:all 0.2s ease;
-                    transition-property: background, border, color;
-
-                    &:hover, &.active {
-                        background:#fff;
-                        border:1px solid #fff;
-                        color:$light-blue;
-                    }
-                }
-            }
-
-            .data {
-                flex:1;
-                padding:40px;
-                overflow-y:auto;
-                overflow-x:hidden;
-
-                .breaker {
-                    width:100%;
-                    clear:both;
-                }
-
-                .inline-inputs {
-                    display:flex;
-
-                }
-
-                .inputs {
-                    margin-bottom:20px;
-                    position: relative;
-
-                    label {
-                        font-size: 11px;
-                    }
-
-                    .action {
-                        cursor: pointer;
-                        position:absolute;
-                        top:15px;
-                        right:0;
-                        width:35px;
-                        height:35px;
-                        line-height:33px;
-                        font-size: 16px;
-                        text-align:center;
-                        border:1px solid rgba(0,0,0,0.2);
-                        color:rgba(0,0,0,0.3);
-                        border-radius:2px;
-
-                        transition: all 0.2s ease;
-                        transition-property: color, background, border;
-
-                        &:hover {
-                            background:$light-blue;
-                            border:1px solid $light-blue;
-                            color:#fff;
-                        }
-                    }
-
-                    .prefix {
-                        position:absolute;
-                        bottom:3px;
-                        left:0;
-                        font-size: 22px;
-                        color:$medium-grey;
-                        font-weight: bold;
-
-
-                        &.icon {
-                            cursor: pointer;
-
-                            &:hover {
-                                color:$red;
-                            }
-                        }
-                    }
-
-                    input {
-                        width:100%;
-                        border:0;
-                        outline:0;
-                        background:transparent;
-                        border-bottom:1px dashed rgba(0,0,0,0.2);
-                        font-size: 24px;
-                        margin-top:10px;
-
-                        transition:all 0.4s ease;
-                        transition-property: padding;
-
-                        &.with-action {
-                            padding-right:40px;
-                        }
-
-                        &.with-prefix {
-                            padding-left:17px;
-                        }
-
-                        &.with-icon {
-                            padding-left:25px;
-                        }
-
-                        $placeholdercolor:rgba(0,0,0,0.3);
-                        &::-webkit-input-placeholder { color: $placeholdercolor; }
-                        &::-moz-placeholder { color: $placeholdercolor; }
-                        &:-ms-input-placeholder { color: $placeholdercolor; }
-                        &:-moz-placeholder { color: $placeholdercolor; }
-                    }
-
-                    &.half {
-                        flex:2;
-
-                        &:nth-child(2){
-                            margin-left:20px;
-                        }
-                    }
-
-                    &.third {
-                        flex:1;
-
-                        &:nth-child(2){
-                            margin-left:20px;
-                        }
-                    }
-                }
-            }
+        &.limited {
+            overflow-x:hidden;
         }
+    }
 
+    .split-panel {
+        overflow-x:hidden;
+        transition:margin-left, 0.24s;
+        width:150%;
+        margin-left:0;
+
+        &.recipient {
+            margin-left:calc(-50% - 2px);
+        }
+    }
+
+    .panel {
+        flex:1;
+        position: relative;
+        display:flex;
+        flex-direction: column;
+        width:33.333%;
+        max-width:33.333%;
+        min-width:33.333%;
+    }
+
+    .padded {
+        padding:30px;
+    }
+
+    .custom-token {
+        margin-top:-25px;
+        padding:20px 10px 0 10px;
+        background:rgba(0,0,0,0.02);
+        border:1px solid rgba(0,0,0,0.1);
+        border-top:0;
+        border-bottom-left-radius:4px;
+        border-bottom-right-radius:4px;
+        margin-bottom:20px;
     }
 
 

@@ -1,11 +1,11 @@
-const {remote} = window.require('electron');
+import {remote} from '../util/ElectronHelpers';
 import {store} from '../store/store';
 import * as Actions from '../store/constants';
 import {BACKUP_STRATEGIES} from '../models/Settings';
 import StorageService from '../services/StorageService';
 const fs = window.require('fs');
 
-export const getFileLocation = () => remote.dialog.showOpenDialog({ filters: [ { name: 'JSON', extensions: ['json'] } ] });
+export const getFileLocation = () => remote.dialog.showOpenDialog({ filters: [ { name: 'JSON', extensions: ['json', 'txt'] } ] });
 export const getFolderLocation = () => remote.dialog.showOpenDialog({properties: ['openDirectory']});
 const getLatestScatter = () => StorageService.getScatter();
 

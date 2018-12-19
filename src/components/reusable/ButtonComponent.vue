@@ -1,13 +1,17 @@
 <template>
-    <button :disabled="disabled" v-on:click="emit" :class="{'secondary':secondary, 'large':large, 'full':full, 'red':red}">
-        {{text}}
+    <button :disabled="disabled" v-on:click="emit" :class="{'blue': blue, 'red':red, 'small':small}">
+        <i :class="icon" v-if="icon && !loading"></i>
+        <span v-else>
+            <i class="icon-spin4 animate-spin" v-if="loading"></i>
+            <span v-else>{{text}}</span>
+        </span>
     </button>
 </template>
 
 <script>
     export default {
         methods: { emit(){ this.$emit('clicked') } },
-        props:['text', 'red', 'disabled', 'full', 'large', 'secondary']
+        props:['text', 'icon', 'blue', 'red', 'disabled', 'small', 'loading']
     }
 </script>
 
@@ -16,96 +20,69 @@
 
     button {
         cursor: pointer;
-        padding:0 20px;
-        height:40px;
-        line-height:39px;
-        border:1px solid $dark-blue;
+        height:38px;
+        padding:0 12px;
+        width:100%;
         outline:0;
-        background:$light-blue;
-        border-radius:2px;
-        color:#fff;
-        font-size:13px;
-        font-weight: bold;
-        margin-top:10px;
+        border:1px solid #dfe0e1;
+        background:#fff;
+        border-radius:3px;
+        color:$dark-blue;
+        font-size: 14px;
+        font-weight: 500;
+        max-width:360px;
+		line-height:0;
 
-        transition: all 0.15s ease;
-        transition-property: background, color, border;
 
-        &:disabled {
-            opacity:0.4;
-            cursor: not-allowed;
+
+        &.small {
+            height:32px;
+            font-size: 13px;
+            font-weight: bold;
+            width:auto;
+            padding:0 10px;
         }
 
-        &.head {
-            width:100%;
-        }
-
-        &.full {
-            width:100%;
-        }
-
-        &.large {
-            height:50px;
-            line-height:49px;
-            font-size:16px;
-        }
-
-        &:not(:disabled){
-
-            &:hover {
-                background:transparent;
-                border:1px solid $dark-blue;
-                color:$dark-blue;
-            }
-
-            &:active {
-                background:$dark-blue;
-                border:1px solid transparent;
-                color:#fff;
-            }
-
+        &.blue {
+            border:1px solid rgba(0,0,0,0);
+            color:#fff;
+            background:$dark-blue;
+            background-image: linear-gradient(-180deg, #62D0FD -20%, #39ADFF 100%);
         }
 
         &.red {
-            background:$red;
-            border:1px solid transparent;
-            color:#fff;
+            border:1px solid $red;
+            color:$red;
+        }
 
-            &:not(:disabled){
+        &:hover {
+            border:1px solid rgba(0,0,0,0.22);
+        }
 
-                &:hover {
-                    background:transparent;
-                    border:1px solid $red;
-                    color:$red;
+        &:not(:disabled){
+            &:active {
+                border:1px solid $dark-blue;
+                background:rgba(0,0,0,0.04);
+
+                &.blue {
+                    color:$dark-blue;
                 }
 
-                &:active {
-                    background:$dark-red;
-                    border:1px solid transparent;
+                &.red {
+                    border:1px solid $red;
+                    background:$red;
+                    background-image: linear-gradient(-180deg, $red -20%, #e23b3b 100%);
                     color:#fff;
                 }
-
             }
         }
 
-        &.secondary {
-            background:transparent;
-            border:1px solid $dark-blue;
-            color:$dark-blue;
-
-            &:not(:disabled) {
-                &:hover {
-                    background: $light-blue;
-                    border: 1px solid transparent;
-                    color: #fff;
-                }
-
-                &:active {
-                    background: $dark-blue;
-                    border: 1px solid transparent;
-                    color: #fff;
-                }
-            }
+        &:disabled {
+            border:1px solid #c6c7c8;
+            background: #e3e3e3;
+            color: #ababab;
+            cursor: not-allowed;
         }
+
     }
 </style>

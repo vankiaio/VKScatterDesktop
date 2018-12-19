@@ -2,12 +2,12 @@ import AES from 'aes-oop';
 import {Blockchains} from './Blockchains';
 import IdGenerator from '../util/IdGenerator';
 import Crypto from '../util/Crypto';
-import ExternalWallet from './ExternalWallet';
+import ExternalWallet from './hardware/ExternalWallet';
 import {store} from '../store/store';
 
 export default class Keypair {
 
-    constructor(){
+    constructor(blockchains){
         this.id = IdGenerator.text(24);
         this.name = '';
         this.privateKey = '';
@@ -17,10 +17,10 @@ export default class Keypair {
         this.fork = null;
 
         this.publicKeys = [];
-        this.blockchains = [Blockchains.VKTIO, Blockchains.EOSIO, Blockchains.ETH, Blockchains.TRX];
+        this.blockchains = blockchains ? blockchains : [Blockchains.VKTIO, Blockchains.EOSIO, Blockchains.ETH, Blockchains.TRX];
     }
 
-    static placeholder(){ return new Keypair(); }
+    static placeholder(blockchains){ return new Keypair(blockchains); }
     static fromJson(json){
         let p = Object.assign(this.placeholder(), json);
         if(json.hasOwnProperty('external') && !!json.external) p.external = ExternalWallet.fromJson(json.external);
@@ -28,18 +28,25 @@ export default class Keypair {
     }
 
     resetExternal(){
-        this.external.interface.reset();
-        this.external = ExternalWallet.fromJson(this.external);
+        this.external.interface.close();
+        this.external.interface.open();
+        // this.external = ExternalWallet.fromJson(this.external);
     }
 
     hash(){
         if(!this.external) this.keyHash = Crypto.bufferToHash(this.privateKey);
-        else this.keyHash = `${this.external.type}:${this.external.blockchain}:${this.external.addressIndex}`
-
+        else this.keyHash = `${this.external.type}:${this.external.publicKey}`
     }
 
-    accounts(){
-        return store.state.scatter.keychain.accounts.filter(x => x.keypairUnique === this.unique())
+    accounts(unique = false){
+        const accounts = store.state.scatter.keychain.accounts.filter(x => x.keypairUnique === this.unique());
+	    if(!unique) return accounts;
+	    return accounts.reduce((acc, account) => {
+		    if(!acc.find(x => account.network().unique() === x.network().unique()
+			    && account.sendable() === x.sendable())) acc.push(account);
+		    return acc;
+	    }, [])
+
     }
 
     unique(){ return this.id; }

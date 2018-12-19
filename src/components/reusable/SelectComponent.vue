@@ -1,79 +1,71 @@
 <template>
-    <section class="select" :class="{'open':open, 'disabled':disabled}">
-        <figure class="arrow">
-            <i class="fa fa-chevron-down"></i>
-        </figure>
+    <section>
+        <label v-if="label">{{label}}</label>
 
-        <figure class="selected-option" v-on:click="toggle">
-            {{parse(selectedOption)}}
-        </figure>
+        <section class="select" :class="{'open':open, 'disabled':disabled, 'short':short}">
+            <figure class="arrow">
+                <i class="icon-down-open-big"></i>
+            </figure>
 
-        <section class="options">
-            <input ref="terms" placeholder="Search..." v-model="optionsTerms" />
-            <figure :class="isGrouped(item) ? 'group-title' : 'option'" v-for="item in filteredOptions" v-on:click="isGrouped(item) ? null : select(item)">
-                <figure v-if="isGrouped(item) && !optionsTerms.length">{{item}}</figure>
-                <section v-else>
+            <figure class="selected-option" v-on:click="toggle">
+                {{parse(selectedOption, true)}}
+            </figure>
+
+            <section class="options" :class="{'long':long}" v-if="!asButton">
+                <input ref="terms" placeholder="Search..." v-model="optionsTerms" />
+                <figure class="option" v-for="item in filteredOptions" v-on:click="select(item)">
                     <img v-if="imgParser" :src="imgParser(item)" />
                     {{parse(item)}}
-                </section>
-
-            </figure>
+                    <span class="subtitle" v-if="subparser">{{subparser(item)}}</span>
+                </figure>
+            </section>
         </section>
     </section>
 </template>
 
 <script>
+    let documentListener;
     export default {
+	    props:['placeholder', 'label', 'options', 'selected', 'prop', 'parser', 'subparser', 'disabled', 'imgParser', 'long', 'asButton', 'short'],
+
         data(){ return {
             optionsTerms:'',
             selectedOption:this.selected || this.placeholder || this.options[0],
             open:false,
-            groups:[],
         }},
+        mounted(){ document.addEventListener('click', this.handleDocumentClick) },
+        destroyed(){ document.removeEventListener('click', this.handleDocumentClick) },
         computed:{
-            groupedOptions(){
-                if(!this.grouper) return this.options;
-                else {
-                    this.groups = [];
-                    let options = [];
-                    this.options.map(x => {
-                        const group = this.grouper(x);
-                        if(!this.groups.includes(group)){
-                            this.groups.push(group)
-                            options.push(group);
-                        }
-
-                        options.push(x);
-                    })
-                    return options;
-                }
-            },
             filteredOptions(){
-                return this.groupedOptions.filter(x => {
+                return this.options.filter(x => {
                     const parsed = this.parse(x);
                     return !parsed || parsed.toLowerCase().indexOf(this.optionsTerms.toLowerCase()) > -1
                 });
             }
         },
         methods: {
-            isGrouped(item){
-                if(!item) return false;
-                return this.groups.includes(item);
+	    	handleDocumentClick(e){
+                if(this.open) this.open = false;
             },
             toggle(){
-                if(this.disabled) return false;
-                this.open = !this.open;
+	    		if(this.asButton) return this.$emit('clicked', true);
+	    		if(this.open) return;
+                this.$nextTick(() => {
+	                if(this.disabled) return false;
+	                this.open = !this.open;
 
-                if(this.open){
-                    this.optionsTerms = '';
-                    setTimeout(() => {
-                        this.$refs.terms.focus()
-                    }, 50);
-                }
+	                if(this.open){
+		                this.optionsTerms = '';
+		                setTimeout(() => {
+			                this.$refs.terms.focus()
+		                }, 50);
+	                }
+                })
             },
-            parse(item){
-                if(typeof item === 'string') return item;
-                if(this.parser) return this.parser(item);
+            parse(item, selected = false){
+	    		if(this.asButton && !selected) return;
+	            if(typeof item === 'string' && !this.parser) return item;
+	            if(this.parser) return this.parser(item);
 
                 let props = this.prop.split(".");
                 const lastKey = props.pop();
@@ -85,7 +77,6 @@
                 this.$emit('changed', this.selectedOption)
             }
         },
-        props:['placeholder', 'options', 'selected', 'prop', 'parser', 'disabled', 'imgParser', 'grouper'],
         watch:{
             input(){ this.emit(); },
             text(){ this.input = this.text; },
@@ -95,19 +86,34 @@
     }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
     @import "../../_variables";
+
+    label {
+        font-size: 11px;
+        color:#7899a6;
+        font-weight: bold;
+        margin-bottom:5px;
+        display: block;
+        text-align:left;
+
+        &.error {
+            color:$red;
+            animation: blink 1s ease infinite;
+        }
+    }
+
     .select {
+        text-align:left;
         cursor: pointer;
-        height:50px;
+        height:38px;
         position: relative;
         width:100%;
-        font-family:'Raleway',sans-serif;
-        font-size:14px;
-        border:1px solid $mid-light-grey;
-        border-radius:4px;
+        border-radius:3px;
         background:#fff;
-        transition:background 0.2s ease;
+        border:1px solid #dfe0e1;
+        font-size: 14px;
+        transition:background 0.1s ease;
 
         input {
             position: absolute;
@@ -117,29 +123,30 @@
 
         &.disabled {
             background: #f5f5f5;
+            cursor: not-allowed;
         }
 
         &:not(:first-child){
-            margin-top:10px;
+            margin-top:8px;
         }
 
         .arrow {
             position:absolute;
             right:0;
-            height:50px;
-            line-height:50px;
-            padding:0 15px;
-            color:$mid-dark-grey;
-            opacity:0.3;
-            transition:opacity 0.2s ease;
+            height:38px;
+            line-height:38px;
+            padding:0 12px;
+            color:$dark-blue;
+            opacity:0.5;
+            transition:opacity 0.1s ease, transform 0.1s ease;
             pointer-events: none;
         }
 
         .selected-option {
-            height:50px;
-            line-height:50px;
+            height:38px;
+            line-height:38px;
             width:100%;
-            padding:0 35px 0 15px;
+            padding:0 35px 0 12px;
             overflow: hidden;
             word-break: break-all;
         }
@@ -155,27 +162,29 @@
 
         .options {
             position:absolute;
-            top:48px;
+            top:36px;
             background:#fff;
             border:1px solid $mid-light-grey;
             border-bottom-right-radius:4px;
             border-bottom-left-radius:4px;
             left:-1px; right:-1px;
-            box-shadow:0 8px 16px $light-grey;
+            box-shadow:0 8px 16px rgba(0,0,0,0.12);
             visibility:hidden;
             opacity:0;
             max-height:0;
             overflow:auto;
-            transition:all 0.2s ease, max-height 0.5s ease;
-            transition-property: visibility, box-shadow, opacity, max-height;
             z-index:2;
 
             .option {
-                padding:15px 10px;
-                font-size:14px;
+                padding:12px;
                 background:transparent;
-                transition:background 0.2s ease, padding 0.3s ease;
                 word-break: break-all;
+
+                .subtitle {
+                    display:block;
+                    font-size: 9px;
+                    color: $dark-grey;
+                }
 
                 img {
                     width:16px;
@@ -189,8 +198,7 @@
                 }
 
                 &:hover {
-                    background:rgba(0,0,0,0.05);
-                    padding-left:15px;
+                    background:rgba(0,0,0,0.02);
                 }
             }
         }
@@ -198,17 +206,22 @@
         &.open {
             border-bottom-right-radius:0;
             border-bottom-left-radius:0;
-            background:$light-grey;
+            border:1px solid rgba(0,0,0,0.22);
 
             .options {
-                box-shadow:0 8px 16px rgba(0,0,0,0.15);
+                box-shadow:0 8px 8px rgba(0,0,0,0.08);
                 visibility:visible;
                 opacity:1;
                 max-height:180px;
+
+                &.long {
+                    max-height:300px;
+                }
             }
 
             .arrow {
                 opacity:1;
+                transform:rotateZ(-180deg) translateY(2px);
             }
         }
 
@@ -216,6 +229,26 @@
 
             .arrow {
                 opacity:1;
+            }
+        }
+
+        $short-height:32px;
+        &.short {
+            height:$short-height;
+
+            .arrow {
+                height:$short-height;
+                line-height:$short-height;
+            }
+
+            .selected-option {
+                height:$short-height;
+                line-height:$short-height;
+                font-size:13px;
+            }
+
+            .options {
+                top:30px;
             }
         }
     }

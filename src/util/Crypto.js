@@ -1,6 +1,5 @@
 import ecc from 'eosjs-ecc';
 const {PrivateKey} = ecc;
-import bip39 from 'bip39'
 
 import PluginRepository from '../plugins/PluginRepository';
 
@@ -15,6 +14,7 @@ export default class Crypto {
     }
 
     static privateKeyToBuffer(privateKey, blockchain){
+        console.log('blockchain', blockchain);
         return PluginRepository.plugin(blockchain).hexPrivateToBuffer(privateKey);
     }
 

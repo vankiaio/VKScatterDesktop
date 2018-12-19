@@ -7,30 +7,42 @@ import ElectronHelpers from '../util/ElectronHelpers'
 
 export default class UpdateService {
 
+    static updateUrl(){ return `https://github.com/GetScatter/ScatterDesktop/releases` }
+
     static async needsUpdate(){
         const scatter = store.state.scatter.clone();
         const update = await this.needsUpdateNoPrompt();
-        if(update) PopupService.push(Popup.prompt('New Update!', 'There is a new VKScatter update available. Do you want to download it? ( You should backup your scatter before updating! )', 'download', 'Yes', accepted => {
-            if(accepted) ElectronHelpers.openLinkInBrowser(update[2]);
-            else {
-                scatter.meta.lastSuggestedVersion = update[1];
-                store.dispatch(Actions.SET_SCATTER, scatter);
-            }
-        }, 'No'));
-        else return false;
+
+        if(update){
+	        const {version, body, prerelease, name} = update;
+	        if(prerelease) return;
+
+	        scatter.meta.lastSuggestedVersion = version;
+	        store.dispatch(Actions.SET_SCATTER, scatter);
+
+            PopupService.push(Popup.updateAvailable(update, updated => {
+
+            }));
+        }
     }
 
     static async needsUpdateNoPrompt(){
-        const {version, url} = await fetch('https://api.github.com/repos/vankiaio/VKScatterDesktop/releases/latest').then(res => res.json()).then(x => ({
+        const {version, stringVersion, body, prerelease, name} = await fetch('https://api.github.com/repos/vankiaio/VKScatterDesktop/releases/latest').then(res => res.json()).then(x => ({
+	        name:x.name,
             version:mathematicalVersion(x.tag_name),
-            url:x.html_url
+            stringVersion:x.tag_name,
+	        prerelease:x.prerelease,
+	        body:x.body,
         }));
+
+        if(prerelease) return false;
 
         const scatter = store.state.scatter.clone();
         let lastSuggested = scatter.meta.lastSuggestedVersion;
 
         if(mathematicalVersion(scatter.meta.version) < version && (!lastSuggested || lastSuggested !== version))
-            return [version, url];
+            return {version, stringVersion, url:this.updateUrl(), prerelease, name, body};
+
         return false;
     }
 

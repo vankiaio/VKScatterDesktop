@@ -1,4 +1,5 @@
-const {app, BrowserWindow, Tray, Menu, MenuItem} = require('electron');
+const electron = require('electron');
+const {app, BrowserWindow, Tray, Menu, MenuItem} = electron;
 const path = require("path");
 const url = require("url");
 
@@ -26,7 +27,13 @@ let splashScreen = url.format({
 });
 
 
-
+const quit = () => {
+	if(global.appShared && global.appShared.savingData){
+		setTimeout(() => {
+			quit();
+		}, 100);
+	} else setTimeout(() => app.quit(), 1);
+}
 
 let tray, mainWindow;
 
@@ -39,7 +46,7 @@ const setupMenu = () => {
 		submenu: [
 			{ label: "About Application", selector: "orderFrontStandardAboutPanel:" },
 			{ type: "separator" },
-			{ label: "Quit", accelerator: "Command+Q", click: () => { app.quit(); }}
+			{ label: "Quit", accelerator: "Command+Q", click: () => { quit(); }}
 		]}, {
 		label: "Edit",
 		submenu: [
@@ -63,9 +70,9 @@ const setupTray = () => {
 				mainWindow.show();
 				if(mainWindow.isMinimized()) mainWindow.restore();
 			}},
-		{label: 'Exit', type: 'normal', click:() => app.quit()}
+		{label: 'Exit', type: 'normal', click:() => quit()}
 	]);
-	tray.setToolTip('VKScatter Desktop Companion');
+	tray.setToolTip('Vankia Scatter Desktop Companion');
 	tray.setContextMenu(contextMenu);
 
 	tray.on('click', () => {
@@ -77,8 +84,8 @@ const setupTray = () => {
 const createScatterInstance = () => {
 	app.setAsDefaultProtocolClient('scatter');
 
-	const createMainWindow = (show = true) => new BrowserWindow({
-		width: 1280,
+	const createMainWindow = (show, backgroundColor) => new BrowserWindow({
+		width: 900,
 		height: 800,
 		frame: false,
 		radii: [5,5,5,5],
@@ -86,25 +93,25 @@ const createScatterInstance = () => {
 		resizable: true,
 		minWidth: 620,
 		minHeight:580,
+		titleBarStyle:'hiddenInset',
+		backgroundColor,
 		show,
 	});
 
-	mainWindow = createMainWindow(false);
-
-	const splash = createMainWindow(true);
-	splash.loadURL(splashScreen);
+	mainWindow = createMainWindow(false, '#62D0FD');
 	mainWindow.loadURL(mainUrl(false));
+	mainWindow.webContents.openDevTools();
 
 	// if main window is ready to show, then destroy the splash window and show up the main window
 	mainWindow.once('ready-to-show', () => {
-		splash.destroy();
-		mainWindow.show();
+		mainWindow.show(); 
+  		mainWindow.focus(); 
 	});
 
 	// mainWindow.openDevTools();
 	mainWindow.loadURL(mainUrl(false));
 	mainWindow.on('closed', () => mainWindow = null);
-	mainWindow.on('close', () => app.quit());
+	mainWindow.on('close', () => quit());
 
 	setupTray();
 	setupMenu();
@@ -120,7 +127,7 @@ const activateInstance = e => {
 
 app.on('ready', createScatterInstance);
 app.on('activate', activateInstance);
-app.on('window-all-closed', () => app.quit())
+app.on('window-all-closed', () => quit())
 
 app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
 	const isLocal = url.startsWith('https://127.0.0.1');
@@ -142,7 +149,7 @@ const shouldQuit = app.makeSingleInstance(argv => {
 	if (mainWindow) activateInstance();
 })
 
-if (shouldQuit) app.quit();
+if (shouldQuit) quit();
 
 app.on('will-finish-launching', () => {
 	app.on('open-url', (e, url) => {
@@ -155,8 +162,7 @@ app.on('will-finish-launching', () => {
 
 
 
-
-
+const isMac = () => process.platform === 'darwin';
 let waitingPopup;
 class LowLevelWindowService {
 
@@ -172,33 +178,49 @@ class LowLevelWindowService {
 		waitingPopup = await this.getWindow(1,1);
 	}
 
-	static async openPopOut(onReady = () => {}, onClosed = () => {}, width = 800, height = 600){
+	static async openPopOut(onReady = () => {}, onClosed = () => {}, width = 800, height = 600, dontHide = false){
 
 		let win = waitingPopup;
 		if(!win) win = await this.getWindow();
 		else waitingPopup = null;
-		win.setSize(width, height);
-		win.center();
 
-		onReady(win);
-		win.show();
-		win.setAlwaysOnTop(true);
-		win.focus();
-		win.setAlwaysOnTop(false);
+		win.setSize(width, height);
+
+		// Getting the screen to display the popup based on
+		// where the user is at the time ( for dual monitors )
+		const mousePoint = electron.screen.getCursorScreenPoint();
+		let {width:screenWidth, height:screenHeight} = electron.screen.getDisplayNearestPoint(mousePoint).workAreaSize;
+		if(mousePoint.x > screenWidth) screenWidth = screenWidth * Math.ceil(mousePoint.x / screenWidth);
+		win.setPosition(screenWidth - width - 2, screenHeight - height - 2);
 
 		win.once('closed', async () => {
 			// This is a fix for MacOS systems which causes the
 			// main window to always pop up after popups closing.
-			if (process.platform === 'darwin') {
-				mainWindow.hide();
-				app.hide();
+			if (!dontHide && isMac()) {
+				// mainWindow.hide();
+				Menu.sendActionToFirstResponder('hide:');
+				// mainWindow.show();
 			}
 
 			onClosed(win);
 			win = null;
-			waitingPopup = await this.getWindow(1, 1);
-
 		});
+
+		onReady(win);
+
+		win.show();
+		win.setAlwaysOnTop(true, "floating");
+		win.focus();
+
+		if(isMac()){
+			app.dock.hide();
+			win.setAlwaysOnTop(false);
+			win.setVisibleOnAllWorkspaces(true);
+			win.setFullScreenable(false);
+			app.dock.show();
+		}
+
+		waitingPopup = await this.getWindow(1, 1);
 
 		return win;
 	}
@@ -219,6 +241,5 @@ class NotificationService {
 }
 
 const Transport = require('@ledgerhq/hw-transport-node-hid');
-global.appShared = { Transport, ApiWatcher:null, LowLevelWindowService, NotificationService };
-
+global.appShared = { Transport, ApiWatcher:null, LowLevelWindowService, NotificationService, savingData:false };
 

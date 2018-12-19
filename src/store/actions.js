@@ -15,10 +15,15 @@ import Scatter from '../models/Scatter';
 import AES from 'aes-oop';
 import PopupService from "../services/PopupService";
 import {Popup} from '../models/popups/Popup'
-import migrate from '../migrations/migrator'
+import {RUNNING_TESTS} from "../util/TestingHelper";
 
 export const actions = {
-    [Actions.SET_SPLASH]:({commit}, x) => commit(Actions.SET_SPLASH, x),
+    [Actions.HIDE_BACK_BTN]:({commit}, x) => commit(Actions.HIDE_BACK_BTN, x),
+    [Actions.ADD_RESOURCES]:({commit}, x) => commit(Actions.ADD_RESOURCES, x),
+    [Actions.SET_RESOURCES]:({commit}, x) => commit(Actions.SET_RESOURCES, x),
+    [Actions.SET_PROCESS]:({commit}, x) => commit(Actions.SET_PROCESS, x),
+    [Actions.RELEASE_PROCESS]:({commit}, x) => commit(Actions.RELEASE_PROCESS, x),
+    [Actions.SET_WORKING_SCREEN]:({commit}, x) => commit(Actions.SET_WORKING_SCREEN, x),
     [Actions.SET_DAPP_DATA]:({commit}, x) => commit(Actions.SET_DAPP_DATA, x),
     [Actions.SET_DAPP_LOGO]:({commit}, x) => commit(Actions.SET_DAPP_LOGO, x),
     [Actions.SET_SEARCH_TERMS]:({commit}, terms) => commit(Actions.SET_SEARCH_TERMS, terms),
@@ -40,29 +45,21 @@ export const actions = {
 
         if(await PasswordService.verifyPassword()){
             const scatter = state.scatter.clone();
-            await migrate(scatter);
+
+            if(!RUNNING_TESTS){
+	            await require('../migrations/migrator').default(scatter);
+            }
+
             scatter.meta.regenerateVersion();
             await dispatch(Actions.SET_SCATTER, scatter);
         }
+
+        return true;
     },
 
     [Actions.CREATE_SCATTER]:({state, commit, dispatch}, password) => {
         return new Promise(async (resolve, reject) => {
-            const scatter = Scatter.placeholder();
-
-            await Promise.all(PluginRepository.signatureProviders().map(async plugin => {
-                const network = await plugin.getEndorsedNetwork();
-                scatter.settings.networks.push(network);
-            }));
-
-            const firstIdentity = Identity.placeholder();
-            await firstIdentity.initialize(scatter.hash);
-
-            //TODO: Testing
-            firstIdentity.name = 'MyFirstIdentity';
-            scatter.keychain.updateOrPushIdentity(firstIdentity);
-
-            //TODO: Add first automatic keypair
+            const scatter = await Scatter.create();
 
             await SocketService.initialize();
 
@@ -81,13 +78,9 @@ export const actions = {
     [Actions.SET_SCATTER]:({commit, state}, scatter) => {
         return new Promise(async resolve => {
 
-            await StorageService.setScatter(
-                AES.encrypt(
-                    scatter.savable(state.seed), state.seed
-                )
-            );
-
-            await BackupService.createAutoBackup();
+            StorageService.setScatter(AES.encrypt(scatter.savable(state.seed), state.seed)).then(() => {
+	            BackupService.createAutoBackup()
+            });
 
             commit(Actions.SET_SCATTER, scatter);
             resolve(scatter);
@@ -97,8 +90,11 @@ export const actions = {
     [Actions.PUSH_POPUP]:({commit}, popup) => commit(Actions.PUSH_POPUP, popup),
     [Actions.RELEASE_POPUP]:({commit}, popup) => commit(Actions.RELEASE_POPUP, popup),
     [Actions.SET_HARDWARE]:({commit}, hardware) => commit(Actions.SET_HARDWARE, hardware),
+    [Actions.REMOVE_HARDWARE]:({commit}, key) => commit(Actions.REMOVE_HARDWARE, key),
     [Actions.SET_TOKENS]:({commit}, tokens) => commit(Actions.SET_TOKENS, tokens),
-    [Actions.SET_BALANCES]:({commit}, balances) => commit(Actions.SET_BALANCES, balances),
+    [Actions.SET_BALANCES]:({commit}, x) => commit(Actions.SET_BALANCES, x),
+    [Actions.REMOVE_BALANCES]:({commit}, x) => commit(Actions.REMOVE_BALANCES, x),
     [Actions.SET_PRICES]:({commit}, prices) => commit(Actions.SET_PRICES, prices),
+    [Actions.NEW_KEY]:({commit}, x) => commit(Actions.NEW_KEY, x),
 
 };

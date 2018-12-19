@@ -1,11 +1,11 @@
-const { remote } = window.require('electron');
+import {remote} from '../util/ElectronHelpers';
 const { app } = remote;
 
 export default class Meta {
 
     constructor(){
         this.version = app.getVersion();
-        this.lastVersion = '0';
+        this.lastVersion = app.getVersion();
         this.acceptedTerms = false;
         this.lastSuggestedVersion = null;
     }

@@ -18,6 +18,13 @@ import ObjectHelpers from '../../util/ObjectHelpers'
 
 import PopupService from '../../services/PopupService'
 import {Popup} from '../../models/popups/Popup'
+import Token from "../../models/Token";
+import HardwareService from "../../services/HardwareService";
+import BigNumber from "bignumber.js";
+import TokenService from "../../services/TokenService";
+import {localizedState} from "../../localization/locales";
+import LANG_KEYS from "../../localization/keys";
+const erc20abi = require('../../data/abis/erc20');
 
 const web3util = new Web3();
 
@@ -50,34 +57,29 @@ const killCachedInstance = (network, wallet = null) => {
 
 }
 
-const EXPLORERS = [
-    {
-        name:'Etherscan',
-        account:account => `https://etherscan.io/address/${account.formatted()}`,
-        transaction:id => `https://etherscan.io/tx/${id}`,
-        block:id => `https://etherscan.io/block/${id}`
-    },
-];
+const EXPLORER = {
+	"name":"Etherscan",
+	"account":"https://etherscan.io/address/{x}",
+	"transaction":"https://etherscan.io/tx/{x}",
+	"block":"https://etherscan.io/block/{x}"
+};
 
 export default class ETH extends Plugin {
 
     constructor(){ super(Blockchains.ETH, PluginTypes.BLOCKCHAIN_SUPPORT) }
-    explorers(){ return EXPLORERS; }
+    defaultExplorer(){ return EXPLORER; }
     accountFormatter(account){ return `${account.publicKey}` }
     returnableAccount(account){ return { address:account.publicKey, blockchain:Blockchains.ETH }}
 
-    forkSupport(){
-        return false;
+	contractPlaceholder(){ return '0x.....'; }
+	recipientLabel(){ return localizedState(LANG_KEYS.GENERIC.Address); }
+
+    getEndorsedNetwork(){
+        return new Network('ETH Mainnet', 'https', 'ethnodes.get-scatter.com', 443, Blockchains.ETH, '1')
     }
 
-    async getEndorsedNetwork(){
-        return new Promise((resolve, reject) => {
-            resolve(new Network('ETH Mainnet', 'https', 'ethnodes.get-scatter.com', 443, Blockchains.ETH, '1'));
-        });
-    }
-
-    async isEndorsedNetwork(network){
-        const endorsedNetwork = await this.getEndorsedNetwork();
+    isEndorsedNetwork(network){
+        const endorsedNetwork = this.getEndorsedNetwork();
         return network.blockchain === Blockchains.ETH && network.chainId === endorsedNetwork.chainId;
     }
 
@@ -88,6 +90,7 @@ export default class ETH extends Plugin {
     }
 
     usesResources(){ return false; }
+	hasAccountActions(){ return false; }
 
     accountsAreImported(){ return false; }
     isValidRecipient(address){ return this.validPublicKey(address); }
@@ -107,27 +110,53 @@ export default class ETH extends Plugin {
     hexPrivateToBuffer(privateKey){
         return Buffer.from(privateKey, 'hex');
     }
-    conformPrivateKey(privateKey){
-        privateKey = privateKey.trim();
 
-        if(privateKey.indexOf('0x') === 0)
-            privateKey.replace('0x', '');
+	hasUntouchableTokens(){ return false; }
 
-        return privateKey;
+    async balanceFor(account, token, web3 = null){
+
+        const killInstance = !web3;
+        let balance;
+        if(!web3){
+	        const [w, e] = getCachedInstance(account.network());
+	        web3 = e;
+        }
+
+
+        if(token.unique() === this.defaultToken().unique()){
+	        balance = await web3.utils.fromWei(await web3.eth.getBalance(account.publicKey));
+        } else {
+            const contract = new web3.eth.Contract(erc20abi, token.contract);
+            try {
+	            balance = TokenService.formatAmount(await contract.methods.balanceOf(account.sendable()).call(), token, true);
+            } catch(e){
+                console.log(`${token.name} is not an ERC20 token`, e);
+                balance = TokenService.formatAmount('0', token, true);
+            }
+        }
+
+	    if(killInstance) killCachedInstance(account.network());
+	    return balance;
+
     }
-    convertsTo(){
-        return [Blockchains.EOSIO];
-    }
 
-    async balanceFor(account, tokenAccount, symbol){
+	async balancesFor(account, tokens){
         const [web3, engine] = getCachedInstance(account.network());
-        let balance = await web3.utils.fromWei(await web3.eth.getBalance(account.publicKey));
-        killCachedInstance(account.network());
-        return balance;
+
+        let balances = [];
+        for(let i = 0; i < tokens.length; i++){
+            const t = tokens[i].clone();
+	        t.amount = await this.balanceFor(account, tokens[i], web3);
+	        t.chainId = account.network().chainId;
+	        balances.push(t);
+        }
+
+		killCachedInstance(account.network());
+        return balances;
     }
 
     defaultDecimals(){ return 18; }
-    defaultToken(){ return {account:'eth', symbol:'ETH', name:'ETH', blockchain:Blockchains.ETH}; }
+    defaultToken(){ return new Token(Blockchains.ETH, 'eth', 'ETH', 'ETH', this.defaultDecimals()) }
 
     actionParticipants(payload){
         return ObjectHelpers.flatten(
@@ -136,25 +165,15 @@ export default class ETH extends Plugin {
         );
     }
 
-    async fetchTokens(tokens){
-        const ethTokens = [this.defaultToken()];
-        ethTokens.map(token => {
-            token.blockchain = Blockchains.ETH;
-            if(!tokens.find(x => `${x.symbol}:${x.account}` === `${token.symbol}:${token.account}`)) tokens.push(token);
-        });
-    }
 
-    async tokenInfo(token) {
-        return null;
-    }
-
-
-    async transfer({account, to, amount, contract, symbol, promptForSignature = true}){
+    async transfer({account, to, amount, token, promptForSignature = true}){
+	    const {contract, symbol} = token;
+	    const isEth = token.unique() === this.defaultToken().unique();
         return new Promise(async (resolve, reject) => {
             const wallet = new ScatterEthereumWallet(account, async (transaction, callback) => {
-                const payload = { transaction, blockchain:Blockchains.TRX, network:account.network(), requiredFields:{} };
+                const payload = { transaction, blockchain:Blockchains.TRX, network:account.network(), requiredFields:{}, abi:isEth ? null : erc20abi };
                 const signatures = promptForSignature
-                    ? await this.passThroughProvider(payload, account, x => finished(x))
+                    ? await this.passThroughProvider(payload, account, x => finished(x), token)
                     : await this.signer(payload.transaction, account.publicKey);
 
                 if(callback) callback(null, signatures);
@@ -167,10 +186,20 @@ export default class ETH extends Plugin {
             };
 
             const [web3, engine] = getCachedInstance(account.network(), wallet);
-            const value = web3util.utils.toWei(amount.toString());
-            web3.eth.sendTransaction({from:account.publicKey, to, value})
-                .on('transactionHash', transactionHash => finished({transactionHash}))
-                .on('error', error => finished({error}));
+
+            if(isEth){
+	            const value = web3util.utils.toWei(amount.toString());
+	            web3.eth.sendTransaction({from:account.publicKey, to, value})
+		            .on('transactionHash', transactionHash => finished({transactionHash}))
+		            .on('error', error => finished({error}));
+            } else {
+	            const value = TokenService.formatAmount(amount.toString(), token, true);
+	            const contract = new web3.eth.Contract(erc20abi, token.contract, {from:account.sendable()});
+	            contract.methods.transfer(to, value).send({gasLimit: 250000})
+		            .on('transactionHash', transactionHash => finished({transactionHash}))
+		            .on('error', error => finished({error}));
+            }
+
         })
     }
 
@@ -184,13 +213,13 @@ export default class ETH extends Plugin {
         return ethUtil.addHexPrefix(tx.serialize().toString('hex'));
     }
 
-    async passThroughProvider(payload, account, rejector){
+    async passThroughProvider(payload, account, rejector, token = null){
         return new Promise(async resolve => {
-            payload.messages = await this.requestParser(payload.transaction);
+            payload.messages = await this.requestParser(payload.transaction, payload.hasOwnProperty('abi') ? payload.abi : null, token);
             payload.identityKey = store.state.scatter.keychain.identities[0].publicKey;
             payload.participants = [account];
             payload.network = account.network();
-            payload.origin = 'Internal Scatter Transfer';
+            payload.origin = 'Scatter';
             const request = {
                 payload,
                 origin:payload.origin,
@@ -205,24 +234,24 @@ export default class ETH extends Plugin {
 
                 let signature = null;
                 if(KeyPairService.isHardware(account.publicKey)){
-                    const keypair = KeyPairService.getKeyPairFromPublicKey(account.publicKey);
-                    keypair.external.interface.setAddressIndex(keypair.external.addressIndex);
-                    signature = await keypair.external.interface.sign(account.publicKey, payload, payload.abi, account.network());
+                    signature = await HardwareService.sign(account, payload);
                 } else signature = await this.signer(payload.transaction, account.publicKey, true);
 
                 if(!signature) return rejector({error:'Could not get signature'});
 
                 resolve(signature);
-            }));
+            }, true));
         })
     }
 
-    async requestParser(transaction, abi){
+    async requestParser(transaction, abi, token = null){
         let params = {};
         let methodABI;
+
         if(abi){
             methodABI = abi.find(method => transaction.data.indexOf(method.signature) !== -1);
             if(!methodABI) throw Error.signatureError('no_abi_method', "No method signature on the abi you provided matched the data for this transaction");
+
 
             params = web3util.eth.abi.decodeParameters(methodABI.inputs, transaction.data.replace(methodABI.signature, ''));
             params = Object.keys(params).reduce((acc, key) => {
@@ -245,7 +274,7 @@ export default class ETH extends Plugin {
 
         return [{
             data,
-            code:transaction.to,
+            code:token ? token.name : transaction.to,
             type:abi ? methodABI.name : 'transfer',
             authorization:transaction.from
         }];

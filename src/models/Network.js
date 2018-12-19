@@ -1,5 +1,7 @@
 import {Blockchains, BlockchainsArray} from './Blockchains';
 import IdGenerator from '../util/IdGenerator';
+import Token from "./Token";
+import PluginRepository from "../plugins/PluginRepository";
 
 export default class Network {
     constructor(_name = '', _protocol = 'https', _host = '', _port = 0, blockchain = Blockchains.VKTIO, chainId = ''){
@@ -13,6 +15,8 @@ export default class Network {
 
         this.fromOrigin = null;
         this.createdAt = +new Date();
+
+        this.token = null;
     }
 
     static placeholder(){ return new Network(); }
@@ -20,6 +24,7 @@ export default class Network {
     static fromJson(json){
         const p = Object.assign(Network.placeholder(), json);
         p.chainId = p.chainId ? p.chainId.toString() : '';
+        p.token = json.hasOwnProperty('token') && json.token ? Token.fromJson(json.token) : null;
         return p;
     }
 
@@ -35,17 +40,22 @@ export default class Network {
     unique(){ return (`${this.blockchain}:` + (this.chainId.length ? `chain:${this.chainId}` : `${this.host}:${this.port}`)).toLowerCase(); }
     fullhost(){ return `${this.protocol}://${this.host}${this.port ? ':' : ''}${this.port}` }
     clone(){ return Network.fromJson(JSON.parse(JSON.stringify(this))) }
-    isEmpty(){ return !this.host.length; }
+
     isValid(){
         if(!BlockchainsArray.map(x => x.value).includes(this.blockchain)) return false;
-        return (this.host.length && this.port) || this.chainId.length
+        return this.host.length && this.port.toString().length && this.chainId.length
     }
-    filledNetwork(){
-        return this.name.length && this.port.toString().length && this.chainId.length && this.host.length
-    }
+
     setPort(){
         if(!this.port) this.port = 80;
         if(![80,443].includes(parseInt(this.port))) return;
         this.port = this.protocol === 'http' ? 80 : 443;
     }
+
+	systemToken(){
+        if(this.token) return this.token;
+        const token = PluginRepository.plugin(this.blockchain).defaultToken();
+        token.chainId = this.chainId;
+        return token;
+	}
 }

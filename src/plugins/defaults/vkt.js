@@ -4,69 +4,153 @@ import {Blockchains} from '../../models/Blockchains'
 import Network from '../../models/Network'
 import Account from '../../models/Account'
 import KeyPairService from '../../services/KeyPairService'
+import {localized, localizedState} from '../../localization/locales'
+import LANG_KEYS from '../../localization/keys'
 import Eos from 'eosjs'
-let {ecc, Fcbuffer} = Eos.modules;
+let {ecc} = Eos.modules;
 import ObjectHelpers from '../../util/ObjectHelpers'
 import * as ricardianParser from 'eos-rc-parser';
 import {Popup} from '../../models/popups/Popup'
 import PopupService from '../../services/PopupService'
 import ResourceService from '../../services/ResourceService'
 import StorageService from '../../services/StorageService'
-import ApiService from '../../services/ApiService'
 import * as Actions from '../../models/api/ApiActions';
 import {store} from '../../store/store'
 import { Api, JsonRpc, RpcError, JsSignatureProvider } from 'eosjs2';
 import * as numeric from "eosjs2/dist/eosjs-numeric";
+import Token from "../../models/Token";
+import AccountAction from "../../models/AccountAction";
+import AccountService from "../../services/AccountService";
+import RecurringService from "../../services/RecurringService";
+import HardwareService from "../../services/HardwareService";
 
+
+const blockchainApiURL = 'https://api.light.xeos.me/api';
+const mainnetChainId = 'e17abdaf44e2811b452ea15a0aeb7eff6eab9c5de4452e6fb7b552c5de9ddae7';
+
+class VKTTokenAccountAPI {
+	constructor(){}
+
+
+	static async getAccountsFromPublicKey(publicKey, network){
+		return await Promise.race([
+			new Promise(resolve => setTimeout(() => resolve([]), 5000)),
+			new Promise((resolve, reject) => {
+				const eos = getCachedInstance(network);
+				eos.getKeyAccounts(publicKey).then(res => {
+					if(!res || !res.hasOwnProperty('account_names')){ resolve([]); return false; }
+
+					Promise.all(res.account_names.map(name => eos.getAccount(name).catch(e => resolve([])))).then(multires => {
+						let accounts = [];
+						multires.map(account => {
+							account.permissions.map(perm => {
+								if(!!perm.required_auth.keys.find(x => x.key === publicKey))
+									accounts.push({name:account.account_name, authority:perm.perm_name})
+							});
+						});
+						resolve(accounts)
+					}).catch(e => resolve([]));
+				}).catch(e => resolve([]));
+			})
+		])
+	};
+
+
+	static async getAllTokens(account){
+		return await Promise.race([
+			new Promise(resolve => setTimeout(() => resolve(null), 5000)),
+			fetch(`${blockchainApiURL}/account/eos/${account.sendable()}`).then(r => r.json()).then(res => {
+				return res.balances.map(balance => {
+					return Token.fromJson({
+						blockchain:Blockchains.VKTIO,
+						contract:balance.contract,
+						symbol:balance.currency,
+						name:balance.currency,
+						amount:balance.amount,
+						decimals:balance.decimals,
+						chainId:account.network().chainId
+					})
+				});
+			}).catch(err => {
+				return null;
+			})
+		])
+	}
+}
 
 let cachedInstances = {};
 const getCachedInstance = network => {
-    if(cachedInstances.hasOwnProperty(network.unique())) return cachedInstances[network.unique()];
-    else {
-        const eos = Eos({httpEndpoint:`${network.fullhost()}`, chainId:network.chainId});
-        cachedInstances[network.unique()] = eos;
-        return eos;
-    }
+	if(cachedInstances.hasOwnProperty(network.unique())) return cachedInstances[network.unique()];
+	else {
+		const eos = Eos({httpEndpoint:`${network.fullhost()}`, chainId:network.chainId});
+		cachedInstances[network.unique()] = eos;
+		return eos;
+	}
 }
 
 
-const getAccountsFromPublicKey = (publicKey, network) => {
-    return Promise.race([
-        new Promise(resolve => setTimeout(() => resolve([]), 20000)),
-        new Promise((resolve, reject) => {
-            const eos = getCachedInstance(network);
-            eos.getKeyAccounts(publicKey).then(res => {
-                if(!res || !res.hasOwnProperty('account_names')){ resolve([]); return false; }
+const getAccountsFromPublicKey = async (publicKey, network, process, progressDelta, fallbackToChain = false) => {
+	if(network.chainId === mainnetChainId && !fallbackToChain){
+		const accountsFromApi = await VKTTokenAccountAPI.getAccountsFromPublicKey(publicKey, network);
+		if(!accountsFromApi) return getAccountsFromPublicKey(publicKey, network, process, progressDelta, true);
+		else return accountsFromApi;
+	}
 
-                Promise.all(res.account_names.map(name => eos.getAccount(name).catch(e => resolve([])))).then(multires => {
-                    let accounts = [];
-                    multires.map(account => {
-                        account.permissions.map(perm => {
-                            if(!!perm.required_auth.keys.find(x => x.key === publicKey))
-                                accounts.push({name:account.account_name, authority:perm.perm_name})
-                        });
-                    });
-                    resolve(accounts)
-                }).catch(e => resolve([]));
-            }).catch(e => resolve([]));
-        })
-    ])
+
+	return Promise.race([
+		new Promise(resolve => setTimeout(() => resolve([]), 20000)),
+		new Promise((resolve, reject) => {
+			const eos = getCachedInstance(network);
+			if(process) process.setSubTitle(localizedState(LANG_KEYS.PROCESSES.FetchAccountsFromNetwork, network.name));
+			eos.getKeyAccounts(publicKey).then(res => {
+				if(process) process.updateProgress(progressDelta/3);
+				if(!res || !res.hasOwnProperty('account_names')){ resolve([]); return false; }
+				const {account_names} = res;
+
+				const setProcessTitle = () => {
+					if(process) process.setSubTitle(localizedState(LANG_KEYS.PROCESSES.ImportingAccountsFromNetwork, [account_names.length, network.name]));
+				};
+				setProcessTitle();
+
+				const perAccountProgress = progressDelta ? (progressDelta/3) / account_names.length : 0;
+
+				Promise.all(account_names.map(async name => {
+					const data = await eos.getAccount(name).catch(e => resolve([]))
+					setProcessTitle(true);
+					if(process) process.updateProgress(perAccountProgress);
+					return data;
+				})).then(multires => {
+					let accounts = [];
+					multires.map(account => {
+						account.permissions.map(perm => {
+							if(!!perm.required_auth.keys.find(x => x.key === publicKey)) {
+								accounts.push({name: account.account_name, authority: perm.perm_name})
+							}
+						});
+					});
+					resolve(accounts)
+				}).catch(e => resolve([]));
+			}).catch(e => resolve([]));
+		})
+	])
 };
 
-const EXPLORERS = [
-    {
-        name:'VkT Tracker',
-        account:account => `http://tracker.devicexx.com/accounts/${account.name}`,
-        transaction: id => `http://tracker.devicexx.com/transactions/blocks/${id}`,
-        block:id => `http://tracker.devicexx.com/blocks/${id}`
-    },
-    {
-        name:'VKT Blocks',
-        account:account => `http://tracker.devicexx.com/accounts/${account.name}`,
-        transaction: id => `http://tracker.devicexx.com/transactions/blocks/${id}`,
-        block:id => `http://tracker.devicexx.com/blocks/${id}`
-    }
-];
+
+
+const popupError = result => {
+	console.log('result', result);
+	const error = ({error:JSON.parse(result).error.details[0].message.replace('assertion failure with message:', '').trim()});
+	PopupService.push(Popup.prompt('Transaction Error', error));
+}
+
+
+
+const EXPLORER = {
+	"name":"VKT Tracker",
+	"account":"http://tracker.devicexx.com/accounts/{x}",
+	"transaction":"http://tracker.devicexx.com/transactions/blocks/{x}",
+	"block":"http://tracker.devicexx.com/blocks/{x}"
+};
 
 
 
@@ -74,230 +158,440 @@ const EXPLORERS = [
 export default class VKT extends Plugin {
 
     constructor(){ super(Blockchains.VKTIO, PluginTypes.BLOCKCHAIN_SUPPORT) }
-    explorers(){ return EXPLORERS; }
-    accountFormatter(account){ return `${account.name}@${account.authority}` }
-    returnableAccount(account){ return { name:account.name, authority:account.authority, publicKey:account.publicKey, blockchain:Blockchains.VKTIO }}
+	defaultExplorer(){ return EXPLORER; }
+	accountFormatter(account){ return `${account.name}@${account.authority}` }
+	returnableAccount(account){ return { name:account.name, authority:account.authority, publicKey:account.publicKey, blockchain:Blockchains.VKTIO }}
 
-    forkSupport(){
-        return true;
-    }
+	contractPlaceholder(){ return 'eosio.token'; }
+	recipientLabel(){ return localizedState(LANG_KEYS.GENERIC.AccountName); }
 
-    async getEndorsedNetwork(){
-        return new Promise((resolve, reject) => {
-            resolve(new Network(
-                'VKT Mainnet', 'http',
-                '221.122.119.226',
-                8888,
-                Blockchains.VKTIO,
-                'e17abdaf44e2811b452ea15a0aeb7eff6eab9c5de4452e6fb7b552c5de9ddae7'
-            ));
-        });
-    }
+	getEndorsedNetwork(){
+		return new Network('VKT Mainnet', 'http', '221.122.119.226', 8888, Blockchains.VKTIO, mainnetChainId)
+	}
 
-    async isEndorsedNetwork(network){
-        const endorsedNetwork = await this.getEndorsedNetwork();
-        return network.blockchain === Blockchains.VKTIO && network.chainId === endorsedNetwork.chainId;
-    }
+	isEndorsedNetwork(network){
+		return network.blockchain === Blockchains.VKTIO && network.chainId === mainnetChainId;
+	}
 
-    async getChainId(network){
-        const eos = Eos({httpEndpoint:network.fullhost()});
-        return eos.getInfo({}).then(x => x.chain_id || '').catch(() => '');
-    }
+	async getChainId(network){
+		const eos = Eos({httpEndpoint:network.fullhost()});
+		return eos.getInfo({}).then(x => x.chain_id || '').catch(() => '');
+	}
 
-    usesResources(){ return true; }
+	usesResources(){ return true; }
+	hasAccountActions(){ return true; }
 
-    async getResourcesFor(account){
-        const data = await this.accountData(account);
-        if(!data || !data.hasOwnProperty('cpu_limit') || !data.cpu_limit.hasOwnProperty('available')) return [];
+	async proxyVote(account, proxyAccount, prompt = false){
+		return new Promise(async (resolve, reject) => {
+			const signProvider = prompt
+				? payload => this.passThroughProvider(payload, account, reject)
+				: payload => this.signer(payload, account.publicKey);
+			const network = account.network();
+			const eos = Eos({httpEndpoint:network.fullhost(), chainId:network.chainId, signProvider});
+			return await eos.voteproducer(account.name, proxyAccount, [], {authorization:[account.formatted()]})
+				.catch(res => reject(popupError(res)))
+				.then(res => resolve(res))
+		})
 
-        const refund = data.hasOwnProperty('refund_request') && data.refund_request ? {
-          type:'bar',
-          name:'Refund',
-          cpu:data.refund_request.cpu_amount,
-          net:data.refund_request.net_amount,
-          used:+new Date() - +new Date(data.refund_request.request_time),
-          total:(86400*3*1000),
-          text:(new Date((+new Date(data.refund_request.request_time)) + (86400*3*1000))).toLocaleString(),
-          color:'blue',
-        } : null;
+	}
 
-        const resources = [{
-          type:'radial',
-          name:'CPU',
-          available:data.cpu_limit.available,
-          max:data.cpu_limit.max,
-          percentage:(data.cpu_limit.used * 100) / data.cpu_limit.max
-        },{
-          type:'radial',
-          name:'NET',
-          available:data.net_limit.available,
-          max:data.net_limit.max,
-          percentage:(data.net_limit.used * 100) / data.net_limit.max
-        },{
-          type:'radial',
-          name:'RAM',
-          available:data.ram_usage,
-          max:data.ram_quota,
-          percentage:(data.ram_usage * 100) / data.ram_quota
-        }];
+	async changePermissions(account, keys){
+		if(!keys) return;
+		return new Promise(async (resolve, reject) => {
+			const signProvider = payload => this.passThroughProvider(payload, account, reject);
+			const network = account.network();
+			const eos = Eos({httpEndpoint:network.fullhost(), chainId:network.chainId, signProvider});
 
-        if(refund) resources.push(refund);
+			const perms = Object.keys(keys).map(permission => {
+				if(!keys[permission].length) return;
 
-        return resources;
-    }
+				const keyOrAccount = keys[permission];
+				let auth = {
+					accounts:[],
+					keys:[],
+					threshold:1,
+					waits:[],
+				};
 
-    async moderateResource(resource, account){
-        return new Promise(resolve => {
-            const {name} = resource;
+				// Public Key
+				if(this.validPublicKey(keyOrAccount)) auth.keys.push({
+					key:keyOrAccount,
+					weight:1
+				});
 
-            const returnResult = tx => {
-                if(!tx) return resolve(false);
-                // PopupService.push(Popup.transactionSuccess(account.blockchain(), tx.transaction_id));
-                resolve(true);
-            }
+				// Account
+				else {
+					const [actor, perm] = keyOrAccount.split('@');
+					auth.accounts.push({
+						actor,
+						permission:perm ? perm : 'active'
+					})
+				}
 
-            if(['CPU', 'NET'].includes(name))
-                PopupService.push(Popup.delegateResources(account, returnResult));
+				const parent = permission === 'owner' ? '' : 'owner';
 
-            if(name === 'RAM')
-                PopupService.push(Popup.buySellRAM(account, returnResult));
+				return {
+					account:account.name,
+					permission,
+					parent,
+					auth,
+				}
+			}).filter(x => !!x);
 
-        })
-    }
+			const options = {authorization:[`${account.name}@owner`]};
+			return eos.transaction(tr => perms.map(perm => tr.updateauth(perm, options)))
+				.catch(res => {
+					popupError(res);
+					reject(false)
+				})
+				.then(async res => {
+					PopupService.push(Popup.transactionSuccess(Blockchains.VKTIO, res.transaction_id));
 
-    async needsResources(account){
-        const resources = await this.getResourcesFor(account);
-        if(!resources.length) return false;
+					const keypairs = [account.keypair()];
 
-        return resources.find(x => x.name === 'CPU').available < 6000;
-    }
+					const authorities = Object.keys(keys).filter(x => keys[x].length);
+					const accounts = store.getters.accounts.filter(x => x.identifiable() === account.identifiable() && authorities.includes(x.authority));
+					await AccountService.removeAccounts(accounts);
 
-    async addResources(account){
-        const signProvider = payload => this.signer(payload, account.publicKey);
-        const network = account.network();
-        const eos = Eos({httpEndpoint:network.fullhost(), chainId:network.chainId, signProvider});
-        return await eos.delegatebw(account.name, account.name, '0.0000 VKT', '0.1000 VKT', 0, { authorization:[account.formatted()] })
-            .catch(error => console.error(error))
-            .then(res => res);
-    }
+					const addAccount = async (keypair, authority) => {
+						const acc = account.clone();
+						acc.publicKey = keypair.publicKeys.find(x => x.blockchain === Blockchains.VKTIO).key,
+						acc.keypairUnique = keypair.unique();
+						acc.authority = authority;
+						return AccountService.addAccount(acc);
+					};
 
-    accountsAreImported(){ return true; }
-    getImportableAccounts(keypair, network){
-        return new Promise((resolve, reject) => {
-            let publicKey = keypair.publicKeys.find(x => x.blockchain === Blockchains.VKTIO);
-            if(!publicKey) return resolve([]);
-            publicKey = publicKey.key;
-            getAccountsFromPublicKey(publicKey, network).then(accounts => {
-                resolve(accounts.map(account => Account.fromJson({
-                    name:account.name,
-                    authority:account.authority,
-                    publicKey,
-                    keypairUnique:keypair.unique(),
-                    networkUnique:network.unique(),
-                })))
-            }).catch(e => resolve([]));
-        })
-    }
+					const activeKeypair = store.state.scatter.keychain.getKeyPairByPublicKey(keys.active);
+					const ownerKeypair = store.state.scatter.keychain.getKeyPairByPublicKey(keys.owner);
+					if(activeKeypair) await addAccount(activeKeypair, 'active');
+					if(ownerKeypair) await addAccount(ownerKeypair, 'owner');
+					resolve(true)
+				});
+		})
 
-    isValidRecipient(name){ return /(^[a-z1-5.]{1,11}[a-z1-5]$)|(^[a-z1-5.]{12}[a-j1-5]$)/g.test(name); }
-    privateToPublic(privateKey, prefix = null){ return ecc.PrivateKey(privateKey).toPublic().toString(prefix ? prefix : Blockchains.VKTIO.toUpperCase()); }
-    validPrivateKey(privateKey){ return privateKey.length === 51 && ecc.isValidPrivate(privateKey); }
-    validPublicKey(publicKey, prefix = null){ return ecc.PublicKey.fromStringOrThrow(publicKey, prefix ? prefix : Blockchains.VKTIO.toUpperCase()); }
+	}
 
-    randomPrivateKey(){ return ecc.randomKey(); }
-    conformPrivateKey(privateKey){ return privateKey.trim(); }
-    convertsTo(){ return []; }
-    from_eth(privateKey){
-        return ecc.PrivateKey.fromHex(Buffer.from(privateKey, 'hex')).toString();
-    }
-    bufferToHexPrivate(buffer){
-        return ecc.PrivateKey.fromBuffer(new Buffer(buffer)).toString()
-    }
-    hexPrivateToBuffer(privateKey){
-        return new ecc.PrivateKey(privateKey).toBuffer();
-    }
+	accountActions(account){
+		const accounts = store.state.scatter.keychain.accounts.filter(x => x.identifiable() === account.identifiable() && x.keypairUnique === account.keypairUnique);
 
-    actionParticipants(payload){
-        return ObjectHelpers.flatten(
-            payload.messages
-                .map(message => message.authorization
-                    .map(auth => `${auth.actor}@${auth.permission}`))
-        );
-    }
-
-    async accountData(account){
-        const eos = getCachedInstance(account.network());
-        return Promise.race([
-            new Promise(resolve => setTimeout(() => resolve(null), 2000)),
-            eos.getAccount(account.name)
-        ])
-    }
-
-    async balanceFor(account, tokenAccount, symbol){
-        const eos = getCachedInstance(account.network());
-
-        const balances = await eos.getTableRows({
-            json:true,
-            code:tokenAccount,
-            scope:account.name,
-            table:'accounts',
-            limit:500
-        }).then(res => res.rows).catch(() => []);
-
-        const row = balances.find(row => row.balance.split(" ")[1].toLowerCase() === symbol.toLowerCase());
-        return row ? row.balance.split(" ")[0] : 0;
-    }
-
-    defaultDecimals(){ return 4; }
-    defaultToken(){ return {symbol:'VKT', account:'eosio.token', name:'VKT', blockchain:Blockchains.VKTIO}; }
-
-    async fetchTokens(tokens){
-        tokens.push(this.defaultToken());
-        const eosTokens = await fetch("https://raw.githubusercontent.com/eoscafe/eos-airdrops/master/tokens.json").then(res => res.json()).catch(() => []);
-        eosTokens.map(token => {
-            token.blockchain = Blockchains.VKTIO;
-            if(!tokens.find(x => `${x.symbol}:${x.account}` === `${token.symbol}:${token.account}`)) tokens.push(token);
-        });
-    }
-
-    async tokenInfo(token){
-        const network = await this.getEndorsedNetwork();
-        const eos = getCachedInstance(network);
-        return Promise.race([
-            new Promise(resolve => setTimeout(() => resolve(null), 500)),
-            eos.getTableRows({
-                json:true,
-                code:token.account,
-                scope:token.symbol,
-                table:'stat',
-                limit:1
-            }).then(({rows}) => {
-                if(!rows.length) return null;
-                return {
-                    maxSupply:rows[0].max_supply[0],
-                    supply:rows[0].supply.split(' ')[0],
-                };
-            }).catch(() => null)
-        ])
-    }
+		const {EOS} = LANG_KEYS.KEYPAIR.ACCOUNTS.ACTIONS;
 
 
+		let availableActions = [
+			new AccountAction(localizedState(EOS.UnlinkAccountButton, null), '', () => {
+				PopupService.push(Popup.unlinkAccount(account, () => {}));
+			})
+		];
 
-    async passThroughProvider(payload, account, rejector){
-        return new Promise(async resolve => {
-            payload.messages = await this.requestParser(payload, Network.fromJson(account.network()));
-            payload.identityKey = store.state.scatter.keychain.identities[0].publicKey;
-            payload.participants = [account];
-            payload.network = account.network();
-            payload.origin = 'Internal Scatter Transfer';
-            const request = {
-                payload,
-                origin:payload.origin,
-                blockchain:'vkt',
-                requiredFields:{},
-                type:Actions.REQUEST_SIGNATURE,
-                id:1,
-            }
+		const nonWatchActions = [
+			new AccountAction(localizedState(EOS.ProxyVotesButton, null), '', () => {
+				PopupService.push(Popup.eosProxyVotes(account, () => {}));
+			}),
+		];
+
+		const ownerActions = [
+			new AccountAction(localizedState(EOS.ChangePermissionsButton, null), '', () => {
+				PopupService.push(Popup.verifyPassword(verified => {
+					if(!verified) return;
+					PopupService.push(Popup.eosChangePermissions(account, async permissions => {
+						await this.changePermissions(account, permissions);
+					}));
+				}));
+			})
+		];
+
+		// Adding owner only actions.
+		if(accounts.some(x => x.authority !== 'watch'))
+			availableActions = nonWatchActions.concat(availableActions);
+		if(accounts.some(x => x.authority === 'owner'))
+			availableActions = ownerActions.concat(availableActions);
+
+		return availableActions;
+	}
+
+	async refund(account){
+		return new Promise(async (resolve, reject) => {
+			const signProvider = payload => this.passThroughProvider(payload, account, reject);
+			const network = account.network();
+			const eos = Eos({httpEndpoint:network.fullhost(), chainId:network.chainId, signProvider});
+			return await eos.refund(account.name, {authorization:[account.formatted()]})
+				.catch(res => reject(popupError(res)))
+				.then(res => resolve(res));
+		})
+	}
+
+	async getResourcesFor(account){
+		const data = await this.accountData(account);
+
+		if(!data || !data.hasOwnProperty('cpu_limit') || !data.cpu_limit.hasOwnProperty('available')) return [];
+
+		let refund;
+		if(data.hasOwnProperty('refund_request') && data.refund_request){
+			const threeDays = (86400*3*1000);
+			const percentage = ((+new Date() - +new Date(data.refund_request.request_time)) * 100) / threeDays;
+			refund = {
+				name:'Refund',
+				text:(new Date((+new Date(data.refund_request.request_time)) + (86400*3*1000))).toLocaleDateString(),
+				percentage,
+				actionable:percentage >= 100,
+				actionText:localizedState(LANG_KEYS.KEYPAIR.ACCOUNTS.EOSClaimRefundButton, null),
+			}
+		}
+
+		const actionText = localizedState(LANG_KEYS.GENERIC.Manage, null);
+		const resources = [{
+			name:'CPU',
+			available:data.cpu_limit.available,
+			max:data.cpu_limit.max,
+			percentage:(data.cpu_limit.used * 100) / data.cpu_limit.max,
+			actionable:true,
+			actionText,
+		},{
+			name:'NET',
+			available:data.net_limit.available,
+			max:data.net_limit.max,
+			percentage:(data.net_limit.used * 100) / data.net_limit.max,
+			actionable:true,
+			actionText,
+		},{
+			name:'RAM',
+			available:data.ram_usage,
+			max:data.ram_quota,
+			percentage:(data.ram_usage * 100) / data.ram_quota,
+			actionable:true,
+			actionText,
+		}];
+
+		if(refund) resources.push(refund);
+
+		return resources;
+	}
+
+	async moderateResource(resource, account){
+		return new Promise(async resolve => {
+			const {name} = resource;
+
+			const returnResult = tx => resolve(tx)
+
+			if(['CPU', 'NET'].includes(name))
+				PopupService.push(Popup.eosModerateCpuNet(account, returnResult));
+
+			if(name === 'RAM')
+				PopupService.push(Popup.eosModerateRam(account, returnResult));
+
+			if(name === 'Refund') {
+				resolve(await this.refund(account));
+			}
+
+		})
+	}
+
+	async needsResources(account){
+		const resources = await this.getResourcesFor(account);
+		if(!resources.length) return false;
+
+		return resources.find(x => x.name === 'CPU').available < 6000;
+	}
+
+	// TODO: make into slider
+	async addResources(account){
+		const signProvider = payload => this.signer(payload, account.publicKey);
+		const network = account.network();
+		const eos = Eos({httpEndpoint:network.fullhost(), chainId:network.chainId, signProvider});
+		const symbol = account.network().systemToken().symbol;
+		return await eos.delegatebw(account.name, account.name, `0.0000 ${symbol}`, `0.1000 ${symbol}`, 0, { authorization:[account.formatted()] })
+			.catch(res => {
+				popupError(res);
+				return false;
+			})
+			.then(res => res);
+	}
+
+	accountsAreImported(){ return true; }
+	getImportableAccounts(keypair, network, process, progressDelta){
+		return new Promise((resolve, reject) => {
+			let publicKey = keypair.publicKeys.find(x => x.blockchain === Blockchains.VKTIO);
+			if(!publicKey) return resolve([]);
+			publicKey = publicKey.key;
+			getAccountsFromPublicKey(publicKey, network, process, progressDelta).then(accounts => {
+				resolve(accounts.map(account => Account.fromJson({
+					name:account.name,
+					authority:account.authority,
+					publicKey,
+					keypairUnique:keypair.unique(),
+					networkUnique:network.unique(),
+				})))
+			}).catch(e => resolve([]));
+		})
+	}
+
+	isValidRecipient(name){ return /(^[a-z1-5.]{1,11}[a-z1-5]$)|(^[a-z1-5.]{12}[a-j1-5]$)/g.test(name); }
+	privateToPublic(privateKey, prefix = null){ return ecc.PrivateKey(privateKey).toPublic().toString(prefix ? prefix : Blockchains.VKTIO.toUpperCase()); }
+	validPrivateKey(privateKey){ return privateKey.length >= 50 && ecc.isValidPrivate(privateKey); }
+	validPublicKey(publicKey, prefix = null){
+		try {
+			return ecc.PublicKey.fromStringOrThrow(publicKey, prefix ? prefix : Blockchains.VKTIO.toUpperCase());
+		} catch(e){
+			return false;
+		}
+	}
+
+	randomPrivateKey(){ return ecc.randomKey(); }
+
+	bufferToHexPrivate(buffer){
+		return ecc.PrivateKey.fromBuffer(new Buffer(buffer)).toString()
+	}
+	hexPrivateToBuffer(privateKey){
+		return new ecc.PrivateKey(privateKey).toBuffer();
+	}
+
+	actionParticipants(payload){
+		return ObjectHelpers.flatten(
+			payload.messages
+				.map(message => message.authorization
+					.map(auth => `${auth.actor}@${auth.permission}`))
+		);
+	}
+
+	async accountData(account, network = null, accountName = null){
+
+		const getAccount = () => {
+			return fetch(`${network ? network.fullhost() : account.network().fullhost()}/v1/chain/get_account`, {
+				method: 'POST',
+				body: JSON.stringify({account_name:accountName ? accountName : account.name})
+			})
+				.then(res => res.json())
+		};
+
+		return Promise.race([
+			new Promise(resolve => setTimeout(() => resolve(null), 2000)),
+			getAccount()
+		])
+	}
+
+	hasUntouchableTokens(){ return true; }
+	async untouchableBalance(account){
+		const accData = await this.accountData(account).catch(() => null);
+		if(!accData || !accData.hasOwnProperty('self_delegated_bandwidth') || !accData.self_delegated_bandwidth) return null;
+		const token = account.network().systemToken().clone();
+		token.amount = parseFloat(parseFloat(accData.self_delegated_bandwidth.cpu_weight.split(' ')[0]) + parseFloat(accData.self_delegated_bandwidth.net_weight.split(' ')[0])).toFixed(token.decimals);
+		token.unusable = 'CPU / NET';
+		return token;
+	}
+
+	async balanceFor(account, token){
+		const eos = getCachedInstance(account.network());
+
+		const balances = await eos.getTableRows({
+			json:true,
+			code:token.contract,
+			scope:account.name,
+			table:'accounts',
+			limit:500
+		}).then(res => res.rows).catch(() => []);
+
+		const row = balances.find(row => row.balance.split(" ")[1].toLowerCase() === token.symbol.toLowerCase());
+		return row ? row.balance.split(" ")[0] : 0;
+	}
+
+	async balancesFor(account, tokens, fallback = false){
+		if(!fallback && this.isEndorsedNetwork(account.network())){
+			const balances = await EosTokenAccountAPI.getAllTokens(account);
+			if(!balances) return this.balanceFor(account, tokens, true);
+			const blacklist = store.getters.blacklistTokens.filter(x => x.blockchain === Blockchains.VKTIO).map(x => x.unique());
+			return balances.filter(x => !blacklist.includes(x.unique()));
+		}
+
+
+		return (await Promise.all(tokens.map(async token => {
+			const t = token.clone();
+			t.amount = await this.balanceFor(account, token);
+			t.chainId = account.network().chainId;
+			return t;
+		})));
+	}
+
+	defaultDecimals(){ return 4; }
+	defaultToken(){ return new Token(Blockchains.VKTIO, 'eosio.token', 'VKT', 'VKT', this.defaultDecimals()) }
+
+	async getRamPrice(network, eos = null){
+		if(!eos) eos = getCachedInstance(network);
+
+		const parseAsset = asset => asset.split(' ')[0];
+		const getRamInfo = async () => eos.getTableRows({
+			json:true,
+			code:'eosio',
+			scope:'eosio',
+			table:'rammarket'
+		}).then(res => {
+			const ramInfo = res.rows[0];
+			return [parseAsset(ramInfo.quote.balance), parseAsset(ramInfo.base.balance)];
+		});
+
+		const ramInfo = await getRamInfo();
+		return (ramInfo[0] / ramInfo[1]).toFixed(8);
+	}
+
+	async createAccount(creator, name, owner, active, eosUsed){
+		return new Promise(async (resolve, reject) => {
+			const network = creator.network();
+			const signProvider = payload => this.passThroughProvider(payload, creator, reject);
+			const eos = Eos({httpEndpoint:network.fullhost(), chainId:network.chainId, signProvider});
+
+			const coreSymbol = network.systemToken().symbol;
+
+			const net = (eosUsed/4).toFixed(creator.network().systemToken().decimals);
+			const cpu = (eosUsed-net).toFixed(creator.network().systemToken().decimals);
+
+			if(net <= 0 || cpu <= 0) return reject(localizedState(LANG_KEYS.CREATE_EOS.ERRORS.InvalidResources, null));
+
+			const options = {authorization:[creator.formatted()]};
+
+			eos.transaction(tr => {
+				tr.newaccount({
+					creator: creator.name,
+					name: name,
+					owner,
+					active
+				}, options);
+				tr.buyrambytes({
+					payer:creator.name,
+					receiver:name,
+					bytes:4096
+				}, options);
+				tr.delegatebw({
+					from: creator.name,
+					receiver: name,
+					stake_net_quantity: `${net} ${coreSymbol}`,
+					stake_cpu_quantity: `${cpu} ${coreSymbol}`,
+					transfer: 1
+				}, options)
+			}, options)
+				.then(trx => resolve(trx.transaction_id))
+				.catch(res => {
+					popupError(res);
+					reject(false);
+				});
+		})
+	}
+
+
+
+	async passThroughProvider(payload, account, rejector){
+		return new Promise(async resolve => {
+			payload.messages = await this.requestParser(payload, Network.fromJson(account.network()));
+			payload.identityKey = store.state.scatter.keychain.identities[0].publicKey;
+			payload.participants = [account];
+			payload.network = account.network();
+			payload.origin = 'Scatter';
+			const request = {
+				payload,
+				origin:payload.origin,
+				blockchain:'vkt',
+				requiredFields:{},
+				type:Actions.REQUEST_SIGNATURE,
+				id:1,
+			}
 
             PopupService.push(Popup.popout(request, async ({result}) => {
                 if(!result || (!result.accepted || false)) return rejector({error:'Could not get signature'});

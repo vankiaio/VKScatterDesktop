@@ -4,13 +4,13 @@ import Keypair from './Keypair';
 import Account from './Account';
 import AuthorizedApp from './AuthorizedApp';
 import ObjectHelpers from '../util/ObjectHelpers';
+import RecurringService from "../services/RecurringService";
 
 export default class Keychain {
 
     constructor(){
         this.keypairs = [];
         this.accounts = [];
-        this.linkedApps = [];
         this.identities = [];
         this.permissions = [];
         this.apps = [];

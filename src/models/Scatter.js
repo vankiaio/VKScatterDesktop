@@ -4,6 +4,9 @@ import Settings from './Settings';
 import AES from 'aes-oop';
 import Hasher from '../util/Hasher'
 import IdGenerator from '../util/IdGenerator'
+import Recurring from "./Recurring";
+import PluginRepository from "../plugins/PluginRepository";
+import Identity from "./Identity";
 
 export default class Scatter {
 
@@ -13,16 +16,29 @@ export default class Scatter {
         this.settings = Settings.placeholder();
         this.contacts = [];
         this.hash = Hasher.unsaltedQuickHash(IdGenerator.text(2048));
-        this.bufferKeys = false;
 
-        this.nonce = 0;
-        this.noncePrefix = 'nonce';
+        this.recurring = Recurring.placeholder();
 
         this.toured = false;
 
         this.pin = null;
+        this.pinForAll = false;
     }
 
+    static async create(){
+        const scatter = new Scatter();
+	    await Promise.all(PluginRepository.signatureProviders().map(async plugin => {
+		    const network = plugin.getEndorsedNetwork();
+		    scatter.settings.networks.push(network);
+	    }));
+
+	    const firstIdentity = Identity.placeholder();
+	    await firstIdentity.initialize(scatter.hash);
+
+	    firstIdentity.name = 'MyFirstIdentity';
+	    scatter.keychain.updateOrPushIdentity(firstIdentity);
+	    return scatter;
+    }
     static placeholder(){ return new Scatter(); }
     static fromJson(json){
         let p = Object.assign(this.placeholder(), json);

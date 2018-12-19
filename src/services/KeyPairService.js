@@ -10,6 +10,7 @@ import {store} from '../store/store';
 import Keypair from '../models/Keypair';
 import Account from '../models/Account'
 import AccountService from "./AccountService";
+import HardwareService from "./HardwareService";
 
 export default class KeyPairService {
 
@@ -89,15 +90,17 @@ export default class KeyPairService {
 		    keypair.blockchains = keypair.blockchains.filter(x => x !== blockchain);
 		    const accountsToRemove = keypair.accounts().filter(x => x.blockchain() === blockchain);
 		    await AccountService.removeAccounts(accountsToRemove);
+		    KeyPairService.updateKeyPair(keypair);
         }
 
         // Adding
 	    else {
 		    keypair.blockchains.push(blockchain);
-		    await AccountService.importAllAccounts(keypair);
+		    await AccountService.importAllAccounts(keypair, false, [blockchain]);
+		    KeyPairService.updateKeyPair(keypair);
         }
 
-	    KeyPairService.updateKeyPair(keypair);
+
 	    return true;
     }
 
@@ -115,7 +118,7 @@ export default class KeyPairService {
     }
 
     static getKeyPairFromPublicKey(publicKey, decrypt = false){
-        const keypair = store.state.scatter.keychain.keypairs.find(x => x.publicKeys.find(k => k.key === publicKey));
+        const keypair = store.getters.keypairs.find(x => x.publicKeys.find(k => k.key === publicKey));
         if(keypair) {
             if(decrypt) keypair.decrypt(store.state.seed);
             return keypair;
@@ -140,13 +143,10 @@ export default class KeyPairService {
         return null;
     }
 
-    static isHardware(publicKey){
-        const keypair = this.getKeyPairFromPublicKey(publicKey);
-        if(!keypair) throw new Error('Keypair doesnt exist on keychain');
-        return keypair.external !== null;
-    }
+    static async loadFromHardware(keypair, tries = 0){
+        if(typeof keypair.external.interface.getPublicKey !== 'function') return false;
 
-    static async loadFromHardware(keypair){
+        if(tries >= 5) return false;
         return keypair.external.interface.getPublicKey().then(key => {
             if(PluginRepository.plugin(keypair.external.blockchain).validPublicKey(key)){
                 keypair.external.publicKey = key;
@@ -154,9 +154,19 @@ export default class KeyPairService {
                 keypair.hash();
                 return true;
             } else return false;
-        }).catch(() => {
+        }).catch(async err => {
+            if(err.toString().match('Cannot write to HID device')){
+                await HardwareService.openConnections();
+                return this.loadFromHardware(keypair, tries++);
+            }
             return false;
         })
     }
+
+	static isHardware(publicKey){
+		const keypair = this.getKeyPairFromPublicKey(publicKey);
+		if(!keypair) throw new Error('Keypair doesnt exist on keychain');
+		return keypair.external !== null;
+	}
     
 }

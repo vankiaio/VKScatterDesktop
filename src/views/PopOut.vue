@@ -1,24 +1,49 @@
 <template>
-    <section class="popout">
+    <section>
 
-        <section v-if="windowMessage">
+        <!--<section v-if="windowMessage">-->
 
-            <get-identity v-if="popupType === apiActions.GET_OR_REQUEST_IDENTITY"
-                          :payload="payload" :plugin-origin="pluginOrigin" v-on:returned="returnResult"></get-identity>
+            <!--<get-identity v-if="popupType === apiActions.GET_OR_REQUEST_IDENTITY"-->
+                          <!--:payload="payload" :plugin-origin="pluginOrigin" v-on:returned="returnResult"></get-identity>-->
 
-            <suggest-network v-if="popupType === apiActions.REQUEST_ADD_NETWORK"
-                             :payload="payload" :plugin-origin="pluginOrigin" v-on:returned="returnResult"></suggest-network>
+            <!--<suggest-network v-if="popupType === apiActions.SUGGEST_NETWORK"-->
+                             <!--:payload="payload" :plugin-origin="pluginOrigin" v-on:returned="returnResult"></suggest-network>-->
 
-            <signature-request v-if="popupType === apiActions.REQUEST_SIGNATURE || popupType === apiActions.REQUEST_ARBITRARY_SIGNATURE"
-                               :payload="payload" :plugin-origin="pluginOrigin" v-on:returned="returnResult"></signature-request>
+            <!--<signature-request v-if="popupType === apiActions.REQUEST_SIGNATURE || popupType === apiActions.REQUEST_ARBITRARY_SIGNATURE"-->
+                               <!--:payload="payload" :plugin-origin="pluginOrigin" v-on:returned="returnResult"></signature-request>-->
 
-            <link-app v-if="popupType === 'linkApp'" :payload="payload" :plugin-origin="pluginOrigin" v-on:returned="returnResult"></link-app>
+            <!--<link-app v-if="popupType === 'linkApp'" :payload="payload" :plugin-origin="pluginOrigin" v-on:returned="returnResult"></link-app>-->
 
-            <get-public-key v-if="popupType === apiActions.GET_PUBLIC_KEY" :payload="payload" :plugin-origin="pluginOrigin" v-on:returned="returnResult"></get-public-key>
+            <!--<get-public-key v-if="popupType === apiActions.GET_PUBLIC_KEY" :payload="payload" :plugin-origin="pluginOrigin" v-on:returned="returnResult"></get-public-key>-->
 
-            <link-account v-if="popupType === apiActions.LINK_ACCOUNT" :payload="payload" :plugin-origin="pluginOrigin" v-on:returned="returnResult"></link-account>
+            <!--<link-account v-if="popupType === apiActions.LINK_ACCOUNT" :payload="payload" :plugin-origin="pluginOrigin" v-on:returned="returnResult"></link-account>-->
 
-            <transfer-request v-if="popupType === apiActions.REQUEST_TRANSFER" :payload="payload" :plugin-origin="pluginOrigin" v-on:returned="returnResult"></transfer-request>
+            <!--<transfer-request v-if="popupType === apiActions.REQUEST_TRANSFER" :payload="payload" :plugin-origin="pluginOrigin" v-on:returned="returnResult"></transfer-request>-->
+
+        <!--</section>-->
+
+        <section v-if="windowMessage" class="popout">
+
+            <AppLogin v-if="popupType === apiActions.GET_OR_REQUEST_IDENTITY"
+                      :popup="popup"
+                      v-on:expanded="expandOrContract" :expanded="expanded"
+                      v-on:returned="returnResult" />
+
+            <Signature v-if="popupType === apiActions.REQUEST_SIGNATURE || popupType === apiActions.REQUEST_ARBITRARY_SIGNATURE"
+                      :popup="popup" :pinning="pinning"
+                      v-on:expanded="expandOrContract" :expanded="expanded"
+                      v-on:returned="returnResult" />
+
+            <GetPublicKey v-if="popupType === apiActions.GET_PUBLIC_KEY"
+                          :popup="popup"
+                          v-on:returned="returnResult" />
+
+            <TransferRequest v-if="popupType === apiActions.REQUEST_TRANSFER"
+                             :popup="popup" :pinning="pinning"
+                             v-on:returned="returnResult" />
+
+            <LinkApp :popup="popup" v-if="popupType === 'linkApp'" v-on:returned="returnResult" />
+
 
         </section>
 
@@ -27,20 +52,31 @@
 </template>
 
 <script>
+    import '../popout.scss';
+
     import { mapActions, mapGetters, mapState } from 'vuex'
     import * as Actions from '../store/constants';
-
     import Scatter from '../models/Scatter';
-
-    const { remote } = window.require('electron');
+    import {remote} from '../util/ElectronHelpers';
     import WindowService from '../services/WindowService'
     import * as ApiActions from '../models/api/ApiActions';
+    import {Popup} from "../models/popups/Popup";
+    import PasswordService from "../services/PasswordService";
 
     export default {
         data () {return {
             apiActions:ApiActions,
             windowMessage:null,
+	        expanded:false,
+            pinning:false,
         }},
+        components:{
+	        GetPublicKey:() => import('./popouts/GetPublicKey'),
+	        TransferRequest:() => import('./popouts/TransferRequest'),
+            AppLogin:() => import('./popouts/AppLogin'),
+            Signature:() => import('./popouts/Signature'),
+            LinkApp:() => import('./popouts/LinkApp'),
+        },
         mounted(){
             WindowService.watch('popup', windowMessage => {
                 this.windowMessage = windowMessage;
@@ -51,28 +87,53 @@
                 // which makes popups slow down too.
                 scatter.keychain.keypairs.map(x => {
                     if(x.external) x.external = null;
-                })
+                });
 
                 this[Actions.HOLD_SCATTER](Scatter.fromJson(scatter));
+                console.log('popupType', this.popupType);
+
+                const needsPIN = [
+                    ApiActions.REQUEST_ARBITRARY_SIGNATURE,
+                    ApiActions.REQUEST_SIGNATURE,
+                    ApiActions.REQUEST_TRANSFER
+                ];
+
+                setTimeout(async () => {
+	                if(this.scatter.pinForAll && needsPIN.includes(this.popup.data.type)){
+	                	this.pinning = true;
+		                if(! await PasswordService.verifyPIN()){
+		                	this.returnResult(null);
+                        }
+		                this.pinning = false;
+	                }
+                })
             });
         },
         computed:{
             ...mapState([
                 'scatter',
             ]),
-            pluginOrigin(){ return this.windowMessage.data.popup.data.props.plugin },
+            popup(){ return Popup.fromJson(this.windowMessage.data.popup) },
             payload(){ return this.windowMessage.data.popup.data.props.payload },
             popupType(){ return this.windowMessage.data.popup.data.type },
-            showNonce(){
-                return this.popupType === ApiActions.REQUEST_SIGNATURE ||
-                       this.popupType === ApiActions.REQUEST_ARBITRARY_SIGNATURE
-            }
         },
         methods: {
-            returnResult(result){
-                WindowService.sendResult(this.windowMessage, result);
-                setTimeout(() => remote.getCurrentWindow().close(), 50);
+            async returnResult(result){
+				await WindowService.sendResult(this.windowMessage, result);
+
+				const window = remote.getCurrentWindow();
+				window.close();
+				if(!window.closed) window.destroy();
             },
+
+	        expandOrContract(deltaWidth = 300, forced = null, subtracted = null){
+            	if(forced !== null) this.expanded = forced;
+		        else this.expanded = !this.expanded;
+
+		        const {width, height} = this.popup.dimensions();
+		        const delta = (this.expanded ? deltaWidth : 0);
+		        WindowService.changeWindowSize(height, subtracted ? width-delta : width+delta);
+	        },
             ...mapActions([
                 Actions.HOLD_SCATTER
             ])
@@ -83,8 +144,6 @@
 <style scoped lang="scss" rel="stylesheet/scss">
     @import "../_variables.scss";
 
-    .popout {
-        position: relative;
-    }
+
 
 </style>

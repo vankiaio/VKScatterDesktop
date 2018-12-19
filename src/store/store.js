@@ -5,15 +5,18 @@ import {mutations} from './mutations';
 import {actions} from './actions';
 
 import {PopupDisplayTypes} from '../models/popups/Popup'
-import Scatter from '../models/Scatter';
 import PluginRepository from '../plugins/PluginRepository'
+import Locale from "../models/Locale";
 
 Vue.use(Vuex);
 
 const state = {
-    splash:false,
     dappLogos:{},
     dappData:{},
+    workingScreen:null,
+    processes:[],
+    resources:{},
+    hideBackButton:false,
 
     searchTerms:'',
 
@@ -24,16 +27,20 @@ const state = {
 
     popups:[],
 
-    hardware:null,
+    hardware:{},
 
-    tokens:[],
     balances:{},
     prices:{},
+
+	newKey:false,
 };
 
 const getters = {
     // App State
-    unlocked:state =>       state.scatter !== null && typeof state.scatter !== 'string' && state.scatter instanceof Scatter && !state.scatter.isEncrypted() && state.splash,
+    unlocked:state =>       state.scatter !== null
+                                && typeof state.scatter !== 'string'
+                                && typeof state.scatter.isEncrypted === 'function'
+                                && !state.scatter.isEncrypted(),
 
 
     contacts:state =>       state.scatter.contacts || [],
@@ -45,15 +52,34 @@ const getters = {
     accounts:state =>       state.scatter.keychain.accounts || [],
     permissions:state =>    state.scatter.keychain.permissions || [],
     apps:state =>           state.scatter.keychain.apps || [],
-    linkedApps:state =>     state.scatter.keychain.linkedApps || [],
 
     // Settings
     version:state =>        state.scatter.meta.version,
     networks:state =>       state.scatter.settings.networks || [],
-    language:state =>       state.scatter.settings.language || [],
+    language:state =>       {
+    	if(!state.scatter || !state.scatter.hasOwnProperty('settings')) return;
+    	if(state.scatter.settings.languageJson) return Locale.fromJson(state.scatter.settings.languageJson);
+    	return state.scatter.settings.language;
+    },
     autoBackup:state =>     state.scatter.settings.autoBackup || null,
     backupLocation:state => state.scatter.settings.backupLocation || null,
     explorers:state =>      state.scatter.settings.explorers || PluginRepository.defaultExplorers(),
+	blacklistTokens:state =>  state.scatter.settings.blacklistTokens,
+	balanceFilters:state =>   state.scatter.settings.balanceFilters,
+	displayCurrency:state =>   state.scatter.settings.displayCurrency,
+	displayToken:state =>   state.scatter.settings.displayToken,
+	tokens:state =>         state.scatter.settings.tokens,
+    allTokens:(state, getters) =>      getters.networkTokens.concat(getters.tokens),
+    mainnetTokensOnly:state =>      state.scatter.settings.showMainnetsOnly,
+	networkTokens:state =>  state.scatter.settings.networks.map(x => {
+		const token = x.systemToken();
+		token.chainId = x.chainId;
+		return token;
+	}).reduce((acc, token) => {
+		const exists = acc.find(x => x.unique() === token.unique() && x.chainId === token.chainId);
+		if(!exists) acc.push(token);
+		return acc;
+	}, []),
 
     // Popups
     popIns:state =>         state.popups.filter(x => x.displayType === PopupDisplayTypes.POP_IN) || [],
@@ -62,59 +88,38 @@ const getters = {
 
     showNotifications:state => state.scatter.settings.showNotifications,
 
-    totalTokenBalance:state => {
-        let total = 0;
-        Object.keys(state.balances).map(acc => {
-            state.balances[acc].map(t => {
-                total += parseFloat(t.balance);
-            })
-        });
-        return total;
-    },
+    totalBalances:(state, getters) => {
+        const tokens = {};
+	    tokens['totals'] = {};
 
-    allBalances(){
-        const totals = {};
-        Object.keys(state.balances).map(acc => {
-            state.balances[acc].map(t => {
-                totals[t.symbol] = (totals[t.symbol] || 0) + parseFloat(t.balance)
-            })
-        });
-        return totals;
-    },
+        Object.keys(state.balances).map(async accountUnique => {
+            const account = state.scatter.keychain.accounts.find(x => x.identifiable() === accountUnique);
+            if(!account) return;
 
-    totalBalance:state =>   {
-        const displayToken = state.scatter.settings.displayToken;
-        const symbol = displayToken ? displayToken.symbol : 'USD';
 
-        const totals = {};
-        let total = 0;
+            if(getters.mainnetTokensOnly){
+	            if(!PluginRepository.plugin(account.blockchain()).isEndorsedNetwork(account.network()))
+	                return;
+            }
 
-        if(!displayToken){
-            Object.keys(state.balances).map(acc => {
-                state.balances[acc].map(t => {
-                    const defaultToken = PluginRepository.plugin(t.blockchain).defaultToken();
-                    if(defaultToken.symbol !== t.symbol) return;
-                    totals[t.symbol] = (totals[t.symbol] || 0) + parseFloat(t.balance)
-                })
-            });
+            if(!tokens.hasOwnProperty(account.networkUnique)){
+                tokens[account.networkUnique] = {};
+            }
 
-            Object.keys(totals).map(key => {
-                if(state.prices.hasOwnProperty(key)){
-                    total += state.prices[key].price * totals[key];
+            if(!state.balances[accountUnique]) return;
+            state.balances[accountUnique].map(token => {
+                if(!tokens[account.networkUnique].hasOwnProperty(token.unique())) {
+	                tokens[account.networkUnique][token.unique()] = token.clone();
+	                tokens['totals'][token.unique()] = token.clone();
+                } else {
+	                tokens[account.networkUnique][token.unique()].add(token.amount);
+	                tokens['totals'][token.unique()].add(token.amount);
                 }
             });
-        }
+        });
 
-        else {
-            Object.keys(state.balances).map(acc => {
-                state.balances[acc].filter(t => t.symbol === displayToken.symbol).map(t => {
-                    total += parseFloat(t.balance)
-                })
-            });
-        }
-
-        return [parseFloat(total).toFixed(2).toString(), symbol];
-    }
+        return tokens;
+    },
 };
 
 export const store = new Vuex.Store({

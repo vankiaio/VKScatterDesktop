@@ -6,25 +6,23 @@ import IdGenerator from '../util/IdGenerator'
 import StorageService from '../services/StorageService';
 import AES from 'aes-oop';
 import Scatter from '../models/Scatter';
-import SocketService from '../services/SocketService'
 import PopupService from '../services/PopupService'
 import {Popup} from '../models/popups/Popup'
+import {localizedState} from "../localization/locales";
+import LANG_KEYS from "../localization/keys";
 
 export default class PasswordService {
 
     static isValidPassword(password, confirmPassword = null){
-        // TODO: Password error prompts
         if(!password || password.length < 8) {
-            PopupService.push(Popup.prompt("Invalid Password", "Passwords must be at least 8 characters long.", "ban", "Okay"));
+            PopupService.push(Popup.snackbar(localizedState(LANG_KEYS.SNACKBARS.AUTH.PasswordLength)));
             return false;
         }
 
         if(confirmPassword !== null && password !== confirmPassword) {
-          PopupService.push(Popup.prompt("Confirmation Mismatch", "The confirmation password does not match.", "ban", "Okay"));
+          PopupService.push(Popup.snackbar(localizedState(LANG_KEYS.SNACKBARS.AUTH.InvalidConfirmation)));
             return false;
         }
-
-        // TODO: Strengthen password restrictions
 
         return true;
     }
@@ -50,25 +48,34 @@ export default class PasswordService {
         })
     }
 
-    static async verifyPassword(password = null, setToState = true){
+    static async verifyPassword(password = null){
         return new Promise(async resolve => {
-            if(password) await this.seedPassword(password);
 
-            try {
-                let scatter = StorageService.getScatter();
-                scatter = AES.decrypt(scatter, store.state.seed);
-                if(setToState) store.commit(Actions.SET_SCATTER, scatter);
+            const testPassword = (setToState, seed, mnemonic = false) => {
+	            try {
+		            let scatter = StorageService.getScatter();
+		            scatter = AES.decrypt(scatter, seed);
+		            if(setToState) store.commit(Actions.SET_SCATTER, scatter);
 
-                if(!scatter.hasOwnProperty('keychain')) throw new Error();
+		            if(!scatter.hasOwnProperty('keychain')) return resolve(false);
 
-                scatter = Scatter.fromJson(scatter);
-                scatter.decrypt(store.state.seed);
-                if(setToState) store.dispatch(Actions.SET_SCATTER, scatter);
-                resolve(true);
-            } catch(e) {
-                resolve(false);
-                SocketService.close();
+		            scatter = Scatter.fromJson(scatter);
+		            scatter.decrypt(seed);
+		            if(setToState) store.dispatch(Actions.SET_SCATTER, scatter);
+		            resolve(mnemonic ? mnemonic : true);
+	            } catch(e) {
+		            console.log('e', e);
+		            resolve(false);
+	            }
             }
+
+            if(!password){
+	            testPassword(true, store.state.seed);
+            } else {
+                const [mnemonic, seed] = await PasswordService.seedPassword(password, false);
+	            testPassword(false, seed, mnemonic);
+            }
+
         })
     }
 
@@ -92,8 +99,6 @@ export default class PasswordService {
                 id.encrypt(newSeed);
             });
 
-            //TODO: Prompt mnemonic
-
             await store.commit(Actions.SET_SEED, newSeed);
             await store.dispatch(Actions.SET_SCATTER, scatter);
             resolve(newMnemonic);
@@ -109,15 +114,9 @@ export default class PasswordService {
                 resolve(await store.dispatch(Actions.SET_SCATTER, scatter));
             };
 
-            if(verify) PopupService.push(Popup.textPrompt(
-                'Confirm Password',
-                'Please confirm your password before changing your PIN.',
-                'lock',
-                'Okay', {placeholder:'Confirm your current Password', type:'password'}, async confirm => {
-                    const confirmed = await PasswordService.verifyPassword(confirm, false);
-                    if(!confirmed) return resolve(null);
-
-                    set();
+            if(verify) PopupService.push(Popup.verifyPassword(verified => {
+                if(!verified) return resolve(null);
+	            set();
             }));
 
             else set();
@@ -125,26 +124,11 @@ export default class PasswordService {
     }
 
     static async verifyPIN(){
+        if(!store.state.scatter.pin || !store.state.scatter.pin.length) return true;
         return new Promise(resolve => {
-            const scatter = store.state.scatter;
-
-            const check = async pin => {
-                if(pin === null) resolve(true);
-                else {
-                    if(scatter.pin !== Hasher.unsaltedQuickHash(pin)){
-                        PopupService.push(Popup.prompt("Bad PIN.", "The PIN you entered is invalid. If you can't remember your PIN go to Settings and change it using your Password.", "ban", "Okay"));
-                        resolve(false);
-                    } else resolve(true);
-                }
-            };
-
-            if(!scatter.pin || !scatter.pin.length) return check(null);
-            else PopupService.push(Popup.textPrompt(
-                'Enter PIN',
-                'In order to do this you must enter your PIN',
-                'lock',
-                'Okay', {placeholder:'Enter your PIN', type:'password'},
-                async pin => check(pin ? pin : '')));
+            PopupService.push(Popup.enterPIN(verified => {
+                resolve(verified);
+            }))
         })
     }
 

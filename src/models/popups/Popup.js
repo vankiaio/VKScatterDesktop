@@ -1,5 +1,10 @@
 import IdGenerator from '../../util/IdGenerator';
 import * as ApiActions from '../api/ApiActions';
+import {localizedState} from "../../localization/locales";
+import LANG_KEYS from "../../localization/keys";
+
+import {remote} from '../../util/ElectronHelpers';
+const NotificationService = () => remote ? remote.getGlobal('appShared').NotificationService : null;
 
 export const PopupDisplayTypes = {
     POP_IN:'popin',
@@ -10,109 +15,211 @@ export const PopupDisplayTypes = {
 
 export class Popup {
 
-    constructor(_displayType = PopupDisplayTypes.POP_IN, _data = new PopupData()){
+    constructor(_displayType = PopupDisplayTypes.POP_IN, _data = new PopupData(), internal = false){
         this.id = IdGenerator.numeric(24);
         this.displayType = _displayType;
         this.data = _data;
+        this.internal = internal;
     }
+
+	static fromJson(json){ return Object.assign(new Popup(), json); }
 
     dimensions(){
-        if(this.data.type === ApiActions.GET_OR_REQUEST_IDENTITY)   return {width:440, height:560};
-        if(this.data.type === ApiActions.REQUEST_TRANSFER)          return {width:440, height:560};
-        if(this.data.type === ApiActions.REQUEST_SIGNATURE)         return {width:1024, height:800};
-        if(this.data.type === ApiActions.REQUEST_ADD_NETWORK)       return {width:440, height:360};
-        if(this.data.type === ApiActions.LINK_ACCOUNT)              return {width:440, height:360};
-        if(this.data.type === ApiActions.GET_PUBLIC_KEY)            return {width:440, height:600};
-        if(this.data.type === 'linkApp')                            return {width:440, height:360};
-
-        return {width:800, height:600};
+    	switch (this.data.type) {
+		    case ApiActions.GET_OR_REQUEST_IDENTITY:
+		    case ApiActions.REQUEST_TRANSFER:
+		    case ApiActions.GET_PUBLIC_KEY:
+			    return {width:420, height:600};
+		    case ApiActions.REQUEST_SIGNATURE:
+			    return {width:920, height:600};
+		    case 'linkApp':
+			    return {width:420, height:500};
+		    default:
+			    return {width:800, height:600};
+	    }
     }
 
-    static prompt(title, description, icon, buttonText, callback, denyButtonText = null){
-        let params = { title, description, icon };
-        if(buttonText) params.buttonText = buttonText;
-        if(denyButtonText) params.denyButtonText = denyButtonText;
+
+
+	appData(){ return this.data.props.appData }
+	payload(){ return this.data.props.payload }
+	origin(){
+    	const app = this.appData();
+    	if(app) return app.name;
+		return this.data.props.plugin
+	}
+
+
+
+    // FULL POP OUT ( external window )
+	static popout(data, callback, internal = false){
+		return new Popup(PopupDisplayTypes.POP_OUT, new PopupData(data.type, data, callback), internal)
+	}
+
+
+
+
+
+
+
+    static prompt(title, description, callback, acceptDeny = false){
+        let params = { title, description, acceptDeny };
         return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.PROMPT, params, callback))
     }
 
-    static checkHardwareWalletScreen(){
-        return Popup.prompt('Check Hardware Wallet', 'Please check your hardware wallet screen.', 'eye');
-    }
+	static selector(title, items, callback){
+		let params = { title, items };
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.SELECTOR, params, callback))
+	}
 
     static transactionSuccess(blockchain, tx, callback){
         return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.TX_SUCCESS, {blockchain, tx}, callback))
-    }
-
-    static vault(){
-        return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.VAULT, {}, () => {}))
-    }
-
-    static linkOrCreateAccount(keypair, callback){
-        return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.LINK_OR_CREATE_ACCOUNT, {keypair}, callback))
-    }
-
-    static textPrompt(title, description, icon, buttonText, input, callback){
-        let params = { title, description, icon, buttonText, input };
-        return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.TEXT_PROMPT, params, callback))
-    }
-
-    static selector(title, description, icon, items, parser, callback, warning = false){
-        return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.SELECTOR, { title, description, icon, items, parser, warning }, callback))
     }
 
     static snackbar(message, icon, timeout = 3000){
         return new Popup(PopupDisplayTypes.SNACKBAR, new PopupData('', { message, icon, timeout }))
     }
 
-    static buySellRAM(account, callback){
-        return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.BUY_SELL_RAM, { account }, callback))
-    }
+	static enterPIN(callback){
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.ENTER_PIN, {}, callback))
+	}
 
-    static delegateResources(account, callback){
-        return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.DELEGATE_RESOURCES, { account }, callback))
-    }
+	static removeApp(origin, callback){
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.REMOVE_APP, {origin}, callback))
+	}
 
-    static ridlRegister(callback){
-        return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.RIDL_REGISTER, {}, callback))
-    }
+	static updateAvailable(update, callback){
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.UPDATE_AVAILABLE, {update}, callback))
+	}
 
-    static popout(data, callback){
-        return new Popup(PopupDisplayTypes.POP_OUT, new PopupData(data.type, data, callback))
-    }
 
-    static mnemonic(phrase){
-        const data = {
-            phrase,
-            icon:'key',
-            title:'Your Password Backup',
-            description:'This Mnemonic phrase is only a backup for your password, it will not regenerate your keys.',
-            buttonText:'Okay'
-        };
-        return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.MNEMONIC, data, () => {}))
-    };
 
-    static invalidIdentityName(){
-        return Popup.snackbar("The name you entered is invalid. Names but be between 3-20 characters and include only a-Z, 0-9 and - or _", "ban");
-    };
+    /*****************************************/
+    /*********      SNACKBARS      ***********/
+    /*****************************************/
+
+	static snackbarBadPassword(timeout = 3000){
+		const message = localizedState(LANG_KEYS.SNACKBARS.BadPassword);
+		return new Popup(PopupDisplayTypes.SNACKBAR, new PopupData('', { message, icon:'attention', timeout }))
+	}
+
+
+    /*****************************************/
+    /*********   FULLSCREEN POPINS ***********/
+    /*****************************************/
+
+	static verifyPassword(callback, returnOnly = false){
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.VERIFY_PASSWORD, {returnOnly}, callback))
+	}
+
+	static eosChangePermissions(account, callback){
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.EOS_CHANGE_PERMISSIONS, {account}, callback))
+	}
+
+	static eosProxyVotes(account, callback){
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.EOS_PROXY_VOTES, {account}, callback))
+	}
+
+	static eosModerateRam(account, callback){
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.EOS_MODERATE_RAM, {account}, callback))
+	}
+
+	static eosModerateCpuNet(account, callback){
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.EOS_MODERATE_CPU_NET, {account}, callback))
+	}
+
+	static eosCreateAccount(activePublicKey, ownerPublicKey, activeId, ownerId, showKeys = false, callback){
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.EOS_CREATE_ACCOUNT, {
+			activePublicKey,
+			ownerPublicKey,
+			activeId,
+			ownerId,
+			showKeys
+		}, callback))
+	}
+
+	static unlinkAccount(account, callback){
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.UNLINK_ACCOUNT, {account}, callback))
+	}
+
+	static unlinkBlockchain(keypair, blockchain, callback){
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.UNLINK_BLOCKCHAIN, {keypair, blockchain}, callback))
+	}
+
+	static removeKeypair(keypair, callback){
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.REMOVE_KEYPAIR, {keypair}, callback))
+	}
+
+	static mnemonic(mnemonic){
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.MNEMONIC, {mnemonic}, () => {}))
+	}
+
+	static removeLocation(identity, location, callback){
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.REMOVE_LOCATION, {identity, location}, callback))
+	}
+
+	static destroyScatter(callback){
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.DESTROY_SCATTER, {}, callback))
+	}
+
+	static checkHardwareWalletScreen(){
+		NotificationService().pushNotification('Check Hardware', 'Please check your hardware screen.');
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.CHECK_HARDWARE, {}, () => {}))
+	}
+
+	static enableWhitelist(){
+		return new Popup(PopupDisplayTypes.POP_IN, new PopupData(PopupTypes.ENABLE_WHITELIST, {}, () => {}))
+	}
 
 }
 
 export const PopupTypes = {
-    MNEMONIC:'mnemonic',
+    // OVERLAYS
     PROMPT:'prompt',
-    TEXT_PROMPT:'textPrompt',
-    SELECTOR:'selector',
-    VAULT:'vault',
-    LINK_OR_CREATE_ACCOUNT:'linkOrCreateAccount',
+	SELECTOR:'selector',
+    ENTER_PIN:'enterPIN',
+    REMOVE_APP:'removeApp',
+    UPDATE_AVAILABLE:'updateAvailable',
 
+    // FULLSCREEN
+    VERIFY_PASSWORD:'verifyPassword',
+    EOS_CHANGE_PERMISSIONS:'eosChangePermissions',
+	EOS_PROXY_VOTES:'eosProxyVotes',
+	EOS_MODERATE_RAM:'eosModerateRam',
+	EOS_MODERATE_CPU_NET:'eosModerateCpuNet',
+	EOS_CREATE_ACCOUNT:'eosCreateAccount',
+	UNLINK_ACCOUNT:'unlinkAccount',
+	UNLINK_BLOCKCHAIN:'unlinkBlockchain',
+	REMOVE_KEYPAIR:'removeKeypair',
+	MNEMONIC:'mnemonic',
+	REMOVE_LOCATION:'removeLocation',
+	DESTROY_SCATTER:'destroyScatter',
+	CHECK_HARDWARE:'checkHardware',
+	ENABLE_WHITELIST:'enableWhitelist',
 
-
-
-    BUY_SELL_RAM:'buySellRAM',
-    DELEGATE_RESOURCES:'delegateResources',
     TX_SUCCESS:'txSuccess',
-    RIDL_REGISTER:'ridlRegister',
 };
+
+export const isFullscreen = popup => {
+    return [
+        PopupTypes.VERIFY_PASSWORD,
+        PopupTypes.EOS_CHANGE_PERMISSIONS,
+        PopupTypes.EOS_PROXY_VOTES,
+        PopupTypes.UNLINK_ACCOUNT,
+        PopupTypes.UNLINK_BLOCKCHAIN,
+        PopupTypes.REMOVE_KEYPAIR,
+        PopupTypes.EOS_MODERATE_RAM,
+        PopupTypes.EOS_MODERATE_CPU_NET,
+        PopupTypes.EOS_CREATE_ACCOUNT,
+        PopupTypes.MNEMONIC,
+        PopupTypes.REMOVE_LOCATION,
+        PopupTypes.DESTROY_SCATTER,
+        PopupTypes.CHECK_HARDWARE,
+        PopupTypes.ENABLE_WHITELIST,
+    ].includes(popup.data.type);
+
+
+}
 
 export class PopupData {
 

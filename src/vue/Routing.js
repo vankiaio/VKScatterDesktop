@@ -1,26 +1,18 @@
-// import Onboarding from '../views/Onboarding.vue'
-// import Login from '../views/Login.vue'
-// import Settings from '../views/Settings.vue'
-// import PopOut from '../views/PopOut.vue'
-
-// import Home from '../views/Home.vue'
-// import Identity from '../views/Identity.vue'
-// import Transfer from '../views/Transfer.vue'
-// import Receive from '../views/Receive.vue'
-// import Permission from '../views/Permission.vue'
-// import Tokens from '../views/Tokens.vue'
-
+const Terms = () => import('../views/Terms')
 const Onboarding = () => import('../views/Onboarding')
 const Login = () => import('../views/Login')
 const Settings = () => import('../views/Settings')
 const PopOut = () => import('../views/PopOut')
 
-const Home = () => import('../views/Home')
 const Identity = () => import('../views/Identity')
 const Transfer = () => import('../views/Transfer')
 const Receive = () => import('../views/Receive')
 const Permission = () => import('../views/Permission')
-const Tokens = () => import('../views/Tokens')
+
+
+const Home = () => import('../views/Home')
+const NewKeypair = () => import('../views/NewKeypair')
+const Keypair = () => import('../views/Keypair')
 
 
 
@@ -28,11 +20,13 @@ const Tokens = () => import('../views/Tokens')
 export const RouteNames = {
     LOGIN:'login',
     HOME:'home',
+    NEW_KEYPAIR:'newKeypair',
+    KEYPAIR:'keypair',
     IDENTITY:'identity',
     TRANSFER:'transfer',
     RECEIVE:'receive',
-    TOKENS:'tokens',
     PERMISSION:'permission',
+    TERMS:'terms',
     ONBOARDING:'onboarding',
     SETTINGS:'settings',
 
@@ -42,16 +36,25 @@ export const RouteNames = {
 
 const RouteViews = {
     [RouteNames.LOGIN]:Login,
+    [RouteNames.TERMS]:Terms,
     [RouteNames.ONBOARDING]:Onboarding,
     [RouteNames.HOME]:Home,
+    [RouteNames.NEW_KEYPAIR]:NewKeypair,
+    [RouteNames.KEYPAIR]:Keypair,
     [RouteNames.IDENTITY]:Identity,
     [RouteNames.TRANSFER]:Transfer,
-    [RouteNames.TOKENS]:Tokens,
     [RouteNames.RECEIVE]:Receive,
     [RouteNames.PERMISSION]:Permission,
 
     [RouteNames.SETTINGS]:Settings,
     [RouteNames.POP_OUT]:PopOut,
+};
+
+const RoutePaths = {
+	[RouteNames.HOME]: '/',
+	[RouteNames.KEYPAIR]: '/keypair/:id',
+	[RouteNames.PERMISSION]: '/permission/:origin',
+	[RouteNames.SETTINGS]: '/settings/:panel',
 };
 
 export class Routing {
@@ -62,7 +65,7 @@ export class Routing {
         let routesBuilder = {};
         routeNames.map(routeName => {
             routesBuilder[routeName] = {
-                path:routeName === RouteNames.LOGIN ? '' : '/'+routeName,
+	            path:RoutePaths.hasOwnProperty(routeName) ? RoutePaths[routeName] : `/${routeName}`,
                 name:routeName,
                 component: RouteViews[routeName]
             }

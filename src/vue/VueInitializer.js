@@ -5,14 +5,18 @@ import VueTour from 'vue-tour'
 
 
 import VueRouter from 'vue-router'
-import {Routing} from './Routing';
+import {RouteNames, Routing} from './Routing';
 import {store} from '../store/store'
 import * as Actions from '../store/constants'
-import {localized} from '../localization/locales'
-import * as LANG_KEYS from '../localization/keys'
+import {blockchainName} from '../models/Blockchains'
+import {SETTINGS_OPTIONS} from '../models/Settings'
 import ElectronHelpers from '../util/ElectronHelpers'
+import {localized} from '../localization/locales'
+import LANG_KEYS from '../localization/keys'
 
 Vue.config.productionTip = false
+
+export let router;
 
 /***
  * Sets up an instance of Vue.
@@ -26,7 +30,7 @@ export default class VueInitializer {
                 routerCallback = () => {}){
         this.setupVuePlugins();
         this.registerComponents(components);
-        const router = this.setupRouting(routes, middleware);
+        router = this.setupRouting(routes, middleware);
 
         store.dispatch(Actions.LOAD_SCATTER).then(async () => {
 
@@ -34,9 +38,30 @@ export default class VueInitializer {
 
             Vue.mixin({
                 data(){ return {
+	                RouteNames,
+	                SETTINGS_OPTIONS,
                     langKeys:LANG_KEYS,
+                    // now:0,
                 }},
+                mounted(){
+                    // setInterval(() => {
+                    //     this.now = +new Date();
+                    // }, 1000);
+                },
                 methods: {
+	                stopTour(){
+	                	if(!store.state.scatter.toured) this.$tours['scatter'].stop()
+	                },
+	                blockchainName,
+	                locale:(key, args) => localized(key, args, store.getters.language),
+	                newKeypair(){ this.stopTour(); this.$router.push({name:RouteNames.NEW_KEYPAIR}); },
+	                goToApps(){ this.openInBrowser('https://get-scatter.com/Apps') },
+	                openInBrowser(url){ ElectronHelpers.openLinkInBrowser(url); },
+	                setWorkingScreen(bool){ store.dispatch(Actions.SET_WORKING_SCREEN, bool); },
+	                copyText(text){ ElectronHelpers.copy(text) },
+
+
+
                     formatNumber(num, commaOnly = false){
                         const toComma = x => {
                             const [whole, decimal] = x.toString().split('.');
@@ -47,19 +72,17 @@ export default class VueInitializer {
                             num > 999999 ? toComma((num/1000000).toFixed(1)) + ' M' :
                                 num > 999 ? toComma((num/1000).toFixed(1)) + ' K' : num
                     },
-                    bind(changed, dotNotation) {
-                        let props = dotNotation.split(".");
-                        const lastKey = props.pop();
-                        props.reduce((obj,key)=> obj[key], this)[lastKey] = changed;
-                    },
-                    openInBrowser(url){
-                        ElectronHelpers.openLinkInBrowser(url);
-                    },
-                    locale:(key) => localized(key, store.getters.language),
-                    scrollTo(step){
-                        const ref = typeof step === 'object' ? step.ref : step;
-                        if(typeof step === 'object') this.onStep = step;
-                        this.$refs.scroller.scrollTop = this.$refs[step.ref].offsetTop-120;
+	                formatTime(milliseconds){
+	                    const formatTimeNumber = n => {
+		                    if(!n) return '00';
+		                    if(n.toString().length === 1) n = '0'+n;
+		                    if(n.toString().length === 0) n = '00';
+		                    return n;
+                        };
+
+	                    const seconds = Math.trunc(milliseconds) % 60;
+		                const minutes = Math.trunc(milliseconds / 60) % 60;
+                        return `${formatTimeNumber(minutes)}:${formatTimeNumber(seconds)}`;
                     },
                 }
             })

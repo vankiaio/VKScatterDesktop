@@ -4,8 +4,6 @@ import * as PluginTypes from '../PluginTypes';
 import {Blockchains} from '../../models/Blockchains'
 import Network from '../../models/Network'
 
-import IdGenerator from '../../util/IdGenerator';
-import Hasher from '../../util/Hasher';
 import KeyPairService from '../../services/KeyPairService';
 import {store} from '../../store/store';
 
@@ -16,9 +14,10 @@ import TronWeb from 'tronweb';
 import * as utils from 'tronweb/src/utils/crypto';
 const ethUtil = require('ethereumjs-util');
 const toBuffer = key => ethUtil.toBuffer(ethUtil.addHexPrefix(key));
-import Web3 from 'web3';
-// import Ethers from 'ethers';
-import ethabi from 'ethereumjs-abi';
+import Token from "../../models/Token";
+import HardwareService from "../../services/HardwareService";
+import {localizedState} from "../../localization/locales";
+import LANG_KEYS from "../../localization/keys";
 
 let cachedInstances = {};
 const getCachedInstance = network => {
@@ -31,31 +30,29 @@ const getCachedInstance = network => {
     }
 }
 
-const EXPLORERS = [
-    {
-        name:'Tronscan',
-        account:account => `https://tronscan.org/#/address/${account.formatted()}`,
-        transaction:id => `https://tronscan.org/#/transaction/${id}`,
-        block:id => `https://tronscan.org/#/block/${id}`
-    },
-];
+const EXPLORER = {
+	"name":"Tronscan",
+	"account":"https://tronscan.org/#/address/{x}",
+	"transaction":"https://tronscan.org/#/transaction/{x}",
+	"block":"https://tronscan.org/#/block/{x}"
+};
 
 export default class TRX extends Plugin {
 
     constructor(){ super(Blockchains.TRX, PluginTypes.BLOCKCHAIN_SUPPORT) }
-    explorers(){ return EXPLORERS; }
+    defaultExplorer(){ return EXPLORER; }
     accountFormatter(account){ return `${account.publicKey}` }
     returnableAccount(account){ return { address:account.publicKey, blockchain:Blockchains.TRX }}
-    forkSupport(){ return false; }
 
-    async getEndorsedNetwork(){
-        return new Promise((resolve, reject) => {
-            resolve(new Network('Tron Mainnet', 'https', 'api.trongrid.io', 443, Blockchains.TRX, '1'));
-        });
+	contractPlaceholder(){ return '0x.....'; }
+	recipientLabel(){ return localizedState(LANG_KEYS.GENERIC.Address); }
+
+    getEndorsedNetwork(){
+        return new Network('Tron Mainnet', 'https', 'api.trongrid.io', 443, Blockchains.TRX, '1');
     }
 
-    async isEndorsedNetwork(network){
-        const endorsedNetwork = await this.getEndorsedNetwork();
+    isEndorsedNetwork(network){
+        const endorsedNetwork = this.getEndorsedNetwork();
         return network.blockchain === Blockchains.TRX && network.chainId === endorsedNetwork.chainId;
     }
 
@@ -64,6 +61,7 @@ export default class TRX extends Plugin {
     }
 
     usesResources(){ return false; }
+	hasAccountActions(){ return false; }
 
     accountsAreImported(){ return false; }
     isValidRecipient(address){ return utils.isAddressValid(address); }
@@ -75,50 +73,87 @@ export default class TRX extends Plugin {
     validPublicKey(publicKey){ return utils.isAddressValid(address); }
     bufferToHexPrivate(buffer){ return new Buffer(buffer).toString('hex') }
     hexPrivateToBuffer(privateKey){ return Buffer.from(privateKey, 'hex'); }
-    conformPrivateKey(privateKey){
-        privateKey = privateKey.trim();
-        return privateKey;
+
+
+	hasUntouchableTokens(){ return false; }
+
+    async balanceFor(account, token){
+	    const tron = getCachedInstance(account.network());
+	    const clone = token.clone();
+        if(token.unique() === this.defaultToken().unique()){
+	        const bal = await tron.trx.getBalance(account.publicKey);
+	        clone.amount = tron.toBigNumber(bal).div(1000000).toFixed(6).toString(10);
+        }
+
+        return clone;
     }
 
-    async balanceFor(account){
-        const tron = getCachedInstance(account.network());
-        const balance = await tron.trx.getBalance(account.publicKey);
-        return tron.toBigNumber(balance).div(1000000).toFixed(6).toString(10);
+	async balancesFor(account, tokens){
+		const tron = getCachedInstance(account.network());
+		const formatBalance = n => tron.toBigNumber(n).div(1000000).toFixed(6).toString(10);
+
+		const trxBalance = await tron.trx.getBalance(account.publicKey);
+		const trx = this.defaultToken();
+		trx.amount = formatBalance(trxBalance);
+
+		const {asset} = await tron.trx.getAccount(account.sendable()).catch(() => ({asset:[]}));
+		if(!asset) return [trx];
+		const altTokens = asset.map(({key:symbol, value}) => {
+			return Token.fromJson({
+				blockchain:Blockchains.TRX,
+				contract:'',
+				symbol,
+				name:symbol,
+				decimals:this.defaultDecimals(),
+				amount:formatBalance(value),
+				chainId:account.network().chainId,
+			})
+		});
+
+		return [trx].concat(altTokens);
     }
 
     defaultDecimals(){ return 6; }
-    defaultToken(){ return {account:'trx', symbol:'TRX', name:'TRX', blockchain:Blockchains.TRX}; }
+    defaultToken(){ return new Token(Blockchains.TRX, 'trx', 'TRX', 'TRX', this.defaultDecimals()) }
     actionParticipants(payload){ return payload.transaction.participants }
 
-    async fetchTokens(tokens){
-        const ethTokens = [this.defaultToken()];
-        ethTokens.map(token => {
-            token.blockchain = Blockchains.TRX;
-            if(!tokens.find(x => `${x.symbol}:${x.account}` === `${token.symbol}:${token.account}`)) tokens.push(token);
-        });
-    }
 
-    async tokenInfo(token) {
-        return null;
-    }
+    async transfer({account, to, amount, token, promptForSignature = true}){
+	    const {symbol} = token;
+	    return new Promise(async (resolve, reject) => {
+		    const tron = getCachedInstance(account.network());
 
+		    tron.trx.sign = async signargs => {
+			    const transaction = { transaction:signargs, participants:[account.publicKey], };
+			    const payload = { transaction, blockchain:Blockchains.TRX, network:account.network(), requiredFields:{} };
+			    return promptForSignature
+				    ? await this.passThroughProvider(payload, account, reject)
+				    : await this.signer(payload, account.publicKey);
+		    };
 
-    async transfer({account, to, amount, promptForSignature = true}){
-        return new Promise(async (resolve, reject) => {
-            const tron = getCachedInstance(account.network());
-            tron.trx.sign = async signargs => {
-                const transaction = { transaction:signargs, participants:[account.publicKey], };
-                const payload = { transaction, blockchain:Blockchains.TRX, network:account.network(), requiredFields:{} };
-                return promptForSignature
-                    ? await this.passThroughProvider(payload, account, reject)
-                    : await this.signer(payload, account.publicKey);
-            };
+		    let unsignedTransaction;
 
-            const send = await tron.transactionBuilder.sendTrx(to, amount, account.publicKey);
-            resolve(await tron.trx.sign(send).then(x => x).catch(error => {
-                return {error}
-            }));
-        })
+		    // SENDING TRX
+		    if(token.unique() === this.defaultToken().unique()) {
+			    unsignedTransaction = await tron.transactionBuilder.sendTrx(to, amount, account.publicKey);
+		    }
+
+		    // SENDING ALT TOKEN
+		    else {
+			    tron.setAddress(account.sendable());
+			    unsignedTransaction = await tron.transactionBuilder.sendToken(to, amount, symbol);
+		    }
+
+		    const signed = await tron.trx.sign(unsignedTransaction)
+			    .then(x => ({success: true, result: x}))
+			    .catch(error => ({success: false, result: error}));
+
+		    if (!signed.success) return resolve({error: signed.result});
+		    else {
+			    const sent = await tron.trx.sendRawTransaction(signed.result).then(x => x.result);
+			    resolve(sent ? signed.result : {error: 'Failed to send.'});
+		    }
+	    })
     }
 
     async signer(payload, publicKey, arbitrary = false, isHash = false){
@@ -136,7 +171,7 @@ export default class TRX extends Plugin {
             payload.identityKey = store.state.scatter.keychain.identities[0].publicKey;
             payload.participants = [account];
             payload.network = account.network();
-            payload.origin = 'Internal Scatter Transfer';
+            payload.origin = 'Scatter';
             const request = {
                 payload,
                 origin:payload.origin,
@@ -151,15 +186,13 @@ export default class TRX extends Plugin {
 
                 let signature = null;
                 if(KeyPairService.isHardware(account.publicKey)){
-                    const keypair = KeyPairService.getKeyPairFromPublicKey(account.publicKey);
-                    keypair.external.interface.setAddressIndex(keypair.external.addressIndex);
-                    signature = await keypair.external.interface.sign(account.publicKey, payload, payload.abi, account.network());
+                	signature = await HardwareService.sign(account, payload);
                 } else signature = await this.signer(payload, account.publicKey);
 
                 if(!signature) return rejector({error:'Could not get signature'});
 
                 resolve(signature);
-            }));
+            }, true));
         })
     }
 

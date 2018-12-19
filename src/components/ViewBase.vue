@@ -1,37 +1,37 @@
 <template>
     <section class="view-base">
-        <section class="router-base">
 
+        <Popups />
 
-            <section v-if="onboarding">
-                <terms></terms>
-            </section>
-
-            <section v-else-if="isPopout">
-                <router-view></router-view>
-            </section>
-
-            <section v-else>
-                <section class="main" v-if="unlocked">
-
-                    <overhead></overhead>
-
-                    <transition name="slide-left" mode="out-in">
-                        <router-view class="shifter" :class="{'home':route === 'home'}"></router-view>
-                    </transition>
-
-                </section>
-
-                <section v-else>
-                    <auth></auth>
-                </section>
-            </section>
-
-
-            <popups></popups>
-
-            <v-tour name="scatter" :steps="steps" :callbacks="{onStop}"></v-tour>
+        <section v-if="isPopout">
+            <router-view></router-view>
         </section>
+
+        <section v-else>
+            <menu-bar></menu-bar>
+
+            <transition name="slide-up">
+                <user-bar v-if="route === routeNames.HOME"></user-bar>
+            </transition>
+
+            <section class="app-content">
+
+                <transition :name="route === 'login' ? 'fade' : ''" mode="out-in">
+                    <router-view></router-view>
+                </transition>
+
+                <Processes />
+            </section>
+        </section>
+
+        <transition name="fade" mode="out-in">
+            <section class="working-screen" v-if="workingScreen">
+                <figure class="spinner icon-spin4 animate-spin"></figure>
+            </section>
+        </transition>
+
+
+        <v-tour name="scatter" :steps="steps" :callbacks="{onStop}"></v-tour>
 
     </section>
 </template>
@@ -40,36 +40,37 @@
     import { mapActions, mapGetters, mapState } from 'vuex'
     import * as Actions from '../store/constants';
     import {RouteNames, Routing} from '../vue/Routing'
-    import WindowService from '../services/WindowService'
-    import PopupService from '../services/PopupService'
-    import {Popup} from '../models/popups/Popup'
+
+    import Processes from './Processes';
+    import Popups from './Popups';
 
     export default {
+    	components:{
+		    Popups,
+		    Processes
+        },
         data(){ return {
             routeNames:RouteNames,
-            loggingIn:false,
-            collapsedMenu:false,
 
             steps: [
                 {
                     target: '#tour1',
-                    content: `This is your <b>Vault</b> where all of your Keys are kept. <br><b>Open it.</b>`,
+                    content: `
+                        <div>You have to have a key</div>
+                        <span>So we will start by adding your first one.</span>
+                        <figure class="icon-cancel" onclick="() => this.stopTour()"></figure>
+                    `,
                     params: {
-                        placement: 'bottom'
-                    }
-                },
-                {
-                    target: '#tour2',
-                    content: `Now click here to add a <b>Vault Entry</b>`,
-                    params: {
-                        placement: 'left'
+                        placement: 'top'
                     }
                 },
             ],
         }},
         computed:{
             ...mapState([
-                'scatter'
+                'scatter',
+                'workingScreen',
+                'processes'
             ]),
             ...mapGetters([
                 'unlocked',
@@ -85,21 +86,24 @@
             }
         },
         created(){
-
+	        this.checkTour()
         },
         mounted(){
 
         },
         methods:{
             onStop(){
+            	if(!this.scatter) return;
                 const scatter = this.scatter.clone();
                 scatter.toured = true;
                 this[Actions.SET_SCATTER](scatter);
             },
             checkTour(){
                 if(!this.scatter) return;
-                if(!this.scatter.toured && !this.onboarding && this.unlocked && this.route === 'home'){
-                    this.$tours['scatter'].start();
+                if(!this.scatter.toured && this.unlocked && this.route === 'home'){
+                    setTimeout(() => {
+	                    this.$tours['scatter'].start();
+                    }, 1000);
                 }
             },
             ...mapActions([
@@ -121,77 +125,46 @@
     }
 </script>
 
-<style scoped lang="scss" rel="stylesheet/scss">
+<style lang="scss" rel="stylesheet/scss">
     @import '../_variables.scss';
 
-    .main {
-        background:#f8f8f8;
-        height:100vh;
-        position: relative;
+    .working-screen {
+        background:rgba(255,255,255,0.93);
+        position:fixed;
+        top:80px;
+        left:0;
+        right:0;
+        bottom:0;
+        z-index:1000000;
         display:flex;
-        flex-direction: column;
-    }
+        justify-content: center;
+        align-items: center;
+        text-align: center;
 
-    .shifter {
-        position: relative;
-        flex: 1;
-        display: flex;
-
-
-        &.home {
-            flex-direction: column;
+        .spinner {
+            font-size: 36px;
+            color:$light-blue;
         }
     }
 
-
+    .app-content {
+        position:fixed;
+        overflow-y: auto;
+        overflow-x:hidden;
+        left: 0;
+        right: 0;
+        top: 80px;
+        bottom:0;
+        z-index: 1;
+        background: white;
+    }
 
     .view-base {
-
-    }
-
-    .sidebar {
-        position:absolute;
-        top:0;
-        bottom:0;
-        left:0;
-        transition: left 0.6s ease;
-        transition-delay: 0.1s;
-        z-index:2;
-
-        &.hidden {
-            left:-450px;
-            transition-delay: 0s;
-        }
-    }
-
-    main {
-        width:calc(100% - 270px);
-        right:0;
-        position: absolute;
-        top:0;
-        bottom:0;
-        z-index:1;
-
-
-        &.expanded {
-            width:calc(100% - 450px);
-        }
-
-        &.no-sidebar {
-            width:100%;
-        }
-
-        &.collapsed-menu {
-            width:calc(100% - 70px);
-        }
-    }
-
-    .router-base {
+        min-height:100vh;
         position: relative;
         display: flex;
         flex-direction: column;
         flex: 1;
-        height: 100vh;
     }
 
 

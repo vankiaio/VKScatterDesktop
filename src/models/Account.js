@@ -1,6 +1,6 @@
-import Keypair from './Keypair';
 import PluginRepository from '../plugins/PluginRepository';
 import {store} from '../store/store'
+import {Blockchains} from "./Blockchains";
 
 export default class Account {
     constructor(){
@@ -9,6 +9,11 @@ export default class Account {
         this.publicKey = '';
         this.name = '';
         this.authority = '';
+
+        this.logins = 0;
+
+        this.createdAt = +new Date();
+        this.fromOrigin = null;
     }
 
     sendable(){
@@ -17,10 +22,6 @@ export default class Account {
 
     formatted(){
         return PluginRepository.plugin(this.blockchain()).accountFormatter(this);
-    }
-
-    formattedWithNetwork(){
-        return `${this.network().name} - ${this.formatted()}`;
     }
 
     network(){
@@ -32,16 +33,31 @@ export default class Account {
     }
 
     blockchain(){
-        if(!this.keypair()) return;
+    	if(!this.keypair()) return Blockchains.VKTIO;
         return this.keypair().publicKeys.find(x => x.key === this.publicKey).blockchain;
+    }
+
+    authorities(){
+	    if(!this.authority.length) return [];
+	    return store.getters.accounts
+            .filter(x => x.identifiable() === this.identifiable() && x.keypairUnique === this.keypairUnique)
+            .sort((a,b) => a.authority.localeCompare(b.authority));
     }
 
     static placeholder(){ return new Account(); }
     static fromJson(json){ return Object.assign(this.placeholder(), json); }
     unique(){ return this.keypairUnique + this.networkUnique + this.name + this.authority + this.publicKey; }
+    identifiable(){ return this.networkUnique + this.sendable(); }
     clone(){ return Account.fromJson(JSON.parse(JSON.stringify(this))) }
 
     asReturnable(){
         return PluginRepository.plugin(this.blockchain()).returnableAccount(this);
+    }
+
+    tokenCount(systemToken = null){
+	    if(!store.state.balances) return 0;
+	    if(!store.state.balances.hasOwnProperty(this.identifiable())) return 0;
+	    if(!store.state.balances[this.identifiable()]) return 0;
+	    return store.state.balances[this.identifiable()].filter(x => !systemToken ? true : x.identifiable() !== systemToken.identifiable()).length;
     }
 }
