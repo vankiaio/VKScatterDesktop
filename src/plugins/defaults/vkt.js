@@ -25,7 +25,7 @@ import RecurringService from "../../services/RecurringService";
 import HardwareService from "../../services/HardwareService";
 
 
-const blockchainApiURL = 'https://api.light.xeos.me/api';
+const blockchainApiURL = 'http://221.122.119.226:3030/vktapi/v1';
 const mainnetChainId = 'e17abdaf44e2811b452ea15a0aeb7eff6eab9c5de4452e6fb7b552c5de9ddae7';
 
 class VKTTokenAccountAPI {
@@ -59,7 +59,7 @@ class VKTTokenAccountAPI {
 	static async getAllTokens(account){
 		return await Promise.race([
 			new Promise(resolve => setTimeout(() => resolve(null), 5000)),
-			fetch(`${blockchainApiURL}/account/eos/${account.sendable()}`).then(r => r.json()).then(res => {
+			fetch(`${blockchainApiURL}/account/vkt/${account.sendable()}`).then(r => r.json()).then(res => {
 				return res.balances.map(balance => {
 					return Token.fromJson({
 						blockchain:Blockchains.VKTIO,
@@ -504,7 +504,7 @@ export default class VKT extends Plugin {
 
 	async balancesFor(account, tokens, fallback = false){
 		if(!fallback && this.isEndorsedNetwork(account.network())){
-			const balances = await EosTokenAccountAPI.getAllTokens(account);
+			const balances = await VKTTokenAccountAPI.getAllTokens(account);
 			if(!balances) return this.balanceFor(account, tokens, true);
 			const blacklist = store.getters.blacklistTokens.filter(x => x.blockchain === Blockchains.VKTIO).map(x => x.unique());
 			return balances.filter(x => !blacklist.includes(x.unique()));
