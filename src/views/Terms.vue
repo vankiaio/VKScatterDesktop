@@ -3,7 +3,7 @@
 
         <section class="panel-container">
             <section class="head">
-                <figure class="logo">S</figure>
+                <figure class="logo">VK</figure>
                 <figure class="info">
                     <figure>Welcome to Vankia Scatter</figure>
                     <figure>Please read the following before continuing.</figure>

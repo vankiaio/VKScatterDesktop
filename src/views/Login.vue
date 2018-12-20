@@ -39,7 +39,7 @@
             <!-- LOGIN -->
             <section key="existing" class="existing-scatter" v-if="!isNewScatter">
                 <section>
-                    <figure class="badge">S</figure>
+                    <figure class="badge">VK</figure>
                     <h1>{{locale(langKeys.LOGIN.EXISTING.Title)}}</h1>
                     <cin style="width:350px;" :focus="true" big="1"
                          :placeholder="locale(langKeys.LOGIN.EXISTING.PasswordPlaceholder)"
