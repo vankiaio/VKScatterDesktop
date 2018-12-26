@@ -100,7 +100,6 @@ const createScatterInstance = () => {
 
 	mainWindow = createMainWindow(false, '#62D0FD');
 	mainWindow.loadURL(mainUrl(false));
-	//mainWindow.webContents.openDevTools();
 
 	// if main window is ready to show, then destroy the splash window and show up the main window
 	mainWindow.once('ready-to-show', () => {
