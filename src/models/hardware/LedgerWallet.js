@@ -167,7 +167,7 @@ class LedgerAPI {
                                 1 + publicKeyLength + 1,
                                 1 + publicKeyLength + 1 + addressLength
                             )
-                            .toString("ascii"));
+                            .toString("ascii").replace(/^EOS/g, 'VKT'));
                     }).catch(err => {
                         PopupService.remove(popup);
                         reject(err);
