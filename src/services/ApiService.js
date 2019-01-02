@@ -184,8 +184,8 @@ export default class ApiService {
 
 			// Convert buf and abi to messages
 			switch(blockchain){
-        case Blockchains.VKTIO: payload.messages = await plugin.requestParser(payload, network); break;
 				case Blockchains.VKTIO: payload.messages = await plugin.requestParser(payload, network); break;
+				case Blockchains.EOSIO: payload.messages = await plugin.requestParser(payload, network); break;
 				case Blockchains.ETH:
 				case Blockchains.TRX:
 					payload.messages = await plugin.requestParser(payload, payload.hasOwnProperty('abi') ? payload.abi : null); break;
