@@ -3,7 +3,7 @@
 
         <section class="action-box top-pad">
             <label>{{locale(langKeys.SETTINGS.GENERAL.VersionLabel)}}</label>
-            <b>Vankia Scatter Desktop v{{version}}</b>
+            <b>Vankia Wallet Desktop v{{version}}</b>
 
             <btn :class="{'wiggle':needsUpdate}"
                  :disabled="!needsUpdate"
