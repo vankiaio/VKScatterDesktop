@@ -1,6 +1,6 @@
 {
   "name": "vankiawallet",
-  "version": "10.0.3",
+  "version": "10.0.5",
   "description": "Vankia Wallet Desktop Companion",
   "private": true,
   "main": "electron.js",
