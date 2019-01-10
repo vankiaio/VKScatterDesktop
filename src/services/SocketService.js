@@ -130,7 +130,7 @@ export default class SocketService {
             io.attach(httpsServer,options);
         } else {
             PopupService.push(Popup.prompt("Couldn't fetch certificates",
-                'There was an issue trying to fetch the certificates which allow Scatter to run on SSL. This is usually caused by proxies, firewalls, and anti-viruses.'))
+                'There was an issue trying to fetch the certificates which allow Vankia Wallet to run on SSL. This is usually caused by proxies, firewalls, and anti-viruses.'))
         }
 
 	    const namespace = io.of(`/scatter`);

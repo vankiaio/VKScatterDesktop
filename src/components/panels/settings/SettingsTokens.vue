@@ -263,7 +263,8 @@
 				}));
 			},
 			terms(){
-				return this.searchTerms.trim().toLowerCase();
+                // return this.searchTerms.trim().toLowerCase();
+                return Blockchains.VKTIO;
 			},
 			networkTokensList(){
 				const tokens = this.filterTokensByTerms(this.networkTokens).reduce((acc, t) => {

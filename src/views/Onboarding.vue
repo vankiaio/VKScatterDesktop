@@ -7,10 +7,10 @@
                 <figure class="title">Automatic Backups</figure>
                 <br>
                 <section class="disclaimer red less-pad" style="margin-bottom:10px;">
-                    Scatter has no way to re-create your private keys!
+                    Vankia Wallet has no way to re-create your private keys!
                 </section>
                 <p>
-                    Because of this we enforce automatic backups of your Scatter to your local device to make sure you always have a backup of your digital assets.
+                    Because of this we enforce automatic backups of your Vankia Wallet to your local device to make sure you always have a backup of your digital assets.
                     The back files are always encrypted and require your password to unlock.
                 </p>
             </section>

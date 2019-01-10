@@ -39,7 +39,8 @@
             <!-- LOGIN -->
             <section key="existing" class="existing-scatter" v-if="!isNewScatter">
                 <section>
-                    <figure class="badge">VK</figure>
+                    <!-- <figure class="badge"></figure> -->
+					<img class="imglogo" src="../../static/icon.png">
                     <h1>{{locale(langKeys.LOGIN.EXISTING.Title)}}</h1>
                     <cin style="width:350px;" :focus="true" big="1"
                          :placeholder="locale(langKeys.LOGIN.EXISTING.PasswordPlaceholder)"
@@ -445,17 +446,26 @@
 
         .badge {
             font-family: 'Grand Hotel', sans-serif;
-            height:120px;
+            height:150px;
             line-height: 135px;
             padding-right:3px;
-            width:120px;
+            width:150px;
             box-shadow:0 0 30px rgba(0,0,0,0.08), 0 0 20px rgba(0,0,0,0.04);
             border-radius:50%;
             color:$light-blue;
             font-size: 88px;
             display:inline-block;
             margin-bottom:50px;
-        }
+		}
+		
+		.imglogo {
+			display:inline-block;
+			height:135px;
+			width:135px;
+			padding-top: 0px;
+			padding-bottom: 30px;
+			vertical-align: top;
+		}
 
         .bottom-stuck {
             position:absolute;

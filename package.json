@@ -1,7 +1,7 @@
 {
-  "name": "vkscatter",
+  "name": "vankiawallet",
   "version": "10.0.3",
-  "description": "Vankia Scatter Desktop Companion",
+  "description": "Vankia Wallet Desktop Companion",
   "private": true,
   "main": "electron.js",
   "license": "MIT",
@@ -14,7 +14,7 @@
   },
   "keywords": [
     "scatter",
-    "vkscatter",
+    "vankiawallet",
     "blockchain",
     "signatures",
     "eos",
@@ -159,8 +159,8 @@
     "not ie <= 8"
   ],
   "build": {
-    "productName": "vkscatter",
-    "appId": "com.get-vkscatter.server",
+    "productName": "vankiawallet",
+    "appId": "com.get-vankiawallet.server",
     "artifactName": "${os}-${productName}-${version}-${arch}.${ext}",
     "asar": true,
     "asarUnpack": [
@@ -187,7 +187,7 @@
       "oneClick": false,
       "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
-      "shortcutName": "VKScatter"
+      "shortcutName": "Vankia Wallet"
     },
     "directories": {
       "buildResources": "build",
@@ -223,10 +223,10 @@
     "linux": {
       "category": "Network",
       "desktop": {
-        "Name": "VKScatter",
-        "GenericName": "VKScatter Desktop",
-        "X-GNOME-FullName": "vkscatter",
-        "Comment": "VKScatter desktop signature server.",
+        "Name": "Vankia Wallet",
+        "GenericName": "Vankia Wallet Desktop",
+        "X-GNOME-FullName": "vankiawallet",
+        "Comment": "Vankia Wallet desktop signature server.",
         "Type": "Application",
         "Terminal": "false",
         "StartupNotify": "false",

@@ -19,7 +19,7 @@ export default class Error {
     }
 
     static locked(){
-        return new Error(ErrorTypes.LOCKED, "The user's VKScatter is locked. They have been notified and should unlock before continuing.")
+        return new Error(ErrorTypes.LOCKED, "The user's Vankia Wallet is locked. They have been notified and should unlock before continuing.")
     }
 
     static signatureError(_type, _message){
@@ -47,11 +47,11 @@ export default class Error {
     }
 
     static signatureAccountMissing(){
-        return this.signatureError("account_missing", "You are trying to sign a request with an account that isn't currently linked or doesn't exist in the user's VKScatter");
+        return this.signatureError("account_missing", "You are trying to sign a request with an account that isn't currently linked or doesn't exist in the user's Vankia Wallet");
     }
 
     static noNetwork(){
-        return this.signatureError("no_network", "This user does not have this network in their VKScatter.");
+        return this.signatureError("no_network", "This user does not have this network in their Vankia Wallet.");
     }
 
 }

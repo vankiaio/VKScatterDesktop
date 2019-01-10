@@ -1,4 +1,4 @@
-# Scatter Test Suite
+# Vankia Wallet Test Suite
 
 ## Unit Tests
 

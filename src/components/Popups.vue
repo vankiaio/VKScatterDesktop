@@ -165,7 +165,7 @@
         height:calc(100vh - 80px);
         width:100%;
         position:fixed;
-        top:80px;
+        top:40px;
         bottom:0;
         left:0;
         right:0;

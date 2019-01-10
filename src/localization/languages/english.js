@@ -105,7 +105,7 @@ const Locale = {
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[LOGIN.RESTORE.Title]:() => `Restore from backup`,
 	[LOGIN.RESTORE.SubTitle]:() =>
-		`If you have a backup for your Vankia Scatter you can import it here by loading it into Vankia Scatter. 
+		`If you have a backup for your Vankia Wallet you can import it here by loading it into Vankia Wallet. 
         You will still need the password to unlock it.`,
 	[LOGIN.RESTORE.ChooseButton]:() => `Choose your Backup`,
 	[LOGIN.RESTORE.BackButton]:() => `Go back and start from scratch`,
@@ -135,7 +135,7 @@ const Locale = {
 	[DASHBOARD.APPS.NPermissions]:n => `${n} Permission${plural_s(n)}`,
 	[DASHBOARD.APPS.NoPermissions]:() => `No Permissions`,
 	[DASHBOARD.APPS.UnlinkedAppsTitle]:() => `Below are apps that you aren't linked with.`,
-	[DASHBOARD.APPS.UnlinkedAppsSubtitle]:() => `Note that these apps are not added by the Vankia Scatter team, 
+	[DASHBOARD.APPS.UnlinkedAppsSubtitle]:() => `Note that these apps are not added by the Vankia Wallet team, 
 		but by the apps themselves. The display of any app is not an endorsement of any kind, 
 		just a discovery mechanism.`,
 	[DASHBOARD.APPS.NoMeta]:() => `No Meta`,
@@ -155,7 +155,7 @@ const Locale = {
 		The keys will not have any funds on them, they are brand new.`,
 	[ADD_KEYS.SELECT.CreateButton]:() => `Create Key`,
 	[ADD_KEYS.SELECT.ImportTitle]:() => `Import an existing key`,
-	[ADD_KEYS.SELECT.ImportDescription]:() => `If you already have a key and want to import it into Vankia Scatter`,
+	[ADD_KEYS.SELECT.ImportDescription]:() => `If you already have a key and want to import it into Vankia Wallet`,
 	[ADD_KEYS.SELECT.ImportButton]:() => `Import Key`,
 	[ADD_KEYS.SELECT.CreateEosTitle]: () => `Create a new VKT account`,
 	[ADD_KEYS.SELECT.CreateEosDescription]:() => `We'll quickly generate two keys for you`,
@@ -186,9 +186,9 @@ const Locale = {
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[ADD_KEYS.EOS_KEYS.OwnerDescription]:() =>
 		`This is your master key which has total control over your account. 
-		Do not keep it in Scatter unless you absolutely need it`,
+		Do not keep it in Wallet unless you absolutely need it`,
 	[ADD_KEYS.EOS_KEYS.ActiveDescription]:() =>
-		`This is the key you will use with applications. It is what you want to keep imported into Vankia Scatter.`,
+		`This is the key you will use with applications. It is what you want to keep imported into Vankia Wallet.`,
 	[ADD_KEYS.EOS_KEYS.CreateEosAccountTitle]: () => `Use these keys to create an VKT account.`,
 	[ADD_KEYS.EOS_KEYS.CreateEosAccountDescription]:() =>
 		`You can not instantly use VKT with just keys, you need to create an account with them.`,
@@ -294,9 +294,9 @@ const Locale = {
 	/*                                                  */
 	/****************************************************/
 	[IDENTITY.Title]:() => `Identity`,
-	[IDENTITY.DisclaimerTitleImportant]:() => `Nothing here is required in order to use Vankia Scatter`,
+	[IDENTITY.DisclaimerTitleImportant]:() => `Nothing here is required in order to use Vankia Wallet`,
 	[IDENTITY.DisclaimerTitle]:() =>
-		`but it might be required by some applications connecting to your Vankia Scatter, 
+		`but it might be required by some applications connecting to your Vankia Wallet, 
 		for instance when using a shopping application that needs your shipping address.`,
 	[IDENTITY.DisclaimerSubtitle]:() => `All information is stored locally on your computer and is never sent anywhere without your consent.`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -344,7 +344,7 @@ const Locale = {
 	[PERMISSIONS.MutableFieldsLabel]:() => `Mutable Fields`,
 	[PERMISSIONS.RemoveLabel]:() => `Remove Permission`,
 	[PERMISSIONS.RemoveIdentityText]:() =>
-		`Login permissions are what allow applications to interact with your Scatter.
+		`Login permissions are what allow applications to interact with your Wallet.
         You can force a log-out from an application by removing this permission.`,
 	[PERMISSIONS.RemoveWhitelistLabel]:() =>
 		`Action whitelists make it so you don't have to keep accepting popups to sign transactions.
@@ -381,10 +381,10 @@ const Locale = {
 		`These notifications appear on certain operating systems when you auto-sign whitelisted transactions.`,
 	[SETTINGS.GENERAL.DataPathLabel]:() => `Data Path`,
 	[SETTINGS.GENERAL.DataPathDescription]:() =>
-		`The location on your computer that Vankia Scatter saves it's encrypted data to.`,
+		`The location on your computer that Vankia Wallet saves it's encrypted data to.`,
 	[SETTINGS.GENERAL.DeveloperConsoleLabel]:() => `Developer Console`,
 	[SETTINGS.GENERAL.DeveloperConsoleDescription]:() =>
-		`Sometimes you might need to see if Vankia Scatter is throwing any errors.`,
+		`Sometimes you might need to see if Vankia Wallet is throwing any errors.`,
 	[SETTINGS.GENERAL.DeveloperConsoleButton]:() => `Open Console`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[SETTINGS.LANGUAGE.Label]:() => `Select your Language`,
@@ -403,10 +403,10 @@ const Locale = {
 		`You can set whether you want to see balances for all networks in the main dashboard, or just balances for mainnets.`,
 	[SETTINGS.TOKENS.SETTINGS.MainBalanceDisplayMainnetButton]:() => `Show all networks`,
 	[SETTINGS.TOKENS.SETTINGS.MainBalanceDisplayMainnetDesc]:() =>
-		`Displaying only mainnet tokens means Scatter will not use alternate chain or testnet chain tokens to calculate total balances.`,
+		`Displaying only mainnet tokens means Wallet will not use alternate chain or testnet chain tokens to calculate total balances.`,
 	[SETTINGS.TOKENS.SETTINGS.MainBalanceDisplayAllNetworksButton]:() => `Show only Mainnets`,
 	[SETTINGS.TOKENS.SETTINGS.MainBalanceDisplayAllNetworksDesc]:() =>
-		`Showing all networks means Scatter will take every network into consideration when calculating total balances.`,
+		`Showing all networks means Wallet will take every network into consideration when calculating total balances.`,
 	[SETTINGS.TOKENS.SETTINGS.FilterSmallBalancesLabel]:() => `Filter Small Balances`,
 	[SETTINGS.TOKENS.SETTINGS.FilterSmallBalancesDescription]:() =>
 		`If you want to always filter out tokens with small balances you can set a modifier here.`,
@@ -449,7 +449,7 @@ const Locale = {
 	[SETTINGS.PASSWORD.ChangePasswordLabel]:() => `Change your Password`,
 	[SETTINGS.PASSWORD.ChangePasswordDescription]:() =>
 		`Every time you change your password you will get a new Mnemonic 
-		( Seed Phrase ) which is your alternate password for unlocking Vankia Scatter.`,
+		( Seed Phrase ) which is your alternate password for unlocking Vankia Wallet.`,
 	[SETTINGS.PASSWORD.NewPasswordLabel]:() => `New Password`,
 	[SETTINGS.PASSWORD.NewPasswordPlaceholder]:() => `Password`,
 	[SETTINGS.PASSWORD.ConfirmPasswordLabel]:() => `Confirm new Password`,
@@ -463,7 +463,7 @@ const Locale = {
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[SETTINGS.BACKUP.Label]:() => `Configure Backups`,
 	[SETTINGS.BACKUP.Description]:() =>
-		`Backups allow you to save the state of your entire Scatter including all keys, 
+		`Backups allow you to save the state of your entire Wallet including all keys, 
 		permissions and settings.`,
 	[SETTINGS.BACKUP.AutoBackupLocationLabel]:() => `Auto-Backup Location`,
 	[SETTINGS.BACKUP.CreateBackupButton]:() => `Create Backup`,
@@ -471,15 +471,15 @@ const Locale = {
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[SETTINGS.FIREWALL.ENABLED.Label]:() => `Enable Firewall`,
 	[SETTINGS.FIREWALL.ENABLED.Description]:() =>
-		`RIDL Defender is Scatter's proprietary decentralized firewall system. It helps protect you from malicious websites, applications, and accounts.`,
+		`RIDL Defender is Wallet's proprietary decentralized firewall system. It helps protect you from malicious websites, applications, and accounts.`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[SETTINGS.DESTROY.Label]:() => `Configure`,
 	[SETTINGS.DESTROY.Description]:() =>
-		`Destroying your Vankia Scatter will remove all your data including your Identities and Keypair 
+		`Destroying your Vankia Wallet will remove all your data including your Identities and Keypair 
 		configurations from your local machine.
         It will not delete your blockchain accounts from the actual blockchain.`,
 	[SETTINGS.DESTROY.Important]:() => `MAKE SURE YOU HAVE A BACKUP BEFORE YOU DO THIS!`,
-	[SETTINGS.DESTROY.Button]:() => `Destroy Vankia Scatter`,
+	[SETTINGS.DESTROY.Button]:() => `Destroy Vankia Wallet`,
 
 
 
@@ -574,7 +574,7 @@ const Locale = {
 	[POPOUTS.LOGIN.AccountRequirements]:() => `App requires accounts for these networks`,
 	[POPOUTS.LOGIN.NoAccountsTitle]:() => `You do not have blockchain accounts for the networks that this application requires.`,
 	[POPOUTS.LOGIN.NoAccountsDesc]:() =>
-		`Before logging into this application go back to Vankia Scatter and import some keys for the network/blockchain that this application is using.`,
+		`Before logging into this application go back to Vankia Wallet and import some keys for the network/blockchain that this application is using.`,
 	[POPOUTS.LOGIN.MissingFieldsTitle]:() => `You are missing some fields!`,
 	[POPOUTS.LOGIN.MissingFieldsDesc]:() =>
 		`Fill out the inputs below which will add those fields to your Identity for later use and also return them to the application.`,
@@ -616,11 +616,11 @@ const Locale = {
 	[POPINS.FULLSCREEN.CONFIRM_PASS.Title]:() => `Confirm Password`,
 	[POPINS.FULLSCREEN.CONFIRM_PASS.Label]:() => `Enter password or backup phrase`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
-	[POPINS.FULLSCREEN.DESTROY.Title]:() => `Destroy Scatter`,
+	[POPINS.FULLSCREEN.DESTROY.Title]:() => `Destroy Wallet`,
 	[POPINS.FULLSCREEN.DESTROY.Disclaimer]:() =>
 		`Before doing this, make sure you have all of your Private Keys backed up.`,
 	[POPINS.FULLSCREEN.DESTROY.Desc]:() =>
-		`Destroying your Scatter is irreversible, and you will not be able to restore any data without backups.`,
+		`Destroying your Wallet is irreversible, and you will not be able to restore any data without backups.`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[POPINS.FULLSCREEN.WHITELISTING.Title]:() => `Enabled Whitelist`,
 	[POPINS.FULLSCREEN.WHITELISTING.Desc]:() =>
@@ -664,7 +664,7 @@ const Locale = {
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[POPINS.FULLSCREEN.MNEMONIC.Title]:() => `Password Alternative`,
 	[POPINS.FULLSCREEN.MNEMONIC.Desc]:() => `This phrase is a backup for your password. It is not used to generate keys.`,
-	[POPINS.FULLSCREEN.MNEMONIC.SubDesc]:() => `You can paste this phrase into any field that accepts a password in Scatter.`,
+	[POPINS.FULLSCREEN.MNEMONIC.SubDesc]:() => `You can paste this phrase into any field that accepts a password in Wallet.`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[POPINS.FULLSCREEN.REMOVE_KEY.Title]:() => `Removing Keys`,
 	[POPINS.FULLSCREEN.REMOVE_KEY.Disclaimer]:() => `Removing keys also removes all of it's accounts and their application permissions.`,
@@ -682,12 +682,12 @@ const Locale = {
 	[POPINS.OVERLAY.ConfirmPin]:() => `Confirm PIN`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[POPINS.OVERLAY.REMOVE_APP.Title]:() => `Removing Application`,
-	[POPINS.OVERLAY.REMOVE_APP.Desc]:() => `You are about to remove this application from your Scatter. This will also remove all whitelist permissions.`,
+	[POPINS.OVERLAY.REMOVE_APP.Desc]:() => `You are about to remove this application from your Wallet. This will also remove all whitelist permissions.`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[POPINS.OVERLAY.TRX_SUCCESS.Title]:() => `Transaction Success!`,
 	[POPINS.OVERLAY.TRX_SUCCESS.Desc]:x => `Click link below to view on ${x}`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
-	[POPINS.OVERLAY.UPDATE_AVAIL.Title]:() => `Scatter Update Available`,
+	[POPINS.OVERLAY.UPDATE_AVAIL.Title]:() => `Wallet Update Available`,
 	[POPINS.OVERLAY.UPDATE_AVAIL.ClickLink]:() => `Click the link below to go to the downloads page`,
 
 };

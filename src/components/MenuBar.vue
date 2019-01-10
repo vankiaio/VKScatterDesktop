@@ -1,7 +1,8 @@
 <template>
 	<section class="menu-bar">
 		<transition name="slide-up" mode="out-in">
-			<router-link v-if="loaded && $route.name !== RouteNames.LOGIN" :to="{name:RouteNames.HOME}" class="logo">Vankia Scatter</router-link>
+			<router-link v-if="loaded && $route.name !== RouteNames.LOGIN" :to="{name:RouteNames.HOME}" class="logo">
+				<img class="imglogo" src="../../static/icon_white.png">VANKIA WALLET</router-link>
 		</transition>
 
 		<section class="actions" v-if="!isMacOS">
@@ -70,10 +71,10 @@
 	.menu-bar {
 		-webkit-app-region: drag;
 		background:$light-blue;
-		background-image: linear-gradient(-180deg, #39ADFF -20%, #62D0FD 100%);
+		background-image: linear-gradient(-180deg, rgb(59, 79, 160) -20%, rgb(59, 79, 160) 100%);
 		color:#fff;
-		height:80px;
-		line-height: 80px;
+		height:40px;
+		line-height: 40px;
 		width:100%;
 		text-align:center;
 		z-index: 10;
@@ -82,13 +83,22 @@
 		left:0;
 		right:0;
 
-		.logo {
-			font-family: 'Grand Hotel', sans-serif;
-			font-size: 45px;
+        .imglogo {
 			display:inline-block;
-			height:80px;
-			line-height: 80px;
-			padding-top:3px;
+			height:28px;
+			line-height: 28px;
+			padding-top: 5px;
+			padding-right: 5px;
+			vertical-align: top;
+		}
+
+		.logo {
+			font-family: 'Geometric', sans-serif;
+			font-size: 20px;
+			display:inline-block;
+			height:40px;
+			line-height: 40px;
+			padding-top: 0px;
 			cursor: default;
 			-webkit-app-region: drag;
 		}
@@ -97,19 +107,19 @@
 			position:absolute;
 			right:0;
 			top:0;
-			height:80px;
-			line-height: 80px;
+			height:40px;
+			line-height: 40px;
 			display:flex;
 			justify-content: center;
 			align-items: center;
-			padding:0 35px;
+			padding:0 20px;
 			-webkit-app-region: no-drag;
 
 			$action:15px;
 
 			.action {
 				float:right;
-				padding:10px;
+				padding:6px;
 				cursor: pointer;
 				display: flex;
 				flex-direction: column;

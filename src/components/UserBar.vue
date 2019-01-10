@@ -55,11 +55,11 @@
         justify-content: space-between;
         padding:0 30px;
         position: absolute;
-        top: 80px;
+        top: 60px;
         left: 0;
         right: 0;
         z-index: 2;
-        background: #62d0fd;
+        background: #ffffff;
 
         .actions {
             .action {
@@ -76,7 +76,7 @@
                 width:auto;
                 padding:0 10px;
                 border:1px solid rgba(0,0,0,0.12);
-                color:#fff;
+                color:rgb(60, 80, 160);
                 display:inline-block;
 
                 &:hover {

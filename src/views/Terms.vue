@@ -5,7 +5,7 @@
             <section class="head">
                 <figure class="logo">VK</figure>
                 <figure class="info">
-                    <figure>Welcome to Vankia Scatter</figure>
+                    <figure>Welcome to Vankia Wallet</figure>
                     <figure>Please read the following before continuing.</figure>
                 </figure>
                 <section class="buttons">
@@ -21,7 +21,7 @@
                 <br>
                 <br>
                 <figure class="name">Let's get some things set in stone first.</figure>
-                <figure class="description">Read through the terms below fully so that you understand how both Scatter and you are protected.</figure>
+                <figure class="description">Read through the terms below fully so that you understand how both Vankia Wallet and you are protected.</figure>
 
                 <br>
                 <br>
@@ -37,18 +37,18 @@
                         <figure class="terms">
                             <h1>1. Acceptance of Terms</h1>
 
-                            Scatter Desktop (the "Service") provides single application for managing multiple blockchain accounts, identities, and reputations; allowing other applications to
-                            interact with Scatter to provide Identity authentication and reputation as well as digital signatures for use on various blockchains or other proofs. Any accompanying materials
-                            such as tutorials, code, written documentation and other content issued by Scatter (the "Content") also falls under this agreement.
+                            Vankia Wallet Desktop (the "Service") provides single application for managing multiple blockchain accounts, identities, and reputations; allowing other applications to
+                            interact with Vankia Wallet to provide Identity authentication and reputation as well as digital signatures for use on various blockchains or other proofs. Any accompanying materials
+                            such as tutorials, code, written documentation and other content issued by Vankia Wallet (the "Content") also falls under this agreement.
                             <br><br>
                             Users are always in control of their own digital assets (keypairs and tokens as an example) through popups which allow users to Accept or Deny transactions, information
                             requests, and addition requests.
                             <br><br>
-                            By using Scatter you are accepting the Terms (the "Terms" or "Terms of Use"), please read them thoroughly before using the Service.
+                            By using Vankia Wallet you are accepting the Terms (the "Terms" or "Terms of Use"), please read them thoroughly before using the Service.
                             <b>
                                 By using or otherwise accessing the Service; you (1)
                                 accept and agree to these Terms (2) and consent to the collection, use, disclosure and other handling of information as described in our Privacy Policy and (3) any additional terms,
-                                rules and conditions of participation issued by Scatter from time to time. If you do not agree to the Terms, then you may not access or use the Content or Services.
+                                rules and conditions of participation issued by Vankia Wallet from time to time. If you do not agree to the Terms, then you may not access or use the Content or Services.
                             </b>
 
 
@@ -56,7 +56,7 @@
                             <br><br>
                             <h1>2. Modification of Terms of Use</h1>
 
-                            Scatter reserves the right, at its sole discretion, to modify or replace the Terms of Use at any time.
+                            Vankia Wallet reserves the right, at its sole discretion, to modify or replace the Terms of Use at any time.
                             The most current version of these Terms will be posted on https://get-scatter.com (the "Site"). You shall be responsible for
                             reviewing and becoming familiar with any such modifications. Use of the Services by you after any modification to the Terms constitutes your acceptance
                             of the Terms of Use as modified.
@@ -71,10 +71,10 @@
                             You hereby represent and warrant that you are fully able and competent to enter into the terms, conditions, obligations, affirmations, representations and warranties set forth in these
                             Terms and to abide by and comply with these Terms.
                             <br><br>
-                            Scatter is a global platform and by accessing the Site or Services, you are representing and warranting that, you are of the legal age of majority in your jurisdiction as is required
+                            Vankia Wallet is a global platform and by accessing the Site or Services, you are representing and warranting that, you are of the legal age of majority in your jurisdiction as is required
                             to access such Services and enter into arrangements as provided by the Service. You further represent that you are otherwise legally permitted to use the service in your
                             jurisdiction including owning cryptographic tokens of value, and interacting with the Service in any way. You further represent you are responsible for ensuring compliance
-                            with the laws of your jurisdiction and acknowledge that Scatter is not liable for your compliance with such laws.
+                            with the laws of your jurisdiction and acknowledge that Vankia Wallet is not liable for your compliance with such laws.
 
 
 
@@ -82,11 +82,11 @@
                             <br><br>
                             <h1>4. Account Password and Security</h1>
 
-                            When setting up Scatter, you will be responsible for keeping your own account secrets, which may be a twelve-word seed phrase, a backup file, passwords, keypairs, or
-                            other locally stored secret information. Scatter encrypts this information locally with a strong seed derived from the password you provide, that we never send to our servers.
-                            You agree to (a) never use the same password for Scatter that you have ever used outside of this service; (b) keep your secret information and password confidential and do not share them with anyone else.
-                            Scatter cannot and will not be liable for any loss or damage arising from your failure to comply with this section.
-                            By using Scatter you recognize yourself as the sole legal owner of your own secrets, keys, passwords, seed phrases, and other private data.
+                            When setting up Vankia Wallet, you will be responsible for keeping your own account secrets, which may be a twelve-word seed phrase, a backup file, passwords, keypairs, or
+                            other locally stored secret information. Vankia Wallet encrypts this information locally with a strong seed derived from the password you provide, that we never send to our servers.
+                            You agree to (a) never use the same password for Vankia Wallet that you have ever used outside of this service; (b) keep your secret information and password confidential and do not share them with anyone else.
+                            Vankia Wallet cannot and will not be liable for any loss or damage arising from your failure to comply with this section.
+                            By using Vankia Wallet you recognize yourself as the sole legal owner of your own secrets, keys, passwords, seed phrases, and other private data.
 
 
 
@@ -100,10 +100,10 @@
 
                             You expressly understand and agree that your use of the Service is at your sole risk. The Service (including the Service and the Site) are provided on an "AS IS"
                             and "as available" basis, without warranties of any kind, either express or implied, including, without limitation, implied warranties of merchantability, fitness for a
-                            particular purpose or non-infringement. You acknowledge that Scatter has no control over, and no duty to take any action regarding: which users gain access to or use the
+                            particular purpose or non-infringement. You acknowledge that Vankia Wallet has no control over, and no duty to take any action regarding: which users gain access to or use the
                             Service; what effects the Content may have on you; how you may interpret or use the Content; or what actions you may take as a result of having been exposed to the Content.
-                            You release Scatter from all liability for you having acquired or not acquired Content through the Service. Scatter makes no representations concerning any Content contained
-                            in or accessed through the Service, and Scatter will not be responsible or liable for the accuracy, copyright compliance, legality or decency of material contained in or accessed
+                            You release Vankia Wallet from all liability for you having acquired or not acquired Content through the Service. Vankia Wallet makes no representations concerning any Content contained
+                            in or accessed through the Service, and Vankia Wallet will not be responsible or liable for the accuracy, copyright compliance, legality or decency of material contained in or accessed
                             through the Service.
                             <br><br>
                             <h2>5.2 Sophistication and Risk of Cryptographic Systems</h2>
@@ -114,28 +114,28 @@
                             <br><br>
                             <h2>5.3 Risk of Regulatory Actions in One or More Jurisdictions</h2>
 
-                            Scatter and the supported blockchains and tokens could be impacted by one or more regulatory inquiries or regulatory action, which could impede or limit the ability of Scatter to continue to develop,
+                            Vankia Wallet and the supported blockchains and tokens could be impacted by one or more regulatory inquiries or regulatory action, which could impede or limit the ability of Vankia Wallet to continue to develop,
                             or which could impede or limit your ability to access or use the Service or supported blockchains and their networks.
                             <br><br>
                             <h2>5.4 Risk of Weaknesses or Exploits in the Field of Cryptography</h2>
 
                             You acknowledge and understand that Cryptography is a progressing field. Advances in code cracking or technical advances such as the development of quantum computers
                             may present risks to cryptocurrencies and the Service, which could result in the theft or loss of your digital assets such as your keypairs, cryptographic tokens or property.
-                            To the extent possible, Scatter intends to update the protocols underlying the Service to account for any advances in cryptography and to incorporate additional security measures, but does not guarantee or
+                            To the extent possible, Vankia Wallet intends to update the protocols underlying the Service to account for any advances in cryptography and to incorporate additional security measures, but does not guarantee or
                             otherwise represent full security of the system. By using the Service, you acknowledge these inherent risks.
                             <br><br>
                             <h2>5.5 Volatility of Crypto Currencies</h2>
 
                             You understand that blockchain technologies and associated currencies or tokens are highly volatile due to many factors including but not limited to adoption,
                             speculation, technology and security risks. You also acknowledge that the cost of transacting on such technologies is variable and may increase at any time causing impact to any
-                            activities taking place on the supported blockchains. You acknowledge these risks and represent that Scatter cannot be held liable for such fluctuations in both time and costs.
+                            activities taking place on the supported blockchains. You acknowledge these risks and represent that Vankia Wallet cannot be held liable for such fluctuations in both time and costs.
                             <br><br>
                             <h2>5.6 Application Security</h2>
 
                             You acknowledge that blockchain applications are code subject to flaws and acknowledge that you are solely responsible for evaluating any code provided by the Service
                             and the trustworthiness of any third-party websites, products, smart-contracts, or Content you access or use through the Service. You further expressly acknowledge
-                            and represent that blockchain applications can be written maliciously or negligently, that Scatter cannot be held liable for your interaction with such applications and that
-                            such applications may cause the loss of property or even identity. This warning and others later provided by Scatter in no way evidence or represent an on-going duty to alert
+                            and represent that blockchain applications can be written maliciously or negligently, that Vankia Wallet cannot be held liable for your interaction with such applications and that
+                            such applications may cause the loss of property or even identity. This warning and others later provided by Vankia Wallet in no way evidence or represent an on-going duty to alert
                             you to all of the potential risks of utilizing the Service or Content.
 
 
@@ -145,11 +145,11 @@
                             <br><br>
                             <h1>6. Indemnity</h1>
 
-                            You agree to release and to indemnify, defend and hold harmless Scatter and its parents, subsidiaries, affiliates and agencies, as well as the officers, directors, employees,
+                            You agree to release and to indemnify, defend and hold harmless Vankia Wallet and its parents, subsidiaries, affiliates and agencies, as well as the officers, directors, employees,
                             shareholders and representatives of any of the foregoing entities, from and against any and all losses, liabilities, expenses, damages, costs (including attorneys' fees and court costs)
                             claims or actions of any kind whatsoever arising or resulting from your use of the Service, your violation of these Terms of Use, and any of your acts or omissions that implicate publicity rights,
-                            defamation or invasion of privacy. Scatter reserves the right, at its own expense, to assume exclusive defense and control of any matter otherwise subject to indemnification by you and, in such case,
-                            you agree to cooperate with Scatter in the defense of such matter.
+                            defamation or invasion of privacy. Vankia Wallet reserves the right, at its own expense, to assume exclusive defense and control of any matter otherwise subject to indemnification by you and, in such case,
+                            you agree to cooperate with Vankia Wallet in the defense of such matter.
 
 
                             <br><br>
@@ -178,9 +178,9 @@
                             <br><br>
                             <h1>8. Our proprietary rights</h1>
 
-                            All title, ownership and intellectual property rights in and to the Service are owned by Scatter or its licensors. You acknowledge and agree that the Service contains
-                            proprietary and confidential information that is protected by applicable intellectual property and other laws. Except as expressly authorized by Scatter, you agree not to copy,
-                            modify, rent, lease, loan, sell, distribute, perform, display or create derivative works based on the Service, in whole or in part. Scatter issues licenses for Scatter's various code-bases,
+                            All title, ownership and intellectual property rights in and to the Service are owned by Vankia Wallet or its licensors. You acknowledge and agree that the Service contains
+                            proprietary and confidential information that is protected by applicable intellectual property and other laws. Except as expressly authorized by Vankia Wallet, you agree not to copy,
+                            modify, rent, lease, loan, sell, distribute, perform, display or create derivative works based on the Service, in whole or in part. Vankia Wallet issues licenses for Vankia Wallet's various code-bases,
                             which can be found on their individual repositories. Each code-base might have a different license. You can find all official repositories at https://github.com/GetScatter.
 
 
@@ -189,9 +189,9 @@
                             <br><br>
                             <h1>9. Links</h1>
 
-                            The Service provides, or third parties may provide, links to other accessible internet websites, applications or resources. Because Scatter might have no control over such sites,
-                            applications and resources, you acknowledge and agree that Scatter is not responsible for the availability of such external sites, applications or resources, and does not endorse and is not
-                            responsible or liable for any content, advertising, products or other materials on or available from such sites or resources. You further acknowledge and agree that Scatter shall not be responsible
+                            The Service provides, or third parties may provide, links to other accessible internet websites, applications or resources. Because Vankia Wallet might have no control over such sites,
+                            applications and resources, you acknowledge and agree that Vankia Wallet is not responsible for the availability of such external sites, applications or resources, and does not endorse and is not
+                            responsible or liable for any content, advertising, products or other materials on or available from such sites or resources. You further acknowledge and agree that Vankia Wallet shall not be responsible
                             or liable, directly or indirectly, for any damage or loss caused or alleged to be caused by or in connection with use of or reliance on any such content, goods or services available on or through
                             any such site or resource.
 
@@ -200,7 +200,7 @@
                             <br><br>
                             <h1>10. Termination and suspension</h1>
 
-                            Scatter may terminate or suspend all or part of the Service and your Scatter access immediately, without prior notice or liability, if you breach any of the terms or conditions of the Terms.
+                            Vankia Wallet may terminate or suspend all or part of the Service and your Vankia Wallet access immediately, without prior notice or liability, if you breach any of the terms or conditions of the Terms.
                             Upon termination of your access, your right to use the Service will immediately cease.
                             <br><br>
                             The following provisions of the Terms survive any termination of these Terms: INDEMNITY; WARRANTY DISCLAIMERS; LIMITATION ON LIABILITY; OUR PROPRIETARY RIGHTS; LINKS; TERMINATION; NO THIRD PARTY
@@ -218,7 +218,7 @@
                             <br><br>
                             <h1>12. Notice and procedure for making claims of copyright infringement</h1>
 
-                            If you believe that your copyright or the copyright of a person on whose behalf you are authorized to act has been infringed, please provide Scatter's Copyright Agent a
+                            If you believe that your copyright or the copyright of a person on whose behalf you are authorized to act has been infringed, please provide Vankia Wallet's Copyright Agent a
                             written Notice containing the following information:
                             <br><br>
                             · an electronic or physical signature of the person authorized to act on behalf of the owner of the copyright or other intellectual property interest;
@@ -294,18 +294,18 @@
                             You have the right to opt-out and not be bound by the arbitration and class action waiver provisions set forth above by sending written notice of your decision to opt-out
                             to the following email address: legal-opt [at] get-scatter [dot] com. The notice must be sent within 30 days of
                             your first use of the Service, otherwise you shall be bound to arbitrate disputes in accordance with the terms of those paragraphs.
-                            If you opt-out of these arbitration provisions, Scatter also will not be bound by them.
+                            If you opt-out of these arbitration provisions, Vankia Wallet also will not be bound by them.
 
                             <br><br>
                             <h2>13.7 Changes to this Section</h2>
 
-                            Scatter will provide 60-days’ notice of any changes to this section. Changes will become effective on the 60th day, and will apply prospectively only to any claims
+                            Vankia Wallet will provide 60-days’ notice of any changes to this section. Changes will become effective on the 60th day, and will apply prospectively only to any claims
                             arising after the 60th day.
                             <br><br>
-                            For any dispute not subject to arbitration you and Scatter agree to submit to the personal and exclusive jurisdiction of and venue in the federal and state courts located
+                            For any dispute not subject to arbitration you and Vankia Wallet agree to submit to the personal and exclusive jurisdiction of and venue in the federal and state courts located
                             in New York, New York. You further agree to accept service of process by mail, and hereby waive any and all jurisdictional and venue defenses otherwise available.
                             <br><br>
-                            The Terms and the relationship between you and Scatter shall be governed by the laws of the State of New York without regard to conflict of law provisions.
+                            The Terms and the relationship between you and Vankia Wallet shall be governed by the laws of the State of New York without regard to conflict of law provisions.
 
 
 
@@ -316,14 +316,14 @@
 
                             <h2></h2>
 
-                            These Terms (and any additional terms, rules and conditions of participation that Scatter may post on the Service) constitute the entire agreement between you and
-                            Scatter with respect to the Service and supersedes any prior agreements, oral or written, between you and Scatter. In the event of a conflict between these Terms and
+                            These Terms (and any additional terms, rules and conditions of participation that Vankia Wallet may post on the Service) constitute the entire agreement between you and
+                            Vankia Wallet with respect to the Service and supersedes any prior agreements, oral or written, between you and Vankia Wallet. In the event of a conflict between these Terms and
                             the additional terms, rules and conditions of participation, the latter will prevail over the Terms to the extent of the conflict.
 
                             <br><br>
                             <h2>14.2 Waiver and Severability of Terms</h2>
 
-                            The failure of Scatter to exercise or enforce any right or provision of the Terms shall not constitute a waiver of such right or provision. If any provision of the Terms
+                            The failure of Vankia Wallet to exercise or enforce any right or provision of the Terms shall not constitute a waiver of such right or provision. If any provision of the Terms
                             is found by an arbitrator or court of competent jurisdiction to be invalid, the parties nevertheless agree that the arbitrator or court should endeavor to give effect to the
                             parties’ intentions as reflected in the provision, and the other provisions of the Terms remain in full force and effect.
 
