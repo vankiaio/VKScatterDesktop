@@ -72,7 +72,7 @@ const setupTray = () => {
 			}},
 		{label: 'Exit', type: 'normal', click:() => quit()}
 	]);
-	tray.setToolTip('Vankia Scatter Desktop Companion');
+	tray.setToolTip('Vankia Wallet Desktop Companion');
 	tray.setContextMenu(contextMenu);
 
 	tray.on('click', () => {

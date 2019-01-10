@@ -3,7 +3,7 @@
 
         <section class="panel-container">
             <section class="head">
-                <figure class="logo">VK</figure>
+                <figure class="logo"><img class="imglogo" src="../../static/icon_white.png"></figure>
                 <figure class="info">
                     <figure>Welcome to Vankia Wallet</figure>
                     <figure>Please read the following before continuing.</figure>
@@ -30,7 +30,7 @@
                 <section class="split-panels">
 
                     <section class="info-box">
-                        <figure class="header">Last Updated 7-8-2018</figure>
+                        <figure class="header">Last Updated 10-1-2019</figure>
                         <br>
                         <br>
                         <br>
@@ -234,7 +234,7 @@
                             · a statement by you, made under penalty of perjury, that the above information in your Notice is accurate and that you are the copyright or intellectual property owner or
                             authorized to act on the copyright or intellectual property owner’s behalf.
                             <br><br>
-                            Scatter’s Copyright Agent can be reached at:<br>
+                            Vankia Wallet’s Copyright Agent can be reached at:<br>
                             Email: copyright [at] get-scatter [dot] com
 
 
@@ -427,6 +427,14 @@
             float:left;
             padding-right: 1px;
         }
+
+        .imglogo {
+			display:inline-block;
+			height:34px;
+			width:34px;
+            padding-left: 1px;
+            padding-top: 1px;
+		}
 
         .info {
             float:left;
