@@ -30,7 +30,8 @@
 				</figure>
 				<section class="info">
 					<figure class="system">SYSTEM TOKEN</figure>
-					<figure>{{systemTokenBalance.contract}}</figure>
+					<!-- <figure>{{systemTokenBalance.contract}}</figure> -->
+					<figure>vktio.token</figure>
 				</section>
 			</section>
 
