@@ -98,6 +98,7 @@ const getAccountsFromPublicKey = async (publicKey, network, process, progressDel
 		new Promise(resolve => setTimeout(() => resolve([]), 20000)),
 		new Promise((resolve, reject) => {
 			const eos = getCachedInstance(network);
+			network.name = 'VKT Mainnet';
 			if(process) process.setSubTitle(localizedState(LANG_KEYS.PROCESSES.FetchAccountsFromNetwork, network.name));
 			eos.getKeyAccounts(publicKey).then(res => {
 				if(process) process.updateProgress(progressDelta/3);

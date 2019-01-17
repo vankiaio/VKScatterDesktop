@@ -427,7 +427,7 @@ export default class ApiService {
 				Hasher.unsaltedQuickHash(request.payload.nonce)
 			);
 
-			const plugin = PluginRepository.plugin(Blockchains.EOSIO);
+			const plugin = PluginRepository.plugin(Blockchains.VKTIO);
 			const signed = await plugin.signer({data}, publicKey, true, !!isHash);
 			resolve({id:request.id, result:signed});
 		})

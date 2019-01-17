@@ -487,16 +487,13 @@ export default class VKT extends Plugin {
 	async balanceFor(account, token){
 		const eos = getCachedInstance(account.network());
 
-		const balances = await Promise.race([
-			new Promise(resolve => setTimeout(() => resolve([]), 2000)),
-			eos.getTableRows({
-				json:true,
-				code:token.contract,
-				scope:account.name,
-				table:'accounts',
-				limit:500
-			}).then(res => res.rows).catch(() => [])
-		]);
+		const balances = await eos.getTableRows({
+			json:true,
+			code:token.contract,
+			scope:account.name,
+			table:'accounts',
+			limit:500
+		}).then(res => res.rows).catch(() => []);
 
 		const row = balances.find(row => row.balance.split(" ")[1].toLowerCase() === token.symbol.toLowerCase());
 		return row ? row.balance.split(" ")[0] : 0;
@@ -591,7 +588,7 @@ export default class VKT extends Plugin {
 			payload.identityKey = store.state.scatter.keychain.identities[0].publicKey;
 			payload.participants = [account];
 			payload.network = account.network();
-			payload.origin = 'Scatter';
+			payload.origin = 'Vankia';
 			const request = {
 				payload,
 				origin:payload.origin,

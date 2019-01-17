@@ -54,7 +54,7 @@ export default class TransferService {
 
     static transferSuccessPopup(transfer, blockchain){
 	    switch(blockchain){
-        case Blockchains.VKTIO:
+            case Blockchains.VKTIO:
 			    PopupService.push(Popup.transactionSuccess(blockchain, transfer.transaction_id))
 			    break;
 		    case Blockchains.EOSIO:

@@ -151,6 +151,7 @@
 				plugin.untouchableBalance(this.account).then(token => {
 					if(!token) return;
 					this.untouchableTokens = token;
+					this.untouchableTokens.contract = 'vktio.token';
 				})
 			}
 		},
