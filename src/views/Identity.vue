@@ -43,7 +43,7 @@
                 <!--------- EMAIL -------->
                 <!------------------------>
                 <cin :label="locale(langKeys.IDENTITY.PERSONAL.EmailLabel)"
-                     placeholder="liyi@vankia.cn"
+                     placeholder="help@get-scatter.com"
                      :text="identity.personal.email"
                      v-on:changed="x => identity.personal.email = x" />
 
