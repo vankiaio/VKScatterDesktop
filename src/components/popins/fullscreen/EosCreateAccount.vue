@@ -327,7 +327,7 @@
 					account_name:this.accountName
 				};
 
-				const result = await fetch(`https://api.get-scatter.com/v1/create_eos`, {
+				const result = await fetch(`http://221.122.119.226:3030/vktapi/v1/create_vkt`, {
 					method: 'POST',
 					headers:{
 						'Accept': 'application/json',
