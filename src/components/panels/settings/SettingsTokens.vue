@@ -126,7 +126,7 @@
                     {{locale(langKeys.SETTINGS.TOKENS.WHITE_BLACK.WHITELIST.Disclaimer)}}
                 </section>
 
-                <section v-if="blockchain === null && !searchTerms.length">
+                <!-- <section v-if="blockchain === null && !searchTerms.length">
                     <FlatList as-rows="1" style="padding:0;"
                               :selected="selectedDisplayToken"
                               :label="locale(langKeys.SETTINGS.TOKENS.WHITE_BLACK.WHITELIST.FiatCurrencyLabel)"
@@ -135,7 +135,7 @@
                               :items="currencyList" />
                     <br>
                     <br>
-                </section>
+                </section> -->
 
                 <section v-if="networkTokensList.length">
                     <FlatList style="padding:0;"
@@ -263,8 +263,7 @@
 				}));
 			},
 			terms(){
-                // return this.searchTerms.trim().toLowerCase();
-                return Blockchains.VKTIO;
+                return this.searchTerms.trim().toLowerCase();
 			},
 			networkTokensList(){
 				const tokens = this.filterTokensByTerms(this.networkTokens).reduce((acc, t) => {

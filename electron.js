@@ -96,6 +96,7 @@ const createScatterInstance = () => {
 		titleBarStyle:'hiddenInset',
 		backgroundColor,
 		show,
+		webPreferences: {webSecurity: false,allowDisplayingInsecureContent:true,allowRunningInsecureContent:true}
 	});
 
 	mainWindow = createMainWindow(false, '#62D0FD');
@@ -107,7 +108,7 @@ const createScatterInstance = () => {
   		mainWindow.focus(); 
 	});
 
-	// mainWindow.openDevTools();
+	 mainWindow.openDevTools();
 	mainWindow.loadURL(mainUrl(false));
 	mainWindow.on('closed', () => mainWindow = null);
 	mainWindow.on('close', () => quit());

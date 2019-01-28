@@ -215,8 +215,8 @@ const Locale = {
 	[CREATE_EOS.ACCOUNT.ActionBarButton]:() => `Create Account`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[CREATE_EOS.EXCHANGE.ChangeName]:() => `Want to change names?`,
-	[CREATE_EOS.EXCHANGE.InfoTitle]: () => `You need to pay for the resources needed to create accounts on the VKT blockchain.`,
-	[CREATE_EOS.EXCHANGE.InfoSubtitle]:() => `All of the extra funds you send will be transferred to the account.`,
+	[CREATE_EOS.EXCHANGE.InfoTitle]: () => `We will create an account for you free of charge on the VKT blockchain.`,
+	[CREATE_EOS.EXCHANGE.InfoSubtitle]:(accountName) => `Please confirm your username ${accountName} and return if you need to change it.`,
 	[CREATE_EOS.EXCHANGE.UseNameButton]:() => `Use Name`,
 	[CREATE_EOS.EXCHANGE.ExchangeFieldParts]:() => [
 		`Send at least`,    // 2 VKT

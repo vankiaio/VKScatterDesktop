@@ -1,9 +1,9 @@
 
 export const Blockchains = {
-    VKTIO:'vkt',
-    EOSIO:'eos',
-    ETH:'eth',
-    TRX:'trx'
+    VKTIO:'vkt'//,
+    // EOSIO:'eos',
+    // ETH:'eth',
+    // TRX:'trx'
 };
 
 export const BlockchainsArray =

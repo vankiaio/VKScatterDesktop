@@ -91,11 +91,11 @@
 				<br>
 				<br>
 				<section style="margin:0 auto;" class="disclaimer less-pad">
-					{{locale(langKeys.CREATE_EOS.EXCHANGE.InfoTitle)}}
-					<p>{{locale(langKeys.CREATE_EOS.EXCHANGE.InfoSubtitle)}}</p>
+					<h6>{{locale(langKeys.CREATE_EOS.EXCHANGE.InfoTitle)}}</h6>
+					<h6>{{locale(langKeys.CREATE_EOS.EXCHANGE.InfoSubtitle, `${this.accountName}`)}}</h6>
 				</section>
 
-				<figure class="line"></figure>
+				<!-- <figure class="line"></figure>
 
 				<section class="details" style="display:flex;">
 					<figure class="title inline-input">
@@ -132,7 +132,7 @@
 				<cin :placeholder="locale(langKeys.CREATE_EOS.EXCHANGE.TransactionIDLabel)"
 				     big="1"
 				     :text="transactionId"
-				     v-on:changed="x => transactionId = x" />
+				     v-on:changed="x => transactionId = x" /> -->
 
 			</section>
 
@@ -191,19 +191,19 @@
 			accountName:'',
 			accountNameError:' ',
 			creator:null,
-			eosToUse:'1.0000',
+			eosToUse:'0.0500',
 			resourceError:null,
 
 			systemSymbol:'VKT',
 			ramPrice:null,
 
-			transactionId:'',
+			transactionId:'vankiawallet',
 		}},
 
 		created(){
 
 			this.checkAccountName();
-			if(this.hasOtherEosAccounts) this.state = STATES.ACCOUNT;
+			//if(this.hasOtherEosAccounts) this.state = STATES.ACCOUNT;
 			this.getRamPrice();
 		},
 

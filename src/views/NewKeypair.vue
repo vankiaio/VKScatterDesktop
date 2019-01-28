@@ -99,15 +99,15 @@
         	const {SELECT, IMPORT} = this.langKeys.ADD_KEYS;
 
 	        this.newKeyTypes = [
-		        {icon:'', title:locale(SELECT.CreateTitle), description:locale(SELECT.CreateDescription), actions:[{name:locale(SELECT.CreateButton), handler:this.generateNewKeypair}]},
+		        // {icon:'', title:locale(SELECT.CreateTitle), description:locale(SELECT.CreateDescription), actions:[{name:locale(SELECT.CreateButton), handler:this.generateNewKeypair}]},
 		        {icon:'', title:locale(SELECT.ImportTitle), description:locale(SELECT.ImportDescription), actions:[{name:locale(SELECT.ImportButton), handler:() => this.state = STATES.IMPORT}]},
 		        {icon:'', title:locale(SELECT.CreateEosTitle), description:locale(SELECT.CreateEosDescription), actions:[{name:locale(SELECT.CreateEosButton), handler:this.createEosKeys}]},
 	        ];
 
 	        this.importTypes = [
 		        {icon:'icon-key', title:locale(IMPORT.TextTitle), description:locale(IMPORT.TextDescription), actions:[{name:locale(IMPORT.TextButton), handler:() => this.importState = IMPORT_STATES.TEXT}]},
-		        {icon:'icon-microchip', title:locale(IMPORT.HardwareTitle), description:locale(IMPORT.HardwareDescription), actions:[{name:locale(IMPORT.HardwareButton), handler:() => this.importState = IMPORT_STATES.HARDWARE}]},
-		        {icon:'icon-qrcode', title:locale(IMPORT.QrTitle), description:locale(IMPORT.QrDescription), actions:[{name:locale(IMPORT.QrButton), handler:() => this.importState = IMPORT_STATES.QR}]},
+		        // {icon:'icon-microchip', title:locale(IMPORT.HardwareTitle), description:locale(IMPORT.HardwareDescription), actions:[{name:locale(IMPORT.HardwareButton), handler:() => this.importState = IMPORT_STATES.HARDWARE}]},
+		        // {icon:'icon-qrcode', title:locale(IMPORT.QrTitle), description:locale(IMPORT.QrDescription), actions:[{name:locale(IMPORT.QrButton), handler:() => this.importState = IMPORT_STATES.QR}]},
 	        ];
 
         },

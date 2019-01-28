@@ -35,7 +35,7 @@ export default class Settings {
 
         // Tokens
         this.showMainnetsOnly = true;
-        this.displayToken = null;
+        this.displayToken = 'vkt:vkt:VKT';
 	    this.displayCurrency = 'USD';
 	    this.tokens = [];
 	    this.blacklistTokens = [];

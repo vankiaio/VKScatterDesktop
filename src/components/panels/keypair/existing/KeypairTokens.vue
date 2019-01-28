@@ -4,7 +4,7 @@
 			<h1>{{account.sendable()}}</h1>
 			<section class="account-info">
 				<p>{{blockchainName(account.blockchain())}} - <b>{{account.network().name}}</b></p>
-				<p>{{totalFiatBalance}} <b>{{displayCurrency}}</b></p>
+				<!-- <p>{{totalFiatBalance}} <b>{{displayCurrency}}</b></p> -->
 				<br>
 				<br>
 				<router-link tag="p" :to="{name:RouteNames.SETTINGS, params:{panel:{name:'Tokens'}}}" v-if="hiddenTokenCount">
@@ -26,17 +26,17 @@
 				</figure>
 				<figure class="amount">
 					{{formatNumber(systemTokenBalance.amount, true)}}
-					<span v-if="systemTokenBalance.fiatBalance()">{{formatNumber(systemTokenBalance.fiatBalance(), true)}}</span>
+					<!-- <span v-if="systemTokenBalance.fiatBalance()">{{formatNumber(systemTokenBalance.fiatBalance(), true)}}</span> -->
 				</figure>
-				<section class="info">
+				<!-- <section class="info">
 					<figure class="system">SYSTEM TOKEN</figure>
-					<!-- <figure>{{systemTokenBalance.contract}}</figure> -->
+					<figure>{{systemTokenBalance.contract}}</figure>
 					<figure>vktio.token</figure>
-				</section>
+				</section> -->
 			</section>
 
 			<!-- UNTOUCHABLE TOKENS -->
-			<section class="token" v-if="untouchableTokens && matchesToken(searchTerms.trim().toLowerCase(), untouchableTokens)">
+			<!-- <section class="token" v-if="untouchableTokens && matchesToken(searchTerms.trim().toLowerCase(), untouchableTokens)">
 				<figure class="symbol">
 					<span>{{untouchableTokens.symbol}}</span>
 				</figure>
@@ -48,7 +48,7 @@
 					<figure class="system">{{formatNumber(untouchableTokens.unusable, true)}}</figure>
 					<figure>{{untouchableTokens.contract}}</figure>
 				</section>
-			</section>
+			</section> -->
 
 			<!-- ALL TOKENS BESIDES SYSTEM -->
 			<section class="token" v-for="token in filteredTokens">
@@ -57,10 +57,10 @@
 				</figure>
 				<figure class="amount">
 					{{formatNumber(token.amount, true)}}
-					<span v-if="token.fiatBalance()">{{formatNumber(token.fiatBalance(), true)}}</span>
+					<!-- <span v-if="token.fiatBalance()">{{formatNumber(token.fiatBalance(), true)}}</span> -->
 				</figure>
 				<section class="info">
-					<figure :class="{'small':token.contract.length > 20}">{{token.contract}}</figure>
+					<figure :class="{'small':token.contract.length > 20}">vktio.token</figure>
 				</section>
 			</section>
 

@@ -5,14 +5,14 @@
             <label>{{locale(langKeys.SETTINGS.GENERAL.VersionLabel)}}</label>
             <b>Vankia Wallet Desktop v{{version}}</b>
 
-            <btn :class="{'wiggle':needsUpdate}"
+            <!-- <btn :class="{'wiggle':needsUpdate}"
                  :disabled="!needsUpdate"
                  :red="needsUpdate"
                  v-on:clicked="openUpdateLink"
                  :text="needsUpdate
                      ? locale(langKeys.SETTINGS.GENERAL.UpdateAvailable)
                      : locale(langKeys.SETTINGS.GENERAL.NoUpdateAvailable)"
-            />
+            /> -->
         </section>
 
         <section class="action-box top-pad">

@@ -111,18 +111,18 @@
             	return [
 		            SETTINGS_OPTIONS.GENERAL,
 		            SETTINGS_OPTIONS.LANGUAGE,
-		            SETTINGS_OPTIONS.TOKENS,
-		            SETTINGS_OPTIONS.EXPLORER,
+		            // SETTINGS_OPTIONS.TOKENS,
+		            // SETTINGS_OPTIONS.EXPLORER,
                 ]
             },
 	        lockedItems(){
             	return [
-		            SETTINGS_OPTIONS.PIN,
-		            SETTINGS_OPTIONS.NETWORKS,
+		            // SETTINGS_OPTIONS.PIN,
+		            // SETTINGS_OPTIONS.NETWORKS,
 		            SETTINGS_OPTIONS.PASSWORD,
 		            SETTINGS_OPTIONS.BACKUP,
-		            SETTINGS_OPTIONS.FIREWALL,
-		            SETTINGS_OPTIONS.DESTROY,
+		            // SETTINGS_OPTIONS.FIREWALL,
+		            // SETTINGS_OPTIONS.DESTROY,
                 ]
             }
         },

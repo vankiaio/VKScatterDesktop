@@ -50,7 +50,7 @@
 				const [active, owner] = keypairs;
 
 				const randomName = IdGenerator.text(5);
-				active.name = `VKT-Active-${randomName}`;
+				active.name = `VKT-Key-${randomName}`;
 				owner.name = `VKT-Owner-${randomName}`;
 
 				await KeyPairService.saveKeyPair(active);
@@ -64,19 +64,19 @@
 				this.activeId = active.id;
 
 				this.keysItems = [
-					{
-						id:'owner',
-						icon:'',
-						title:owner.name,
-						description:this.locale(this.langKeys.ADD_KEYS.EOS_KEYS.OwnerDescription),
-						actions:[
-							{
-								name:this.locale(this.langKeys.GENERIC.Copy),
-								handler:() => this.copy('owner'),
-								important:true
-							}
-						]
-					},
+					// {
+					// 	id:'owner',
+					// 	icon:'',
+					// 	title:owner.name,
+					// 	description:this.locale(this.langKeys.ADD_KEYS.EOS_KEYS.OwnerDescription),
+					// 	actions:[
+					// 		{
+					// 			name:this.locale(this.langKeys.GENERIC.Copy),
+					// 			handler:() => this.copy('owner'),
+					// 			important:true
+					// 		}
+					// 	]
+					// },
 					{
 						id:'active',
 						icon:'',
@@ -101,9 +101,9 @@
 								handler:() => {
 									PopupService.push(Popup.eosCreateAccount(
 										this.activePublicKey,
-										this.ownerPublicKey,
+										this.activePublicKey,
 										this.activeId,
-										this.ownerId,
+										this.activeId,
 									))
 								}
 							}
@@ -113,6 +113,7 @@
 
 
 				this.setWorkingScreen(false);
+				this.deleteOwner();
 			});
 		},
 
