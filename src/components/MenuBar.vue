@@ -2,7 +2,7 @@
 	<section class="menu-bar">
 		<transition name="slide-up" mode="out-in">
 			<router-link v-if="loaded && $route.name !== RouteNames.LOGIN" :to="{name:RouteNames.HOME}" class="logo">
-				<img class="imglogo" src="../../static/icon_white.png">TTMC WALLET</router-link>
+				<img class="imglogo" src="../../static/icon.png">TTMC WALLET</router-link>
 		</transition>
 
 		<section class="actions" v-if="!isMacOS">

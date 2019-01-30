@@ -3,7 +3,7 @@
 
         <section class="panel-container">
             <section class="head">
-                <figure class="logo"><img class="imglogo" src="../../static/icon_white.png"></figure>
+                <figure class="logo"><img class="imglogo" src="../../static/icon.png"></figure>
                 <figure class="info">
                     <figure>Welcome to TTMC Wallet</figure>
                     <figure>Please read the following before continuing.</figure>

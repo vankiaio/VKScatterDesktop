@@ -15,14 +15,14 @@
             /> -->
         </section>
 
-        <section class="action-box top-pad">
+        <!-- <section class="action-box top-pad">
             <label>{{locale(langKeys.SETTINGS.GENERAL.WhitelistNotificationsLabel)}}</label>
             <p>{{locale(langKeys.SETTINGS.GENERAL.WhitelistNotificationsDescription)}}</p>
 
             <section class="switch bottomed" @click="toggleNotifications">
                 <figure class="dot" :class="{'disabled':!showNotifications}"></figure>
             </section>
-        </section>
+        </section> -->
 
         <section class="action-box top-pad">
             <label>{{locale(langKeys.SETTINGS.GENERAL.DataPathLabel)}}</label>
