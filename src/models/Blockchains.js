@@ -1,6 +1,6 @@
 
 export const Blockchains = {
-    VKTIO:'vkt'//,
+    VKTIO:'ttmc'//,
     // EOSIO:'eos',
     // ETH:'eth',
     // TRX:'trx'

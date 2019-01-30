@@ -86,7 +86,7 @@ class LedgerAPI {
 
         let scrambleKey;
         switch(this.blockchain){
-            case Blockchains.VKTIO: scrambleKey = "vkt"; break;
+            case Blockchains.VKTIO: scrambleKey = "ttmc"; break;
             case Blockchains.EOSIO: scrambleKey = "e0s"; break;
             case Blockchains.ETH: scrambleKey = "eth"; break;
         }

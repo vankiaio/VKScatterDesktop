@@ -194,10 +194,10 @@
 			eosToUse:'0.0500',
 			resourceError:null,
 
-			systemSymbol:'VKT',
+			systemSymbol:'TTMC',
 			ramPrice:null,
 
-			transactionId:'vankiawallet',
+			transactionId:'ttmcwallet',
 		}},
 
 		created(){
@@ -327,7 +327,7 @@
 					account_name:this.accountName
 				};
 
-				const result = await fetch(`http://221.122.119.226:3030/vktapi/v1/create_vkt`, {
+				const result = await fetch(`http://119.23.146.214:3030/vktapi/v1/create_vkt`, {
 					method: 'POST',
 					headers:{
 						'Accept': 'application/json',

@@ -312,7 +312,7 @@ export default class ApiService {
 			if(options.hasOwnProperty('contract')) contract = options.contract;
 			contract = network.systemToken().contract;
 
-			request.payload.memo = network.blockchain === 'vkt'
+			request.payload.memo = network.blockchain === 'ttmc'
 				? options.hasOwnProperty('memo') ? options.memo : ''
 				: '';
 

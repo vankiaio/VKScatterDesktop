@@ -1,5 +1,5 @@
 {
-  "name": "vankiawallet",
+  "name": "ttmcwallet",
   "version": "10.0.5",
   "description": "Vankia Wallet Desktop Companion",
   "private": true,
@@ -14,11 +14,11 @@
   },
   "keywords": [
     "scatter",
-    "vankiawallet",
+    "ttmcwallet",
     "blockchain",
     "signatures",
     "eos",
-    "vkt",
+    "ttmc",
     "ethereum"
   ],
   "homepage": "https://github.com/vankiaio/VKScatterDesktop",
@@ -159,8 +159,8 @@
     "not ie <= 8"
   ],
   "build": {
-    "productName": "vankiawallet",
-    "appId": "com.get-vankiawallet.server",
+    "productName": "ttmcwallet",
+    "appId": "com.get-ttmcwallet.server",
     "artifactName": "${os}-${productName}-${version}-${arch}.${ext}",
     "asar": true,
     "asarUnpack": [
@@ -225,7 +225,7 @@
       "desktop": {
         "Name": "Vankia Wallet",
         "GenericName": "Vankia Wallet Desktop",
-        "X-GNOME-FullName": "vankiawallet",
+        "X-GNOME-FullName": "ttmcwallet",
         "Comment": "Vankia Wallet desktop signature server.",
         "Type": "Application",
         "Terminal": "false",

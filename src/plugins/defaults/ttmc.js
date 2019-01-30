@@ -25,8 +25,8 @@ import RecurringService from "../../services/RecurringService";
 import HardwareService from "../../services/HardwareService";
 
 
-const blockchainApiURL = 'http://221.122.119.226:3030/vktapi/v1';
-const mainnetChainId = 'e17abdaf44e2811b452ea15a0aeb7eff6eab9c5de4452e6fb7b552c5de9ddae7';
+const blockchainApiURL = 'http://119.23.146.214:3030/vktapi/v1';
+const mainnetChainId = '57fca24b1ac519ca178ee44c37844fae2caffd954c4fad1fa67c9c4cceb86a60';
 
 class VKTTokenAccountAPI {
 	constructor(){}
@@ -59,7 +59,7 @@ class VKTTokenAccountAPI {
 	static async getAllTokens(account){
 		return await Promise.race([
 			new Promise(resolve => setTimeout(() => resolve(null), 5000)),
-			fetch(`${blockchainApiURL}/account/vkt/${account.sendable()}`).then(r => r.json()).then(res => {
+			fetch(`${blockchainApiURL}/account/ttmc/${account.sendable()}`).then(r => r.json()).then(res => {
 				return res.balances.map(balance => {
 					return Token.fromJson({
 						blockchain:Blockchains.VKTIO,
@@ -171,7 +171,7 @@ export default class VKT extends Plugin {
 	recipientLabel(){ return localizedState(LANG_KEYS.GENERIC.AccountName); }
 
 	getEndorsedNetwork(){
-		return new Network('VKT Mainnet', 'http', '221.122.119.226', 8888, Blockchains.VKTIO, mainnetChainId)
+		return new Network('VKT Mainnet', 'http', '119.23.146.214', 8888, Blockchains.VKTIO, mainnetChainId)
 	}
 
 	isEndorsedNetwork(network){
@@ -517,7 +517,7 @@ export default class VKT extends Plugin {
 	}
 
 	defaultDecimals(){ return 4; }
-	defaultToken(){ return new Token(Blockchains.VKTIO, 'eosio.token', 'VKT', 'VKT', this.defaultDecimals()) }
+	defaultToken(){ return new Token(Blockchains.VKTIO, 'eosio.token', 'TTMC', 'TTMC', this.defaultDecimals()) }
 
 	async getRamPrice(network, eos = null){
 		if(!eos) eos = getCachedInstance(network);
@@ -592,7 +592,7 @@ export default class VKT extends Plugin {
 			const request = {
 				payload,
 				origin:payload.origin,
-				blockchain:'vkt',
+				blockchain:'ttmc',
 				requiredFields:{},
 				type:Actions.REQUEST_SIGNATURE,
 				id:1,
