@@ -147,7 +147,8 @@
 			},
 			copyPrivateKey(keyType, privateKeyBuffer, publicKey){
 				const privateKey = Crypto.bufferToPrivateKey(privateKeyBuffer, Blockchains.TTMC);
-				ElectronHelpers.copy(`${keyType}\nPrivate: ${privateKey} \nPublic: ${publicKey}`);
+				// ElectronHelpers.copy(`${keyType}\nPrivate: ${privateKey} \nPublic: ${publicKey}`);
+				ElectronHelpers.copy(`Key\nPrivate: ${privateKey} \nPublic: ${publicKey}`);
 			},
 			async deleteOwner(){
 				await KeyPairService.removeKeyPair(this.keypairs.find(x => x.id === this.ownerId));

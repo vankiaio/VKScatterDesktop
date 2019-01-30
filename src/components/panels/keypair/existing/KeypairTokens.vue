@@ -31,7 +31,7 @@
 				<!-- <section class="info">
 					<figure class="system">SYSTEM TOKEN</figure>
 					<figure>{{systemTokenBalance.contract}}</figure>
-					<figure>vktio.token</figure>
+					<figure>ttmc.token</figure>
 				</section> -->
 			</section>
 
@@ -60,7 +60,7 @@
 					<!-- <span v-if="token.fiatBalance()">{{formatNumber(token.fiatBalance(), true)}}</span> -->
 				</figure>
 				<section class="info">
-					<figure :class="{'small':token.contract.length > 20}">vktio.token</figure>
+					<figure :class="{'small':token.contract.length > 20}">ttmc.token</figure>
 				</section>
 			</section>
 
@@ -152,7 +152,7 @@
 				plugin.untouchableBalance(this.account).then(token => {
 					if(!token) return;
 					this.untouchableTokens = token;
-					this.untouchableTokens.contract = 'vktio.token';
+					this.untouchableTokens.contract = 'ttmc.token';
 				})
 			}
 		},

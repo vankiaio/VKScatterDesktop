@@ -25,7 +25,7 @@
   "author": {
     "name": "TTMC",
     "email": "liyi@vankia.cn",
-    "url": "https://www.TTMC.io/"
+    "url": "https://www.ttmc.io/"
   },
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",

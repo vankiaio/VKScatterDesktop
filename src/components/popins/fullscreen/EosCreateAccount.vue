@@ -381,7 +381,7 @@
 			async checkAccountName(){
 				clearTimeout(accountTimeout);
 				accountTimeout = setTimeout(async () => {
-					if(this.accountName.length !== 12) return this.accountNameError = this.locale(this.langKeys.CREATE_EOS.AccountNameLengthError);
+					if(this.accountName.length < 5 || this.accountName.length > 12) return this.accountNameError = this.locale(this.langKeys.CREATE_EOS.AccountNameLengthError);
 					if(this.accountName.split('').filter(x => isNaN(x)).find(x => x.toUpperCase() === x))
 						return this.accountNameError = this.locale(this.langKeys.CREATE_EOS.AccountNameFormattingError);
 

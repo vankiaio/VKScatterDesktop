@@ -21,7 +21,7 @@ export const mockKeypair = Keypair.fromJson({
 		Blockchains.TRX
 	],
 	publicKeys:[
-		{blockchain:Blockchains.TTMC, key:'VKT7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd'},
+		{blockchain:Blockchains.TTMC, key:'TTMC7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd'},
 		{blockchain:Blockchains.EOSIO, key:'EOS7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd'},
 		{blockchain:Blockchains.TRX, key:'TF2quv1hTipcZ8FJ8FRsXXLSiJ1C15dqkW'}
 	],

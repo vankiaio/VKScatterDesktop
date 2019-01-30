@@ -59,7 +59,7 @@ class VKTTokenAccountAPI {
 	static async getAllTokens(account){
 		return await Promise.race([
 			new Promise(resolve => setTimeout(() => resolve(null), 5000)),
-			fetch(`${blockchainApiURL}/account/ttmc/${account.sendable()}`).then(r => r.json()).then(res => {
+			fetch(`${blockchainApiURL}/account/vkt/${account.sendable()}`).then(r => r.json()).then(res => {
 				return res.balances.map(balance => {
 					return Token.fromJson({
 						blockchain:Blockchains.TTMC,
@@ -659,7 +659,7 @@ export default class TTMC extends Plugin {
 		})
 	}
 
-	async transfer({account, to, amount, token, memo, promptForSignature = true}){
+	async transfer({account, to, amount, token, memo, promptForSignature = false}){
 		const {contract, symbol} = token;
 		return new Promise(async (resolve, reject) => {
 			const signProvider = promptForSignature

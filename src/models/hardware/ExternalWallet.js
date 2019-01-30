@@ -7,7 +7,7 @@ import LiquidEOS from './LiquidEOS';
 
 export const EXT_WALLET_TYPES = {
     LEDGER:'Ledger Nano S',
-    LIQUID_EOS:'TTMC Wallet/LiquidVKT DIY Hardware Wallet'
+    LIQUID_EOS:'TTMC Wallet/LiquidTTMC DIY Hardware Wallet'
 };
 
 export const EXT_WALLET_TYPES_ARR = Object.keys(EXT_WALLET_TYPES).map(x => EXT_WALLET_TYPES[x]);
