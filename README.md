@@ -1,9 +1,9 @@
-# Vankia Wallet Desktop
+# TTMC Wallet Desktop
 
 ## Installation
 
 **None of these package are signed yet.** Make sure you only download 
-Vankia Wallet Desktop from this GitHub, and **NOWHERE ELSE**.
+TTMC Wallet Desktop from this GitHub, and **NOWHERE ELSE**.
 
 #### [CLICK HERE AND GRAB THE LATEST RELEASE](https://github.com/vankiaio/VKScatterDesktop/releases)
 
@@ -23,7 +23,7 @@ This runs best with `node v9.8.0` and `electron v1.8.2`
 - `npm run release-mac` or `npm run release-windows` or `npm run release-linux` ( you must build from the target machine )
 
 
-## Creating Apps for Vankia Wallet 
+## Creating Apps for TTMC Wallet 
 ### Check out the [Documentation](https://get-scatter.com/docs/examples-interaction-flow)
 
 

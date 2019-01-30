@@ -1,6 +1,6 @@
 <template>
 	<section class="pop-out-head">
-		<figure class="logo">Vankia Wallet</figure>
+		<figure class="logo">TTMC Wallet</figure>
 		<figure class="close icon-cancel" @click="$emit('closed')"></figure>
 	</section>
 </template>

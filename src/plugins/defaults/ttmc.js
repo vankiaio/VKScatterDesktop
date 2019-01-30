@@ -588,7 +588,7 @@ export default class VKT extends Plugin {
 			payload.identityKey = store.state.scatter.keychain.identities[0].publicKey;
 			payload.participants = [account];
 			payload.network = account.network();
-			payload.origin = 'Vankia';
+			payload.origin = 'TTMC';
 			const request = {
 				payload,
 				origin:payload.origin,

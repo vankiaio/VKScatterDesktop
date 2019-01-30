@@ -2,7 +2,7 @@
 	<section>
 		<section class="split-inputs">
 			<section class="disclaimer less-pad" style="margin-right:20px; flex:0.5; align-self: flex-start;">
-				Scan an encrypted Vankia Wallet QR code
+				Scan an encrypted TTMC Wallet QR code
 
 				<p>
 					Once you scan a valid QR code you will be

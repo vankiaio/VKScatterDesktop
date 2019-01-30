@@ -3,7 +3,7 @@
 
         <PopinHead :popin="popin" :name="locale(langKeys.POPINS.OVERLAY.UPDATE_AVAIL.Title)" />
         <section class="panel centered">
-            <figure class="description"><b>Vankia Wallet Desktop</b> - <b class="blue">{{update.name}}</b> (v{{update.stringVersion}})</figure>
+            <figure class="description"><b>TTMC Wallet Desktop</b> - <b class="blue">{{update.name}}</b> (v{{update.stringVersion}})</figure>
             <br>
             <section class="markdown">
                 <VueMarkdown>{{update.body}}</VueMarkdown>

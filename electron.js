@@ -72,7 +72,7 @@ const setupTray = () => {
 			}},
 		{label: 'Exit', type: 'normal', click:() => quit()}
 	]);
-	tray.setToolTip('Vankia Wallet Desktop Companion');
+	tray.setToolTip('TTMC Wallet Desktop Companion');
 	tray.setContextMenu(contextMenu);
 
 	tray.on('click', () => {

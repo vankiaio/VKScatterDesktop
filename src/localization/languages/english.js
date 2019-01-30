@@ -105,7 +105,7 @@ const Locale = {
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[LOGIN.RESTORE.Title]:() => `Restore from backup`,
 	[LOGIN.RESTORE.SubTitle]:() =>
-		`If you have a backup for your Vankia Wallet you can import it here by loading it into Vankia Wallet. 
+		`If you have a backup for your TTMC Wallet you can import it here by loading it into TTMC Wallet. 
         You will still need the password to unlock it.`,
 	[LOGIN.RESTORE.ChooseButton]:() => `Choose your Backup`,
 	[LOGIN.RESTORE.BackButton]:() => `Go back and start from scratch`,
@@ -135,7 +135,7 @@ const Locale = {
 	[DASHBOARD.APPS.NPermissions]:n => `${n} Permission${plural_s(n)}`,
 	[DASHBOARD.APPS.NoPermissions]:() => `No Permissions`,
 	[DASHBOARD.APPS.UnlinkedAppsTitle]:() => `Below are apps that you aren't linked with.`,
-	[DASHBOARD.APPS.UnlinkedAppsSubtitle]:() => `Note that these apps are not added by the Vankia Wallet team, 
+	[DASHBOARD.APPS.UnlinkedAppsSubtitle]:() => `Note that these apps are not added by the TTMC Wallet team, 
 		but by the apps themselves. The display of any app is not an endorsement of any kind, 
 		just a discovery mechanism.`,
 	[DASHBOARD.APPS.NoMeta]:() => `No Meta`,
@@ -155,11 +155,11 @@ const Locale = {
 		The keys will not have any funds on them, they are brand new.`,
 	[ADD_KEYS.SELECT.CreateButton]:() => `Create Key`,
 	[ADD_KEYS.SELECT.ImportTitle]:() => `Import an existing key`,
-	[ADD_KEYS.SELECT.ImportDescription]:() => `If you already have a key and want to import it into Vankia Wallet`,
+	[ADD_KEYS.SELECT.ImportDescription]:() => `If you already have a key and want to import it into TTMC Wallet`,
 	[ADD_KEYS.SELECT.ImportButton]:() => `Import Key`,
-	[ADD_KEYS.SELECT.CreateEosTitle]: () => `Create a new VKT account`,
+	[ADD_KEYS.SELECT.CreateEosTitle]: () => `Create a new TTMC account`,
 	[ADD_KEYS.SELECT.CreateEosDescription]:() => `We'll quickly generate two keys for you`,
-	[ADD_KEYS.SELECT.CreateEosButton]: () => `VKT account`,
+	[ADD_KEYS.SELECT.CreateEosButton]: () => `TTMC account`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[ADD_KEYS.IMPORT.NameLabel]:() => `Key Name`,
 	[ADD_KEYS.IMPORT.NamePlaceholder]:() => `Give this key a name to remember.`,
@@ -182,26 +182,26 @@ const Locale = {
 	[ADD_KEYS.IMPORT_HW.IndexLabel]:() => `Key/Address Index`,
 	[ADD_KEYS.IMPORT_HW.HardwareError]:() => `Hardware Error`,
 	[ADD_KEYS.IMPORT_HW.UnlockLedgerError]:x => `You need to unlock your ledger and open the ${x} Ledger App.`,
-	[ADD_KEYS.IMPORT_HW.UnlockedLiquidEOSError]: () => `You need to unlock your Liquid VKT Hardware Wallet.`,
+	[ADD_KEYS.IMPORT_HW.UnlockedLiquidEOSError]: () => `You need to unlock your Liquid TTMC Hardware Wallet.`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[ADD_KEYS.EOS_KEYS.OwnerDescription]:() =>
 		`This is your master key which has total control over your account. 
 		Do not keep it in Wallet unless you absolutely need it`,
 	[ADD_KEYS.EOS_KEYS.ActiveDescription]:() =>
-		`This is the key you will use with applications. It is what you want to keep imported into Vankia Wallet.`,
-	[ADD_KEYS.EOS_KEYS.CreateEosAccountTitle]: () => `Use these keys to create an VKT account.`,
+		`This is the key you will use with applications. It is what you want to keep imported into TTMC Wallet.`,
+	[ADD_KEYS.EOS_KEYS.CreateEosAccountTitle]: () => `Use these keys to create an TTMC account.`,
 	[ADD_KEYS.EOS_KEYS.CreateEosAccountDescription]:() =>
-		`You can not instantly use VKT with just keys, you need to create an account with them.`,
+		`You can not instantly use TTMC with just keys, you need to create an account with them.`,
 	[ADD_KEYS.EOS_KEYS.CreateEosAccountButton]:() => `Create Account`,
 
 
 	/****************************************************/
 	/*                                                  */
-	/*               CREATE VKT ACCOUNT                 */
+	/*               CREATE TTMC ACCOUNT                 */
 	/*                                                  */
 	/****************************************************/
-	[CREATE_EOS.DisclaimerTitle]: () => `Accounts on the VKT blockchain must be paid for to be able to be used.`,
-	[CREATE_EOS.AccountNameLengthError]:() => `Account name must be 12 characters long.`,
+	[CREATE_EOS.DisclaimerTitle]: () => `Accounts on the TTMC blockchain must be paid for to be able to be used.`,
+	[CREATE_EOS.AccountNameLengthError]:() => `Account name must be between 5 and 12 characters long.`,
 	[CREATE_EOS.AccountNameFormattingError]:() => `Account name must be lowercase letters only.`,
 	[CREATE_EOS.SelectCreatorError]:() => `Please select an account creator first.`,
 	[CREATE_EOS.CheckingNameAlert]:() => `Checking if name is available...`,
@@ -215,16 +215,16 @@ const Locale = {
 	[CREATE_EOS.ACCOUNT.ActionBarButton]:() => `Create Account`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[CREATE_EOS.EXCHANGE.ChangeName]:() => `Want to change names?`,
-	[CREATE_EOS.EXCHANGE.InfoTitle]: () => `We will create an account for you free of charge on the VKT blockchain.`,
+	[CREATE_EOS.EXCHANGE.InfoTitle]: () => `We will create an account for you free of charge on the TTMC blockchain.`,
 	[CREATE_EOS.EXCHANGE.InfoSubtitle]:(accountName) => `Please confirm your username ${accountName} and return if you need to change it.`,
 	[CREATE_EOS.EXCHANGE.UseNameButton]:() => `Use Name`,
 	[CREATE_EOS.EXCHANGE.ExchangeFieldParts]:() => [
-		`Send at least`,    // 2 VKT
+		`Send at least`,    // 2 TTMC
 		`to account`,       // makeaccounts
 		`with`,             // EOS5kd....
 		`as the memo`,
 	],
-	[CREATE_EOS.EXCHANGE.SentTitle]: () => `After sending VKT from an exchange with the above details, copy the transaction ID here.`,
+	[CREATE_EOS.EXCHANGE.SentTitle]: () => `After sending TTMC from an exchange with the above details, copy the transaction ID here.`,
 	[CREATE_EOS.EXCHANGE.SentSubtitle]:() => `You must wait for the transaction to be irreversible, this takes around 3 minutes.`,
 	[CREATE_EOS.EXCHANGE.TransactionIDLabel]:() => `Transaction ID`,
 	[CREATE_EOS.EXCHANGE.ActionBarButton]:() => `Create Account`,
@@ -244,14 +244,14 @@ const Locale = {
 	[KEYPAIR.DASHBOARD.STATES.AddAccount]:() => `Add Account`,
 	[KEYPAIR.DASHBOARD.STATES.LinkedAccounts]:() => `Linked Accounts`,
 	[KEYPAIR.DASHBOARD.STATES.KeysAndBlockchains]:() => `Keys & Blockchains`,
-	[KEYPAIR.DASHBOARD.ADD_ACCOUNT.CreateEosAccountLabel]: () => `Create a new VKT account`,
+	[KEYPAIR.DASHBOARD.ADD_ACCOUNT.CreateEosAccountLabel]: () => `Create a new TTMC account`,
 	[KEYPAIR.DASHBOARD.ADD_ACCOUNT.CreateEosAccountDescription]:() =>
-		`If you want to create a new VKT account on top of this key.`,
+		`If you want to create a new TTMC account on top of this key.`,
 	[KEYPAIR.DASHBOARD.ADD_ACCOUNT.CreateEosAccountButton]:() => `Create Account`,
-	[KEYPAIR.DASHBOARD.ADD_ACCOUNT.LinkEosAccountLabel]: () => `Link existing VKT account`,
+	[KEYPAIR.DASHBOARD.ADD_ACCOUNT.LinkEosAccountLabel]: () => `Link existing TTMC account`,
 	[KEYPAIR.DASHBOARD.ADD_ACCOUNT.LinkEosAccountDescription]:() =>
-		`If you already have an VKT account, but it's not being imported automatically.`,
-	[KEYPAIR.DASHBOARD.ADD_ACCOUNT.AccountNetworkLabel]: () => `Link existing VKT account`,
+		`If you already have an TTMC account, but it's not being imported automatically.`,
+	[KEYPAIR.DASHBOARD.ADD_ACCOUNT.AccountNetworkLabel]: () => `Link existing TTMC account`,
 	[KEYPAIR.DASHBOARD.ERRORS.InvalidWalletName]:() => `Enter a name for this Key`,
 	[KEYPAIR.DASHBOARD.ERRORS.WalletNameExists]:() => `A Key with this name already exists`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -294,9 +294,9 @@ const Locale = {
 	/*                                                  */
 	/****************************************************/
 	[IDENTITY.Title]:() => `Identity`,
-	[IDENTITY.DisclaimerTitleImportant]:() => `Nothing here is required in order to use Vankia Wallet`,
+	[IDENTITY.DisclaimerTitleImportant]:() => `Nothing here is required in order to use TTMC Wallet`,
 	[IDENTITY.DisclaimerTitle]:() =>
-		`but it might be required by some applications connecting to your Vankia Wallet, 
+		`but it might be required by some applications connecting to your TTMC Wallet, 
 		for instance when using a shopping application that needs your shipping address.`,
 	[IDENTITY.DisclaimerSubtitle]:() => `All information is stored locally on your computer and is never sent anywhere without your consent.`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -381,10 +381,10 @@ const Locale = {
 		`These notifications appear on certain operating systems when you auto-sign whitelisted transactions.`,
 	[SETTINGS.GENERAL.DataPathLabel]:() => `Data Path`,
 	[SETTINGS.GENERAL.DataPathDescription]:() =>
-		`The location on your computer that Vankia Wallet saves it's encrypted data to.`,
+		`The location on your computer that TTMC Wallet saves it's encrypted data to.`,
 	[SETTINGS.GENERAL.DeveloperConsoleLabel]:() => `Developer Console`,
 	[SETTINGS.GENERAL.DeveloperConsoleDescription]:() =>
-		`Sometimes you might need to see if Vankia Wallet is throwing any errors.`,
+		`Sometimes you might need to see if TTMC Wallet is throwing any errors.`,
 	[SETTINGS.GENERAL.DeveloperConsoleButton]:() => `Open Console`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[SETTINGS.LANGUAGE.Label]:() => `Select your Language`,
@@ -449,7 +449,7 @@ const Locale = {
 	[SETTINGS.PASSWORD.ChangePasswordLabel]:() => `Change your Password`,
 	[SETTINGS.PASSWORD.ChangePasswordDescription]:() =>
 		`Every time you change your password you will get a new Mnemonic 
-		( Seed Phrase ) which is your alternate password for unlocking Vankia Wallet.`,
+		( Seed Phrase ) which is your alternate password for unlocking TTMC Wallet.`,
 	[SETTINGS.PASSWORD.NewPasswordLabel]:() => `New Password`,
 	[SETTINGS.PASSWORD.NewPasswordPlaceholder]:() => `Password`,
 	[SETTINGS.PASSWORD.ConfirmPasswordLabel]:() => `Confirm new Password`,
@@ -475,11 +475,11 @@ const Locale = {
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[SETTINGS.DESTROY.Label]:() => `Configure`,
 	[SETTINGS.DESTROY.Description]:() =>
-		`Destroying your Vankia Wallet will remove all your data including your Identities and Keypair 
+		`Destroying your TTMC Wallet will remove all your data including your Identities and Keypair 
 		configurations from your local machine.
         It will not delete your blockchain accounts from the actual blockchain.`,
 	[SETTINGS.DESTROY.Important]:() => `MAKE SURE YOU HAVE A BACKUP BEFORE YOU DO THIS!`,
-	[SETTINGS.DESTROY.Button]:() => `Destroy Vankia Wallet`,
+	[SETTINGS.DESTROY.Button]:() => `Destroy TTMC Wallet`,
 
 
 
@@ -574,7 +574,7 @@ const Locale = {
 	[POPOUTS.LOGIN.AccountRequirements]:() => `App requires accounts for these networks`,
 	[POPOUTS.LOGIN.NoAccountsTitle]:() => `You do not have blockchain accounts for the networks that this application requires.`,
 	[POPOUTS.LOGIN.NoAccountsDesc]:() =>
-		`Before logging into this application go back to Vankia Wallet and import some keys for the network/blockchain that this application is using.`,
+		`Before logging into this application go back to TTMC Wallet and import some keys for the network/blockchain that this application is using.`,
 	[POPOUTS.LOGIN.MissingFieldsTitle]:() => `You are missing some fields!`,
 	[POPOUTS.LOGIN.MissingFieldsDesc]:() =>
 		`Fill out the inputs below which will add those fields to your Identity for later use and also return them to the application.`,

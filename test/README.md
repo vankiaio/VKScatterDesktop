@@ -1,4 +1,4 @@
-# Vankia Wallet Test Suite
+# TTMC Wallet Test Suite
 
 ## Unit Tests
 
