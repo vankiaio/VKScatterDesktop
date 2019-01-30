@@ -87,7 +87,7 @@
 
 		<section class="full-panel center-fold inner with-action limited" v-if="state === STATES.SEND_AMOUNT">
 			<section class="padded">
-				<b>VKT Mainnet</b>
+				<b>TTMC Mainnet</b>
 				<br>
 				<br>
 				<section style="margin:0 auto;" class="disclaimer less-pad">
@@ -226,7 +226,7 @@
 
 			creators(){
 				return this.accounts
-					.filter(x => x.blockchain() === Blockchains.VKTIO)
+					.filter(x => x.blockchain() === Blockchains.TTMC)
 					.filter(x => !x.keypair().external)
 				.reduce((acc, account) => {
 					if(!acc.find(x => account.network().unique() === x.network().unique()
@@ -248,7 +248,7 @@
 				return (parseFloat(this.ramPrice ? this.ramPrice : 0) + parseFloat(this.eosToUse ? this.eosToUse : 0)).toFixed(this.decimals);
 			},
 			hasOtherEosAccounts(){
-				return !!this.accounts.find(x => x.blockchain() === Blockchains.VKTIO);
+				return !!this.accounts.find(x => x.blockchain() === Blockchains.TTMC);
 			},
 			memo(){
 				return this.activePublicKey;
@@ -277,13 +277,13 @@
 			async getNetwork(){
 				if(this.creator) return this.creator.network();
 
-				const plugin = PluginRepository.plugin(Blockchains.VKTIO);
+				const plugin = PluginRepository.plugin(Blockchains.TTMC);
 				const mainnetChainId = plugin.getEndorsedNetwork().chainId;
-				return this.networks.find(x => x.chainId === mainnetChainId && x.blockchain === Blockchains.VKTIO);
+				return this.networks.find(x => x.chainId === mainnetChainId && x.blockchain === Blockchains.TTMC);
 			},
 
 			async getRamPrice(){
-				const plugin = PluginRepository.plugin(Blockchains.VKTIO);
+				const plugin = PluginRepository.plugin(Blockchains.TTMC);
 				const network = await this.getNetwork();
 				const ramPrice = await plugin.getRamPrice(network);
 				this.ramPrice = (ramPrice * 4096).toFixed(this.decimals);
@@ -298,14 +298,14 @@
 
 			finishedAccountCreation(tx, network, exchange = false){
 				setTimeout(async () => {
-					if(!exchange) PopupService.push(Popup.transactionSuccess(Blockchains.VKTIO, tx));
+					if(!exchange) PopupService.push(Popup.transactionSuccess(Blockchains.TTMC, tx));
 					const owner = this.keypairs.find(x => x.id === this.ownerId);
 					const active = this.keypairs.find(x => x.id === this.activeId);
 					this.$router.push({name:this.RouteNames.KEYPAIR, params:{id:owner ? owner.id : active.id}});
 					this.setWorkingScreen(false);
 
 					const networks = network ? [network] : [];
-					await AccountService.importAllAccounts(owner ? owner : active, false, [Blockchains.VKTIO], networks);
+					await AccountService.importAllAccounts(owner ? owner : active, false, [Blockchains.TTMC], networks);
 					this.returnResult(true);
 				}, 500);
 			},
@@ -314,7 +314,7 @@
 				if(this.accountNameError) return;
 				this.setWorkingScreen(true);
 
-				const plugin = PluginRepository.plugin(Blockchains.VKTIO);
+				const plugin = PluginRepository.plugin(Blockchains.TTMC);
 				const signature = await plugin.signer({data:this.activePublicKey}, this.activePublicKey, true);
 
 				const payload = {
@@ -351,7 +351,7 @@
 				if(this.accountNameError) return;
 				if(this.resourceError) return;
 
-				const plugin = PluginRepository.plugin(Blockchains.VKTIO);
+				const plugin = PluginRepository.plugin(Blockchains.TTMC);
 				this.eosToUse = parseFloat(this.eosToUse).toFixed(this.decimals);
 
 				this.setWorkingScreen(true);
@@ -385,7 +385,7 @@
 					if(this.accountName.split('').filter(x => isNaN(x)).find(x => x.toUpperCase() === x))
 						return this.accountNameError = this.locale(this.langKeys.CREATE_EOS.AccountNameFormattingError);
 
-					if(!PluginRepository.plugin(Blockchains.VKTIO).isValidRecipient(this.accountName)){
+					if(!PluginRepository.plugin(Blockchains.TTMC).isValidRecipient(this.accountName)){
 						return this.accountNameError = 'only a-z, 1-5';
 					}
 
@@ -394,7 +394,7 @@
 
 					this.accountNameError = this.locale(this.langKeys.CREATE_EOS.CheckingNameAlert);
 
-					const plugin = PluginRepository.plugin(Blockchains.VKTIO);
+					const plugin = PluginRepository.plugin(Blockchains.TTMC);
 					const acc = await plugin.accountData(null, await this.getNetwork(), this.accountName);
 					if(acc.hasOwnProperty('code') && acc.code === 500){
 						this.accountNameError = null;

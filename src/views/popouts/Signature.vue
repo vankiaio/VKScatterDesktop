@@ -203,7 +203,7 @@
 				'networks',
 			]),
             viewTypesArray(){
-			    const hasEos = !this.isArbitrarySignature && !!this.payload.participants.find(x => Account.fromJson(x).blockchain() === Blockchains.VKTIO);
+			    const hasEos = !this.isArbitrarySignature && !!this.payload.participants.find(x => Account.fromJson(x).blockchain() === Blockchains.TTMC);
 			    const arrMap = [VIEW_TYPES.HUMAN, VIEW_TYPES.JSON];
 			    if(hasEos) arrMap.push(VIEW_TYPES.RICARDIAN);
 			    return arrMap;
@@ -260,7 +260,7 @@
 			    const resources = this.resources[account.identifiable()];
 			    if(!resources) return;
 
-			    if(account.blockchain() === Blockchains.VKTIO){
+			    if(account.blockchain() === Blockchains.TTMC){
 			    	const cpu = resources.find(x => x.name === "CPU");
 			    	return parseFloat(cpu.percentage).toFixed(2) + '% CPU';
                 }

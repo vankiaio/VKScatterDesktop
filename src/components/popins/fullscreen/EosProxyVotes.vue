@@ -75,7 +75,7 @@
 		mounted(){
 			if(this.isHardware) this.autoVote = false;
 			setTimeout(async () => {
-				if(PluginRepository.plugin(Blockchains.VKTIO).isEndorsedNetwork(this.account.network())){
+				if(PluginRepository.plugin(Blockchains.TTMC).isEndorsedNetwork(this.account.network())){
 					this.proxies = await ProxyService.getProxyList();
 				}
 
@@ -93,8 +93,8 @@
 				return this.accounts.find(x => x.unique() === this.popin.data.props.account.unique());
 			},
 			proxyList(){
-				if(!this.proxies.hasOwnProperty(this.blockchainName(Blockchains.VKTIO))) return [];
-				return ObjectHelpers.shuffle(this.proxies[this.blockchainName(Blockchains.VKTIO)].map(proxy => ({
+				if(!this.proxies.hasOwnProperty(this.blockchainName(Blockchains.TTMC))) return [];
+				return ObjectHelpers.shuffle(this.proxies[this.blockchainName(Blockchains.TTMC)].map(proxy => ({
 					id:proxy.account,
 					title:proxy.name,
 					description:proxy.description,
@@ -110,10 +110,10 @@
 				this[Actions.RELEASE_POPUP](this.popin);
 			},
 			async setProxy(){
-				const plugin = PluginRepository.plugin(Blockchains.VKTIO);
+				const plugin = PluginRepository.plugin(Blockchains.TTMC);
 				const result = await plugin.proxyVote(this.account, this.selectedProxy, true);
 				if(result) {
-					PopupService.push(Popup.transactionSuccess(Blockchains.VKTIO, result.transaction_id));
+					PopupService.push(Popup.transactionSuccess(Blockchains.TTMC, result.transaction_id));
 					if(this.autoVote) await RecurringService.addProxy(this.account, this.selectedProxy);
 					else await RecurringService.removeProxies([this.account]);
 				}

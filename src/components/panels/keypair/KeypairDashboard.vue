@@ -47,7 +47,7 @@
 
 
 
-			<!-- ADD / CREATE VKTIO ACCOUNT -->
+			<!-- ADD / CREATE TTMC ACCOUNT -->
 			<section class="list-container" style="overflow:auto;" v-if="dashState === DASH_STATES.ADD_ACCOUNT">
 
 				<section style="padding-bottom:20px;">
@@ -142,10 +142,10 @@
 				'networks',
 			]),
 			eosNetworks(){
-				return this.networks.filter(x => x.blockchain === Blockchains.VKTIO)
+				return this.networks.filter(x => x.blockchain === Blockchains.TTMC)
 			},
 			hasEosBlockchain(){
-				return this.keypair.blockchains.includes(Blockchains.VKTIO);
+				return this.keypair.blockchains.includes(Blockchains.TTMC);
 			},
 			filteredAccounts(){
 				return this.keypair.accounts(true)
@@ -161,11 +161,11 @@
 			},
 			canCreateAccounts(){
 				if(!this.keypair.external) return true;
-				if(this.accounts.find(x => x.blockchain() === Blockchains.VKTIO && !x.keypair().external)) return true;
+				if(this.accounts.find(x => x.blockchain() === Blockchains.TTMC && !x.keypair().external)) return true;
 				return false;
 			},
 			invalidNewAccountName(){
-				return !PluginRepository.plugin(Blockchains.VKTIO).isValidRecipient(this.newAccountName.split('@')[0]);
+				return !PluginRepository.plugin(Blockchains.TTMC).isValidRecipient(this.newAccountName.split('@')[0]);
 			}
 		},
 
@@ -174,7 +174,7 @@
 
 
 			if(!this.keypair.accounts().length){
-				if(this.keypair.blockchains.includes(Blockchains.VKTIO)){
+				if(this.keypair.blockchains.includes(Blockchains.TTMC)){
 					this.dashState = DASH_STATES.ADD_ACCOUNT;
 				}
 			}
@@ -189,7 +189,7 @@
 				const account = Account.fromJson({
 					keypairUnique:this.keypair.id,
 					networkUnique:this.manualAccountNetwork.unique(),
-					publicKey:this.keypair.publicKeys.find(x => x.blockchain === Blockchains.VKTIO).key,
+					publicKey:this.keypair.publicKeys.find(x => x.blockchain === Blockchains.TTMC).key,
 					name,
 					authority:auth ? auth : 'active',
 				});

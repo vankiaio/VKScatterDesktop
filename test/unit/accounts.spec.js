@@ -41,7 +41,7 @@ describe('Account Model', () => {
 	});
 
 	it('should be able to get a network from an account', () => {
-		const eosNetwork = mockNetworks.find(x => x.blockchain === Blockchains.VKTIO);
+		const eosNetwork = mockNetworks.find(x => x.blockchain === Blockchains.TTMC);
 		assert(mockEosAccount.network().unique() === eosNetwork.unique(), `Invalid network from account`)
 	});
 
@@ -50,18 +50,18 @@ describe('Account Model', () => {
 	});
 
 	it('should be able to get a blockchain from an account', () => {
-		assert(mockEosAccount.blockchain() === Blockchains.VKTIO, `Invalid blockchain from account`)
+		assert(mockEosAccount.blockchain() === Blockchains.TTMC, `Invalid blockchain from account`)
 	});
 
 	it('should be able to get a sendable name', () => {
-		assert(mockEosAccount.sendable() !== `${mockEosAccount.name}@${mockEosAccount.authority}`, `Got malformed sendable (VKTIO)`);
-		assert(mockEosAccount.sendable() === mockEosAccount.name, `Invalid sendable name (VKTIO)`);
+		assert(mockEosAccount.sendable() !== `${mockEosAccount.name}@${mockEosAccount.authority}`, `Got malformed sendable (TTMC)`);
+		assert(mockEosAccount.sendable() === mockEosAccount.name, `Invalid sendable name (TTMC)`);
 		assert(mockTrxAccount.sendable() === mockTrxAccount.publicKey, `Invalid sendable name (Tron)`);
 	});
 
 	it('should be able to get a formatted name', () => {
-		assert(mockEosAccount.formatted() === `${mockEosAccount.name}@${mockEosAccount.authority}`, `Got malformed formatted (VKTIO)`);
-		assert(mockEosAccount.formatted() !== mockEosAccount.name, `Invalid formatted name (VKTIO)`);
+		assert(mockEosAccount.formatted() === `${mockEosAccount.name}@${mockEosAccount.authority}`, `Got malformed formatted (TTMC)`);
+		assert(mockEosAccount.formatted() !== mockEosAccount.name, `Invalid formatted name (TTMC)`);
 		assert(mockTrxAccount.formatted() === mockTrxAccount.publicKey, `Invalid formatted name (Tron)`);
 	});
 
@@ -73,11 +73,11 @@ describe('Account Model', () => {
 
 	it('should be able to get a returnable account json based on blockchain', () => {
 		const eosReturnable = mockEosAccount.asReturnable();
-		assert(eosReturnable.hasOwnProperty('name'), `Invalid VKTIO returnable (name)`);
-		assert(eosReturnable.hasOwnProperty('authority'), `Invalid VKTIO returnable (authority)`);
-		assert(eosReturnable.hasOwnProperty('publicKey'), `Invalid VKTIO returnable (publicKey)`);
-		assert(eosReturnable.hasOwnProperty('blockchain'), `Invalid VKTIO returnable (blockchain)`);
-		assert(!eosReturnable.hasOwnProperty('address'), `Invalid VKTIO returnable (address)`);
+		assert(eosReturnable.hasOwnProperty('name'), `Invalid TTMC returnable (name)`);
+		assert(eosReturnable.hasOwnProperty('authority'), `Invalid TTMC returnable (authority)`);
+		assert(eosReturnable.hasOwnProperty('publicKey'), `Invalid TTMC returnable (publicKey)`);
+		assert(eosReturnable.hasOwnProperty('blockchain'), `Invalid TTMC returnable (blockchain)`);
+		assert(!eosReturnable.hasOwnProperty('address'), `Invalid TTMC returnable (address)`);
 
 
 		const trxReturnable = mockTrxAccount.asReturnable();
@@ -124,7 +124,7 @@ describe('AccountService', async () => {
 			// to align tests with the real accounts connected.
 			// TODO: Create real test key with a fixed amount of accounts perpetually.
 
-			// 5 == 2 VKT accounts with 2 authorities, + 1 trx account.
+			// 5 == 2 TTMC accounts with 2 authorities, + 1 trx account.
 			// https://bloks.io/key/EOS7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd
 			// https://tronscan.org/#/address/TF2quv1hTipcZ8FJ8FRsXXLSiJ1C15dqkW
 			assert(scatter().keychain.accounts.length === 5, `Could not import all accounts`);
@@ -136,7 +136,7 @@ describe('AccountService', async () => {
 
 	it('should be able to get all accounts from a network', done => {
 		new Promise(async() => {
-			const plugin = PluginRepository.plugin(Blockchains.VKTIO);
+			const plugin = PluginRepository.plugin(Blockchains.TTMC);
 			const networks = scatter().settings.networks;
 			const accounts = [];
 			const keypair = scatter().keychain.keypairs[0];
@@ -148,7 +148,7 @@ describe('AccountService', async () => {
 
 	it('should be able to add all accounts for a network', done => {
 		new Promise(async() => {
-			const eosNetwork = scatter().settings.networks.find(x => x.blockchain === Blockchains.VKTIO);
+			const eosNetwork = scatter().settings.networks.find(x => x.blockchain === Blockchains.TTMC);
 			await AccountService.importAllAccountsForNetwork(eosNetwork);
 			assert(scatter().keychain.accounts.length === 4, `Could not import all accounts`);
 			done();

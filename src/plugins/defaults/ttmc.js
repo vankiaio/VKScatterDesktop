@@ -62,7 +62,7 @@ class VKTTokenAccountAPI {
 			fetch(`${blockchainApiURL}/account/ttmc/${account.sendable()}`).then(r => r.json()).then(res => {
 				return res.balances.map(balance => {
 					return Token.fromJson({
-						blockchain:Blockchains.VKTIO,
+						blockchain:Blockchains.TTMC,
 						contract:balance.contract,
 						symbol:balance.currency,
 						name:balance.currency,
@@ -151,7 +151,7 @@ const popupError = result => {
 
 
 const EXPLORER = {
-	"name":"VKT Tracker",
+	"name":"TTMC Tracker",
 	"account":"http://tracker.devicexx.com/accounts/{x}",
 	"transaction":"http://tracker.devicexx.com/transactions/blocks/{x}",
 	"block":"http://tracker.devicexx.com/blocks/{x}"
@@ -160,22 +160,22 @@ const EXPLORER = {
 
 
 
-export default class VKT extends Plugin {
+export default class TTMC extends Plugin {
 
-    constructor(){ super(Blockchains.VKTIO, PluginTypes.BLOCKCHAIN_SUPPORT) }
+    constructor(){ super(Blockchains.TTMC, PluginTypes.BLOCKCHAIN_SUPPORT) }
 	defaultExplorer(){ return EXPLORER; }
 	accountFormatter(account){ return `${account.name}@${account.authority}` }
-	returnableAccount(account){ return { name:account.name, authority:account.authority, publicKey:account.publicKey, blockchain:Blockchains.VKTIO }}
+	returnableAccount(account){ return { name:account.name, authority:account.authority, publicKey:account.publicKey, blockchain:Blockchains.TTMC }}
 
 	contractPlaceholder(){ return 'eosio.token'; }
 	recipientLabel(){ return localizedState(LANG_KEYS.GENERIC.AccountName); }
 
 	getEndorsedNetwork(){
-		return new Network('VKT Mainnet', 'http', '119.23.146.214', 8888, Blockchains.VKTIO, mainnetChainId)
+		return new Network('TTMC Mainnet', 'http', '119.23.146.214', 8888, Blockchains.TTMC, mainnetChainId)
 	}
 
 	isEndorsedNetwork(network){
-		return network.blockchain === Blockchains.VKTIO && network.chainId === mainnetChainId;
+		return network.blockchain === Blockchains.TTMC && network.chainId === mainnetChainId;
 	}
 
 	async getChainId(network){
@@ -250,7 +250,7 @@ export default class VKT extends Plugin {
 					reject(false)
 				})
 				.then(async res => {
-					PopupService.push(Popup.transactionSuccess(Blockchains.VKTIO, res.transaction_id));
+					PopupService.push(Popup.transactionSuccess(Blockchains.TTMC, res.transaction_id));
 
 					const keypairs = [account.keypair()];
 
@@ -260,7 +260,7 @@ export default class VKT extends Plugin {
 
 					const addAccount = async (keypair, authority) => {
 						const acc = account.clone();
-						acc.publicKey = keypair.publicKeys.find(x => x.blockchain === Blockchains.VKTIO).key,
+						acc.publicKey = keypair.publicKeys.find(x => x.blockchain === Blockchains.TTMC).key,
 						acc.keypairUnique = keypair.unique();
 						acc.authority = authority;
 						return AccountService.addAccount(acc);
@@ -415,7 +415,7 @@ export default class VKT extends Plugin {
 	accountsAreImported(){ return true; }
 	getImportableAccounts(keypair, network, process, progressDelta){
 		return new Promise((resolve, reject) => {
-			let publicKey = keypair.publicKeys.find(x => x.blockchain === Blockchains.VKTIO);
+			let publicKey = keypair.publicKeys.find(x => x.blockchain === Blockchains.TTMC);
 			if(!publicKey) return resolve([]);
 			publicKey = publicKey.key;
 			getAccountsFromPublicKey(publicKey, network, process, progressDelta).then(accounts => {
@@ -431,11 +431,11 @@ export default class VKT extends Plugin {
 	}
 
 	isValidRecipient(name){ return /(^[a-z1-5.]{1,11}[a-z1-5]$)|(^[a-z1-5.]{12}[a-j1-5]$)/g.test(name); }
-	privateToPublic(privateKey, prefix = null){ return ecc.PrivateKey(privateKey).toPublic().toString(prefix ? prefix : Blockchains.VKTIO.toUpperCase()); }
+	privateToPublic(privateKey, prefix = null){ return ecc.PrivateKey(privateKey).toPublic().toString(prefix ? prefix : Blockchains.TTMC.toUpperCase()); }
 	validPrivateKey(privateKey){ return privateKey.length >= 50 && ecc.isValidPrivate(privateKey); }
 	validPublicKey(publicKey, prefix = null){
 		try {
-			return ecc.PublicKey.fromStringOrThrow(publicKey, prefix ? prefix : Blockchains.VKTIO.toUpperCase());
+			return ecc.PublicKey.fromStringOrThrow(publicKey, prefix ? prefix : Blockchains.TTMC.toUpperCase());
 		} catch(e){
 			return false;
 		}
@@ -503,7 +503,7 @@ export default class VKT extends Plugin {
 		if(!fallback && this.isEndorsedNetwork(account.network())){
 			const balances = await VKTTokenAccountAPI.getAllTokens(account);
 			if(!balances) return this.balanceFor(account, tokens, true);
-			const blacklist = store.getters.blacklistTokens.filter(x => x.blockchain === Blockchains.VKTIO).map(x => x.unique());
+			const blacklist = store.getters.blacklistTokens.filter(x => x.blockchain === Blockchains.TTMC).map(x => x.unique());
 			return balances.filter(x => !blacklist.includes(x.unique()));
 		}
 
@@ -517,7 +517,7 @@ export default class VKT extends Plugin {
 	}
 
 	defaultDecimals(){ return 4; }
-	defaultToken(){ return new Token(Blockchains.VKTIO, 'eosio.token', 'TTMC', 'TTMC', this.defaultDecimals()) }
+	defaultToken(){ return new Token(Blockchains.TTMC, 'eosio.token', 'TTMC', 'TTMC', this.defaultDecimals()) }
 
 	async getRamPrice(network, eos = null){
 		if(!eos) eos = getCachedInstance(network);

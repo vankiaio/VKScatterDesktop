@@ -81,7 +81,7 @@
 			},
 			otherKeys(){
 				return this.keypairs
-					.filter(x => x.publicKeys.some(key => key.blockchain === Blockchains.VKTIO))
+					.filter(x => x.publicKeys.some(key => key.blockchain === Blockchains.TTMC))
 			}
 		},
 		methods:{
@@ -90,10 +90,10 @@
 				this[Actions.RELEASE_POPUP](this.popin);
 			},
 			publicKeyForKeypair(keypair){
-				return keypair.publicKeys.find(key => key.blockchain === Blockchains.VKTIO).key;
+				return keypair.publicKeys.find(key => key.blockchain === Blockchains.TTMC).key;
 			},
 			isValidPermission(keyOrAccountName){
-				const plugin = PluginRepository.plugin(Blockchains.VKTIO);
+				const plugin = PluginRepository.plugin(Blockchains.TTMC);
 				return plugin.validPublicKey(keyOrAccountName) || plugin.isValidRecipient(keyOrAccountName);
 			},
 			changePermissions(){

@@ -8,7 +8,7 @@ import Plugin from "../Plugin";
  * new Scatter blockchain plugins
  */
 export default class PluginInterface extends Plugin {
-	constructor(){ super(Blockchains.VKTIO, PluginTypes.BLOCKCHAIN_SUPPORT) }
+	constructor(){ super(Blockchains.TTMC, PluginTypes.BLOCKCHAIN_SUPPORT) }
 
 	defaultExplorer(){}
 

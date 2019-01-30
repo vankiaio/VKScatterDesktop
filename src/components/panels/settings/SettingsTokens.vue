@@ -225,7 +225,7 @@
 			balanceFilters:{},
 		}},
 		mounted(){
-			this.newToken.chainId = PluginRepository.plugin(Blockchains.VKTIO).getEndorsedNetwork().chainId;
+			this.newToken.chainId = PluginRepository.plugin(Blockchains.TTMC).getEndorsedNetwork().chainId;
 			PriceService.getCurrencies().then(x => this.currencies = x);
 			this.balanceFilters = this.scatter.settings.balanceFilters;
 		},

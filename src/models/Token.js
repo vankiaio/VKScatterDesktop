@@ -6,7 +6,7 @@ import BigNumber from "bignumber.js";
 
 export default class Token {
 
-    constructor(blockchain = Blockchains.VKTIO, contract = '', symbol = '', name = null, decimals = null){
+    constructor(blockchain = Blockchains.TTMC, contract = '', symbol = '', name = null, decimals = null){
         this.id = IdGenerator.text(24);
         this.blockchain = blockchain;
         this.contract = contract;

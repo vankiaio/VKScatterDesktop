@@ -31,7 +31,7 @@ export default class LiquidEOS {
             })},
             async canConnect(){ return true; },
             setAddressIndex(){ return true; },
-            availableBlockchains(){ return [Blockchains.VKTIO] },
+            availableBlockchains(){ return [Blockchains.TTMC] },
             open(){},
             close(){},
         });

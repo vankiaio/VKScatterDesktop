@@ -13,7 +13,7 @@ import Token from "../../src/models/Token";
 
 const jungleNetwork = Network.fromJson({
 	name:'Jungle',
-	blockchain:Blockchains.VKTIO,
+	blockchain:Blockchains.TTMC,
 	host:'119.23.146.214',
 	port:8888,
 	protocol:'http',
@@ -89,13 +89,13 @@ describe('Network Model', () => {
 	});
 
 	it('should get a default system token if none is specified', () => {
-		const defaultToken = PluginRepository.plugin(Blockchains.VKTIO).defaultToken();
+		const defaultToken = PluginRepository.plugin(Blockchains.TTMC).defaultToken();
 		const systemToken = jungleNetwork.systemToken();
 		assert(defaultToken.unique() === systemToken.unique(), `System token was not default token`);
 	});
 
 	it('should get a specified system token', () => {
-		const defaultToken = PluginRepository.plugin(Blockchains.VKTIO).defaultToken();
+		const defaultToken = PluginRepository.plugin(Blockchains.TTMC).defaultToken();
 
 		const network = jungleNetwork.clone();
 
@@ -124,7 +124,7 @@ describe('NetworkService', async () => {
 	it('should be able to add a network', done => {
 		new Promise(async() => {
 			assert(scatter().settings.networks.length === 0, `Already has networks`);
-			const network = mockNetworks.find(x => x.blockchain === Blockchains.VKTIO);
+			const network = mockNetworks.find(x => x.blockchain === Blockchains.TTMC);
 			await NetworkService.addNetwork(network);
 			assert(scatter().settings.networks.length === 1, `Did not add 1 network`);
 			assert(scatter().keychain.accounts.length === 4, `Did not add accounts for keypair from new network.`);

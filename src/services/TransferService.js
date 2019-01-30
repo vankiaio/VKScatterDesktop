@@ -17,7 +17,7 @@ export default class TransferService {
         return this.baseTransfer(params);
     }
 
-    static async [Blockchains.VKTIO](params){
+    static async [Blockchains.TTMC](params){
         return this.baseTransfer(params);
     }
 
@@ -54,7 +54,7 @@ export default class TransferService {
 
     static transferSuccessPopup(transfer, blockchain){
 	    switch(blockchain){
-            case Blockchains.VKTIO:
+            case Blockchains.TTMC:
 			    PopupService.push(Popup.transactionSuccess(blockchain, transfer.transaction_id))
 			    break;
 		    case Blockchains.EOSIO:

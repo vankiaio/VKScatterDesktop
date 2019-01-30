@@ -4,7 +4,7 @@ import Token from "./Token";
 import PluginRepository from "../plugins/PluginRepository";
 
 export default class Network {
-    constructor(_name = '', _protocol = 'https', _host = '', _port = 0, blockchain = Blockchains.VKTIO, chainId = ''){
+    constructor(_name = '', _protocol = 'https', _host = '', _port = 0, blockchain = Blockchains.TTMC, chainId = ''){
         this.id = IdGenerator.numeric(12);
         this.name = _name;
         this.protocol = _protocol;

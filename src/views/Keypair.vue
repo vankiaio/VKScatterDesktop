@@ -68,7 +68,7 @@
 
 	        eosKey(){
             	if(!this.keypair) return;
-		        const publicKey = this.keypair.publicKeys.find(x => x.blockchain === Blockchains.VKTIO);
+		        const publicKey = this.keypair.publicKeys.find(x => x.blockchain === Blockchains.TTMC);
 		        if(!publicKey) return;
 		        return publicKey.key;
 	        }

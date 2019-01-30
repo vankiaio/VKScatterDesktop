@@ -170,12 +170,12 @@
 				this.setWorkingScreen(true);
 
 				const isBuying = this.state === STATES.BUY;
-				PluginRepository.plugin(Blockchains.VKTIO).buyOrSellRAM(this.account, bytes, this.account.network(), isBuying).then(res => {
+				PluginRepository.plugin(Blockchains.TTMC).buyOrSellRAM(this.account, bytes, this.account.network(), isBuying).then(res => {
 					this.setWorkingScreen(false);
 					if(!res || !res.hasOwnProperty('transaction_id')) {
 						return false;
 					}
-					PopupService.push(Popup.transactionSuccess(Blockchains.VKTIO, res.transaction_id));
+					PopupService.push(Popup.transactionSuccess(Blockchains.TTMC, res.transaction_id));
 					this.returnResult(res);
 				}).catch(err => {
 					this.setWorkingScreen(false);
@@ -185,7 +185,7 @@
 
 			async init(){
 				this.setWorkingScreen(false);
-				const plugin = PluginRepository.plugin(Blockchains.VKTIO);
+				const plugin = PluginRepository.plugin(Blockchains.TTMC);
 				const network = this.account.network();
 				const token = this.systemToken;
 				this.balance = await plugin.balanceFor(this.account, token);

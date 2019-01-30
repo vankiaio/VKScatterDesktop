@@ -2,7 +2,7 @@
 	<section>
 		<section class="panel-container limited">
 			<section class="centered">
-				<!--<h1>Your VKT Keys</h1>-->
+				<!--<h1>Your TTMC Keys</h1>-->
 				<img class="eos-logo" src="../../../assets/create_eos.png" />
 				<br>
 				<br>
@@ -43,23 +43,23 @@
 		created(){
 			// this[Actions.HIDE_BACK_BTN](true);
 			setTimeout(async () => {
-				const keypairs = [...new Array(2)].map(() => Keypair.placeholder([Blockchains.VKTIO]));
+				const keypairs = [...new Array(2)].map(() => Keypair.placeholder([Blockchains.TTMC]));
 				await Promise.all(keypairs.map(KeyPairService.generateKeyPair));
 				await Promise.all(keypairs.map(KeyPairService.makePublicKeys));
 
 				const [active, owner] = keypairs;
 
 				const randomName = IdGenerator.text(5);
-				active.name = `VKT-Key-${randomName}`;
-				owner.name = `VKT-Owner-${randomName}`;
+				active.name = `TTMC-Key-${randomName}`;
+				owner.name = `TTMC-Owner-${randomName}`;
 
 				await KeyPairService.saveKeyPair(active);
 				await KeyPairService.saveKeyPair(owner);
 
 				this.$emit('keys', [active.id, owner.id]);
 
-				this.ownerPublicKey = owner.publicKeys.find(x => x.blockchain === Blockchains.VKTIO).key;
-				this.activePublicKey = active.publicKeys.find(x => x.blockchain === Blockchains.VKTIO).key;
+				this.ownerPublicKey = owner.publicKeys.find(x => x.blockchain === Blockchains.TTMC).key;
+				this.activePublicKey = active.publicKeys.find(x => x.blockchain === Blockchains.TTMC).key;
 				this.ownerId = owner.id;
 				this.activeId = active.id;
 
@@ -141,12 +141,12 @@
 
 				let keypair = this.keypairs.find(x => x.id === this[keyType+'Id']);
 				keypair.decrypt(this.seed);
-				const publicKey = keypair.publicKeys.find(x => x.blockchain === Blockchains.VKTIO).key;
+				const publicKey = keypair.publicKeys.find(x => x.blockchain === Blockchains.TTMC).key;
 				this.copyPrivateKey(keyType, keypair.privateKey, publicKey);
 				keypair = null;
 			},
 			copyPrivateKey(keyType, privateKeyBuffer, publicKey){
-				const privateKey = Crypto.bufferToPrivateKey(privateKeyBuffer, Blockchains.VKTIO);
+				const privateKey = Crypto.bufferToPrivateKey(privateKeyBuffer, Blockchains.TTMC);
 				ElectronHelpers.copy(`${keyType}\nPrivate: ${privateKey} \nPublic: ${publicKey}`);
 			},
 			async deleteOwner(){

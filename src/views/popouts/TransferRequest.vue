@@ -166,7 +166,7 @@
 				if(!result) return this.$emit('returned', null);
 
 				let amount = this.currentAmount;
-				if(this.blockchain === Blockchains.VKTIO){
+				if(this.blockchain === Blockchains.TTMC){
 					amount = parseFloat(amount).toFixed(this.decimals);
 				} else {
 					amount = TokenService.formatAmount(amount, this.token);

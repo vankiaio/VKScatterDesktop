@@ -51,7 +51,7 @@
 			hardwareType:EXT_WALLET_TYPES.LEDGER,
 			EXT_WALLET_TYPES,
 			EXT_WALLET_TYPES_ARR,
-			blockchain:Blockchains.VKTIO,
+			blockchain:Blockchains.TTMC,
 			external:null,
 			importing:false,
 		}},

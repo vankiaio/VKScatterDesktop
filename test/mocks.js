@@ -16,12 +16,12 @@ export const mockKeypair = Keypair.fromJson({
 	name:'Testing Keypair',
 	keyHash:'testing_key',
 	blockchains:[
-		Blockchains.VKTIO,
+		Blockchains.TTMC,
 		Blockchains.EOSIO,
 		Blockchains.TRX
 	],
 	publicKeys:[
-		{blockchain:Blockchains.VKTIO, key:'VKT7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd'},
+		{blockchain:Blockchains.TTMC, key:'VKT7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd'},
 		{blockchain:Blockchains.EOSIO, key:'EOS7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd'},
 		{blockchain:Blockchains.TRX, key:'TF2quv1hTipcZ8FJ8FRsXXLSiJ1C15dqkW'}
 	],
@@ -29,8 +29,8 @@ export const mockKeypair = Keypair.fromJson({
 
 export const mockEosAccount = Account.fromJson({
 	keypairUnique:mockKeypair.unique(),
-	networkUnique:mockNetworks.find(x => x.blockchain === Blockchains.VKTIO).unique(),
-	publicKey:mockKeypair.publicKeys.find(x => x.blockchain === Blockchains.VKTIO).key,
+	networkUnique:mockNetworks.find(x => x.blockchain === Blockchains.TTMC).unique(),
+	publicKey:mockKeypair.publicKeys.find(x => x.blockchain === Blockchains.TTMC).key,
 	name:'ramdeathtest',
 	authority:'active'
 });

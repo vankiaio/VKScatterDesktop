@@ -184,7 +184,7 @@ export default class ApiService {
 
 			// Convert buf and abi to messages
 			switch(blockchain){
-				case Blockchains.VKTIO: payload.messages = await plugin.requestParser(payload, network); break;
+				case Blockchains.TTMC: payload.messages = await plugin.requestParser(payload, network); break;
 				case Blockchains.EOSIO: payload.messages = await plugin.requestParser(payload, network); break;
 				case Blockchains.ETH:
 				case Blockchains.TRX:
@@ -427,7 +427,7 @@ export default class ApiService {
 				Hasher.unsaltedQuickHash(request.payload.nonce)
 			);
 
-			const plugin = PluginRepository.plugin(Blockchains.VKTIO);
+			const plugin = PluginRepository.plugin(Blockchains.TTMC);
 			const signed = await plugin.signer({data}, publicKey, true, !!isHash);
 			resolve({id:request.id, result:signed});
 		})

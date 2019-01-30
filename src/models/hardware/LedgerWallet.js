@@ -20,7 +20,7 @@ const throwErr = () => PopupService.push(Popup.prompt(
 ));
 
 export const LEDGER_PATHS = {
-    [Blockchains.VKTIO]:(index = 0) => `44'/194'/0'/0/${index}`,
+    [Blockchains.TTMC]:(index = 0) => `44'/194'/0'/0/${index}`,
     [Blockchains.EOSIO]:(index = 0) => `44'/194'/0'/0/${index}`,
     [Blockchains.ETH]:(index = 0) => `44'/60'/0'/0/${index}`,
 }
@@ -42,7 +42,7 @@ export default class LedgerWallet {
     };
 
     availableBlockchains(){
-        return [Blockchains.VKTIO, Blockchains.EOSIO, Blockchains.ETH];
+        return [Blockchains.TTMC, Blockchains.EOSIO, Blockchains.ETH];
     }
 
     open(){
@@ -86,7 +86,7 @@ class LedgerAPI {
 
         let scrambleKey;
         switch(this.blockchain){
-            case Blockchains.VKTIO: scrambleKey = "ttmc"; break;
+            case Blockchains.TTMC: scrambleKey = "ttmc"; break;
             case Blockchains.EOSIO: scrambleKey = "e0s"; break;
             case Blockchains.ETH: scrambleKey = "eth"; break;
         }
@@ -134,7 +134,7 @@ class LedgerAPI {
     /*                 GET PUBLIC KEY                */
     /*************************************************/
 
-    [`getPublicKey`+Blockchains.VKTIO](){
+    [`getPublicKey`+Blockchains.TTMC](){
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 const path = LEDGER_PATHS[this.blockchain](this.addressIndex);
@@ -167,7 +167,7 @@ class LedgerAPI {
                                 1 + publicKeyLength + 1,
                                 1 + publicKeyLength + 1 + addressLength
                             )
-                            .toString("ascii").replace(/^EOS/g, 'VKT'));
+                            .toString("ascii").replace(/^EOS/g, 'TTMC'));
                     }).catch(err => {
                         PopupService.remove(popup);
                         reject(err);
@@ -203,7 +203,7 @@ class LedgerAPI {
     /*                 SIGN TRANSACTION              */
     /*************************************************/
 
-    [`signTransaction`+Blockchains.VKTIO](publicKey, rawTxHex, abi, network){
+    [`signTransaction`+Blockchains.TTMC](publicKey, rawTxHex, abi, network){
 
         const transaction = rawTxHex.transaction;
 
@@ -300,7 +300,7 @@ class LedgerAPI {
     /*                 GET APP CONFIG                */
     /*************************************************/
 
-    [`getAppConfiguration`+Blockchains.VKTIO](){
+    [`getAppConfiguration`+Blockchains.TTMC](){
         return getTransport().send(EOSIO_CODES.CLA, EOSIO_CODES.INFO, EOSIO_CODES.NO, EOSIO_CODES.NO).then(res => {
             return true;
         }).catch(err => {

@@ -33,7 +33,7 @@ export default class Account {
     }
 
     blockchain(){
-    	if(!this.keypair()) return Blockchains.VKTIO;
+    	if(!this.keypair()) return Blockchains.TTMC;
         return this.keypair().publicKeys.find(x => x.key === this.publicKey).blockchain;
     }
 

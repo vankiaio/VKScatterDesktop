@@ -116,8 +116,8 @@
 
 		        if(this.createdKeys.length){
 			        PopupService.push(Popup.prompt(
-				        'Created VKT Keys',
-				        `You created VKT keys without creating an VKT account, do you want to remove them?`,
+				        'Created TTMC Keys',
+				        `You created TTMC keys without creating an TTMC account, do you want to remove them?`,
 				        removed => {
 					        if(!removed) return this.createdKeys = [];
 					        this.createdKeys.map(async id => {

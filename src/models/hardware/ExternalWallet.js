@@ -14,7 +14,7 @@ export const EXT_WALLET_TYPES_ARR = Object.keys(EXT_WALLET_TYPES).map(x => EXT_W
 
 export default class ExternalWallet {
 
-    constructor(_type = EXT_WALLET_TYPES.LEDGER, _blockchain = Blockchains.VKTIO){
+    constructor(_type = EXT_WALLET_TYPES.LEDGER, _blockchain = Blockchains.TTMC){
         this.id = IdGenerator.text(64);
         this.type = _type;
         this.blockchain = _blockchain;

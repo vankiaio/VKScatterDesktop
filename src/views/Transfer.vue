@@ -85,7 +85,7 @@
                             </section>
                         </section>
 
-                        <cin v-if="token.blockchain === Blockchains.VKTIO"
+                        <cin v-if="token.blockchain === Blockchains.TTMC"
                              :label="locale(langKeys.GENERIC.Memo)" textarea="1"
                              :text="memo"
                              v-on:changed="x => memo = x" />
@@ -465,7 +465,7 @@
             },
             selectToken(token){
 	            this.token = token.id === 'custom'
-		            ? Token.fromJson({id:token.id, name:token.title, blockchain:this.account ? this.account.blockchain() : Blockchains.VKTIO})
+		            ? Token.fromJson({id:token.id, name:token.title, blockchain:this.account ? this.account.blockchain() : Blockchains.TTMC})
 		            : this.filteredTokens.find(x => x.id === token.id);
 	    		if(this.token.id === 'custom'){
 				    this.token.blockchain = this.account.blockchain();
