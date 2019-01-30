@@ -28,7 +28,7 @@ import HardwareService from "../../services/HardwareService";
 const blockchainApiURL = 'http://119.23.146.214:3030/vktapi/v1';
 const mainnetChainId = '57fca24b1ac519ca178ee44c37844fae2caffd954c4fad1fa67c9c4cceb86a60';
 
-class VKTTokenAccountAPI {
+class TTMCTokenAccountAPI {
 	constructor(){}
 
 
@@ -91,7 +91,7 @@ const getCachedInstance = network => {
 
 const getAccountsFromPublicKey = async (publicKey, network, process, progressDelta, fallbackToChain = false) => {
 	if(network.chainId === mainnetChainId && !fallbackToChain){
-		const accountsFromApi = await VKTTokenAccountAPI.getAccountsFromPublicKey(publicKey, network);
+		const accountsFromApi = await TTMCTokenAccountAPI.getAccountsFromPublicKey(publicKey, network);
 		if(!accountsFromApi) return getAccountsFromPublicKey(publicKey, network, process, progressDelta, true);
 		else return accountsFromApi;
 	}
@@ -152,9 +152,9 @@ const popupError = result => {
 
 const EXPLORER = {
 	"name":"TTMC Tracker",
-	"account":"http://tracker.devicexx.com/accounts/{x}",
-	"transaction":"http://tracker.devicexx.com/transactions/blocks/{x}",
-	"block":"http://tracker.devicexx.com/blocks/{x}"
+	"account":"http://tracker.ttmc.com/accounts/{x}",
+	"transaction":"http://tracker.ttmc.com/transactions/blocks/{x}",
+	"block":"http://tracker.ttmc.com/blocks/{x}"
 };
 
 
@@ -501,7 +501,7 @@ export default class TTMC extends Plugin {
 
 	async balancesFor(account, tokens, fallback = false){
 		if(!fallback && this.isEndorsedNetwork(account.network())){
-			const balances = await VKTTokenAccountAPI.getAllTokens(account);
+			const balances = await TTMCTokenAccountAPI.getAllTokens(account);
 			if(!balances) return this.balanceFor(account, tokens, true);
 			const blacklist = store.getters.blacklistTokens.filter(x => x.blockchain === Blockchains.TTMC).map(x => x.unique());
 			return balances.filter(x => !blacklist.includes(x.unique()));
