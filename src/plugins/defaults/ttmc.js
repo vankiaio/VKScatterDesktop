@@ -67,6 +67,9 @@ class TTMCTokenAccountAPI {
 						symbol:balance.currency,
 						name:balance.currency,
 						amount:balance.amount,
+						amountlocked:balance.amountlocked,
+						availableamount:balance.availableamount,
+						unlockdate:balance.unlockdate,
 						decimals:balance.decimals,
 						chainId:account.network().chainId
 					})
