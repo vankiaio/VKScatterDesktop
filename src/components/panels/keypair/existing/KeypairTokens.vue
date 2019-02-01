@@ -26,7 +26,7 @@
 				</figure>
 				<figure class="amount">
 					{{formatNumber(systemTokenBalance.amount, true)}}
-					<span v-if="systemTokenBalance.amountlocked && systemTokenBalance.availableamount && systemTokenBalance.unlockdate">Locked:{{formatNumber(systemTokenBalance.amountlocked, true)}} Available:{{formatNumber(systemTokenBalance.availableamount, true)}} Unlock period:{{systemTokenBalance.unlockdate}}</span>
+					<span v-if="systemTokenBalance.amountlocked && systemTokenBalance.availableamount && systemTokenBalance.unlockdate">Available:{{formatNumber(systemTokenBalance.availableamount, true)}} Locked:{{formatNumber(systemTokenBalance.amountlocked, true)}} Unlock period:{{systemTokenBalance.unlockdate}}</span>
 					<!-- <span v-if="systemTokenBalance.fiatBalance()">{{formatNumber(systemTokenBalance.fiatBalance(), true)}}</span> -->
 				</figure>
 				<!-- <section class="info">
