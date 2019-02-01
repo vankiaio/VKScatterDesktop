@@ -10,8 +10,8 @@
 			     v-on:changed="x => keypair.name = x" />
 
 			<section class="panel-switch" :class="{'short':!scrollerAtTop}">
-				<figure class="button" v-if="hasEosBlockchain" :class="{'active':dashState === DASH_STATES.ADD_ACCOUNT}"
-				        @click="dashState = DASH_STATES.ADD_ACCOUNT">{{locale(langKeys.KEYPAIR.DASHBOARD.STATES.AddAccount)}}</figure>
+				<!-- <figure class="button" v-if="hasEosBlockchain" :class="{'active':dashState === DASH_STATES.ADD_ACCOUNT}"
+				        @click="dashState = DASH_STATES.ADD_ACCOUNT">{{locale(langKeys.KEYPAIR.DASHBOARD.STATES.AddAccount)}}</figure> -->
 				<figure class="button" :class="{'active':dashState === DASH_STATES.ACCOUNTS}"
 				        @click="dashState = DASH_STATES.ACCOUNTS">{{locale(langKeys.KEYPAIR.DASHBOARD.STATES.LinkedAccounts)}}</figure>
 				<figure class="button" :class="{'active':dashState === DASH_STATES.PUBLIC_KEYS}"

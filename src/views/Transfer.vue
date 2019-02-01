@@ -405,7 +405,8 @@
             openTokenSelector(){
 	    		if(!this.account) return;
 
-	    		let items = [{id:'custom', name:this.locale(this.langKeys.TRANSFER.TOKENS.CustomTokenLabel)}].concat(this.filteredTokens)
+                // let items = [{id:'custom', name:this.locale(this.langKeys.TRANSFER.TOKENS.CustomTokenLabel)}].concat(this.filteredTokens)
+                let items = [].concat(this.filteredTokens)
                     .map(token => {
 	                    const balance = this.totalBalanceFor(token.id) ? this.totalBalanceFor(token.id).formatted() ? this.totalBalanceFor(token.id).formatted() :'' :'';
 	                    const description = token.id === 'custom' ? null : balance
