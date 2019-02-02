@@ -2,9 +2,9 @@
 	<section>
 		<section class="item" v-for="blockchain in availableBlockchains">
 
-			<section class="switch" :class="{'disabled':isRefreshing || isHardware}" @click="addOrRemoveBlockchain(blockchain)">
+			<!-- <section class="switch" :class="{'disabled':isRefreshing || isHardware}" @click="addOrRemoveBlockchain(blockchain)">
 				<figure class="dot" :class="{'disabled':!keypair.blockchains.includes(blockchain)}"></figure>
-			</section>
+			</section> -->
 
 			<section class="info">
 				<figure class="blockchain">{{blockchainName(blockchain)}}</figure>
