@@ -5,11 +5,11 @@
             <section class="action-bar short">
                 <section class="token-buttons">
                     <btn style="padding:0 8px;" :disabled="loadingBalances" :loading="loadingBalances" v-on:clicked="refreshTokens" icon="icon-arrows-ccw" />
-                    <router-link :to="{name:RouteNames.SETTINGS, params:{panel:SETTINGS_OPTIONS.TOKENS}}" class="total-balance">
+                    <section :to="{name:RouteNames.SETTINGS, params:{panel:SETTINGS_OPTIONS.TOKENS}}" class="total-balance">
                         <figure class="symbol">{{balance.symbol}}</figure>
                         <figure class="amount">{{formatNumber(balance.amount, true)}}</figure>
-                        <figure class="chevron icon-right-open-big"></figure>
-                    </router-link>
+                        <!-- <figure class="chevron icon-right-open-big"></figure> -->
+                    </section>
                     <!--<btn text="Buy"></btn>-->
                     <!--<btn text="Exchange"></btn>-->
                 </section>
@@ -152,8 +152,8 @@
     }
 
     .total-balance {
-        cursor: pointer;
-        height:36px;
+        // cursor: pointer;
+        height:38px;
         padding:0 12px;
         outline:0;
         border:1px solid #dfe0e1;
@@ -165,24 +165,24 @@
         width:280px;
         margin-left:5px;
 
-        &:hover {
-            border:1px solid rgba(0,0,0,0.22);
+        // &:hover {
+        //     border:1px solid rgba(0,0,0,0.22);
 
-            .chevron {
+        //     .chevron {
 
-                animation: hover-bounce 0.7s ease infinite;
-            }
+        //         animation: hover-bounce 0.7s ease infinite;
+        //     }
 
-            @keyframes hover-bounce {
-                0%, 100% { transform:translateX(-2px) }
-                50% { transform:translateX(2px) }
-            }
-        }
+        //     @keyframes hover-bounce {
+        //         0%, 100% { transform:translateX(-2px) }
+        //         50% { transform:translateX(2px) }
+        //     }
+        // }
 
-        &:active {
-            border:1px solid $dark-blue;
-            background:rgba(0,0,0,0.04);
-        }
+        // &:active {
+        //     border:1px solid $dark-blue;
+        //     background:rgba(0,0,0,0.04);
+        // }
 
         .symbol {
             background:$light-blue;

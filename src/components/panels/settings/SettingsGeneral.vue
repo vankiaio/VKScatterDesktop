@@ -35,12 +35,12 @@
                  v-on:dynamic="openFilePathLink"></cin>
         </section>
 
-        <section class="action-box top-pad">
+        <!-- <section class="action-box top-pad">
             <label>{{locale(langKeys.SETTINGS.GENERAL.DeveloperConsoleLabel)}}</label>
             <p>{{locale(langKeys.SETTINGS.GENERAL.DeveloperConsoleDescription)}}</p>
             <btn @click.native="openConsole"
                  :text="locale(langKeys.SETTINGS.GENERAL.DeveloperConsoleButton)"></btn>
-        </section>
+        </section> -->
 
     </section>
 </template>

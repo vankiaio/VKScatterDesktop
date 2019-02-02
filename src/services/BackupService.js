@@ -17,7 +17,7 @@ const saveFile = (filepath) => {
         const year = date.getUTCFullYear();
         const salt = StorageService.getSalt();
         const file = scatter + '|SLT|' + salt;
-        const name = `${filepath}/scatter__${store.state.scatter.hash.substr(0,4)}-${store.state.scatter.hash.slice(-4)}__${store.state.scatter.meta.version}__${month}-${year}.json`;
+        const name = `${filepath}/ttmc__${store.state.scatter.hash.substr(0,4)}-${store.state.scatter.hash.slice(-4)}__${store.state.scatter.meta.version}__${month}-${year}.json`;
         try {
             fs.writeFileSync(name, file, 'utf-8');
             resolve(true);

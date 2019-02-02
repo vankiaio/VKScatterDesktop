@@ -6,7 +6,7 @@
 				        :class="{'icon-down-open-big':collapsed, 'icon-up-open-big':!collapsed}"
 				        @click="collapsed = !collapsed"></figure>
 
-				<figure class="network">{{blockchainName(account.blockchain())}} - <b>{{account.network().name}}</b></figure>
+				<figure class="network">{{blockchainName(account.blockchain())}}</figure>
 				<figure class="identifier" :class="{'mainnet':isMainnet}" @click="openInExplorer">{{account.sendable()}}</figure>
 					<!-- <section class="authorities" v-if="authorities.length">
 						<figure class="authority" :class="{'red':authority === 'owner'}" v-for="authority in authorities">{{authority}}</figure>
@@ -17,7 +17,7 @@
 				</section> -->
 			</section>
 			<section class="tokens" @click="$emit('tokens', account)" v-if="account.tokenCount(systemToken)+1 > 0">
-				{{locale(langKeys.KEYPAIR.ACCOUNTS.ViewTokens, account.tokenCount(systemToken)+1)}} <i class="icon-right-open-big"></i>
+				{{locale(langKeys.KEYPAIR.ACCOUNTS.ViewTokens)}} <i class="icon-right-open-big"></i>
 			</section>
 			<section class="tokens" v-else>
 				No Tokens

@@ -5,7 +5,7 @@
 			<section class="head">
 				<figure class="icon icon-trash"></figure>
 				<figure class="title">{{locale(langKeys.POPINS.FULLSCREEN.REMOVE_KEY.Title)}}</figure>
-				<p>{{keypair.name}} ({{keypair.accounts().length}} {{locale(langKeys.GENERIC.Accounts, keypair.accounts().length)}})</p>
+				<p>{{keypair.name}}</p>
 
 				<br>
 				<section class="disclaimer less-pad red">

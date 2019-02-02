@@ -100,8 +100,8 @@
 
 	        this.newKeyTypes = [
 		        // {icon:'', title:locale(SELECT.CreateTitle), description:locale(SELECT.CreateDescription), actions:[{name:locale(SELECT.CreateButton), handler:this.generateNewKeypair}]},
-		        {icon:'', title:locale(SELECT.ImportTitle), description:locale(SELECT.ImportDescription), actions:[{name:locale(SELECT.ImportButton), handler:() => this.state = STATES.IMPORT}]},
-		        {icon:'', title:locale(SELECT.CreateEosTitle), description:locale(SELECT.CreateEosDescription), actions:[{name:locale(SELECT.CreateEosButton), handler:this.createEosKeys}]},
+                {icon:'', title:locale(SELECT.CreateEosTitle), description:locale(SELECT.CreateEosDescription), actions:[{name:locale(SELECT.CreateEosButton), handler:this.createEosKeys}]},
+                {icon:'', title:locale(SELECT.ImportTitle), description:locale(SELECT.ImportDescription), actions:[{name:locale(SELECT.ImportButton), handler:() => this.state = STATES.IMPORT}]},
 	        ];
 
 	        this.importTypes = [
@@ -115,18 +115,10 @@
 	        back(){
 
 		        if(this.createdKeys.length){
-			        PopupService.push(Popup.prompt(
-				        'Created TTMC Keys',
-				        `You created TTMC keys without creating an TTMC account, do you want to remove them?`,
-				        removed => {
-					        if(!removed) return this.createdKeys = [];
-					        this.createdKeys.map(async id => {
+			        this.createdKeys.map(async id => {
 						        const keypair = this.keypairs.find(x => x.id === id);
 						        if(keypair) await KeyPairService.removeKeyPair(keypair);
 					        })
-
-					        this.createdKeys = [];
-				        }, true))
 		        }
 
 	        	if(this.importState !== IMPORT_STATES.SELECT) return this.importState = IMPORT_STATES.SELECT;

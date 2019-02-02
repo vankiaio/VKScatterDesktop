@@ -120,7 +120,7 @@ const Locale = {
 	/****************************************************/
 
 	[DASHBOARD.KEYS.SearchPlaceholder]:() => `Search Keys`,
-	[DASHBOARD.KEYS.AddKeysButton]:() => `Add Keys`,
+	[DASHBOARD.KEYS.AddKeysButton]:() => `Add Account`,
 	[DASHBOARD.KEYS.NoKeys]:() => `Well, what are we waiting for?`,
 	[DASHBOARD.KEYS.LinkedAccounts]:count => `${count} linked account${plural_s(count)}`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -154,14 +154,14 @@ const Locale = {
 		`If you want to create a new set of keys that you can use on any blockchain. 
 		The keys will not have any funds on them, they are brand new.`,
 	[ADD_KEYS.SELECT.CreateButton]:() => `Create Key`,
-	[ADD_KEYS.SELECT.ImportTitle]:() => `Import an existing key`,
+	[ADD_KEYS.SELECT.ImportTitle]:() => `Import an existing TTMC account`,
 	[ADD_KEYS.SELECT.ImportDescription]:() => `If you already have a key and want to import it into TTMC Wallet`,
 	[ADD_KEYS.SELECT.ImportButton]:() => `Import Key`,
 	[ADD_KEYS.SELECT.CreateEosTitle]: () => `Create a new TTMC account`,
-	[ADD_KEYS.SELECT.CreateEosDescription]:() => `We'll quickly generate two keys for you`,
+	[ADD_KEYS.SELECT.CreateEosDescription]:() => `We'll quickly generate key for you`,
 	[ADD_KEYS.SELECT.CreateEosButton]: () => `TTMC account`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
-	[ADD_KEYS.IMPORT.NameLabel]:() => `Key Name`,
+	[ADD_KEYS.IMPORT.NameLabel]:() => `Account Name`,
 	[ADD_KEYS.IMPORT.NamePlaceholder]:() => `Give this key a name to remember.`,
 	[ADD_KEYS.IMPORT.TextTitle]:() => `Import private key as text`,
 	[ADD_KEYS.IMPORT.TextDescription]:() => `If you would like to type in or paste your private key`,
@@ -259,7 +259,7 @@ const Locale = {
 	[KEYPAIR.TOKENS.SearchPlaceholder]:() => `Search Tokens`,
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	[KEYPAIR.ACCOUNTS.SearchPlaceholder]:() => `Search Accounts`,
-	[KEYPAIR.ACCOUNTS.ViewTokens]:n => `${n} Token${plural_s(n)}`,
+	[KEYPAIR.ACCOUNTS.ViewTokens]:n => `Details`,
 	[KEYPAIR.ACCOUNTS.EOSClaimRefundButton]:() => `Refund`,
 	[KEYPAIR.ACCOUNTS.EOSDangerousPermissions]:() =>
 		`Both active and owner are on the same key.`,
@@ -400,11 +400,11 @@ const Locale = {
 	[SETTINGS.TOKENS.ADD_TOKEN.BlacklistTokenButton]:() => `Blacklist Token`,
 	[SETTINGS.TOKENS.SETTINGS.MainBalanceDisplayLabel]:() => `Main Balance Display`,
 	[SETTINGS.TOKENS.SETTINGS.MainBalanceDisplayDescription]:() =>
-		`You can set whether you want to see balances for all networks in the main dashboard, or just balances for mainnets.`,
+		`You can set whether you want to see balances for all networks in the main dashboard, or just balances for this net.`,
 	[SETTINGS.TOKENS.SETTINGS.MainBalanceDisplayMainnetButton]:() => `Show all networks`,
 	[SETTINGS.TOKENS.SETTINGS.MainBalanceDisplayMainnetDesc]:() =>
 		`Displaying only mainnet tokens means Wallet will not use alternate chain or testnet chain tokens to calculate total balances.`,
-	[SETTINGS.TOKENS.SETTINGS.MainBalanceDisplayAllNetworksButton]:() => `Show only Mainnets`,
+	[SETTINGS.TOKENS.SETTINGS.MainBalanceDisplayAllNetworksButton]:() => `Show only this net`,
 	[SETTINGS.TOKENS.SETTINGS.MainBalanceDisplayAllNetworksDesc]:() =>
 		`Showing all networks means Wallet will take every network into consideration when calculating total balances.`,
 	[SETTINGS.TOKENS.SETTINGS.FilterSmallBalancesLabel]:() => `Filter Small Balances`,

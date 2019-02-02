@@ -87,7 +87,7 @@
 
 		<section class="full-panel center-fold inner with-action limited" v-if="state === STATES.SEND_AMOUNT">
 			<section class="padded">
-				<b>TTMC Mainnet</b>
+				<b>TTMC BlockChain</b>
 				<br>
 				<br>
 				<section style="margin:0 auto;" class="disclaimer less-pad">
@@ -235,7 +235,7 @@
 				}, []).map(account => ({
 					id:account.unique(),
 					title:account.name,
-					description:account.network().name,
+					description:'',
 				}));
 			},
 			minimumPrice(){

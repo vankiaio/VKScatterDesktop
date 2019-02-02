@@ -9,7 +9,7 @@
                 <sel :options="recipientAccounts" style="width:420px;"
                      :selected="account"
                      :parser="x => x.sendable()"
-                     :subparser="x => `${x.network().name} - ${x.keypair().name}`"
+                     :subparser="x => `${x.keypair().name}`"
                      v-on:changed="x => account = x"></sel>
             </section>
 
@@ -21,9 +21,9 @@
                 </figure>
                 <cin style="width:500px; margin-top:10px; margin-bottom:10px;" disabled="1" big="1"
                      :text="account.sendable()" copy="1" />
-                <section class="details">
+                <!-- <section class="details">
                     <p><b>{{account.network().name}}</b></p>
-                </section>
+                </section> -->
             </section>
 
         </section>

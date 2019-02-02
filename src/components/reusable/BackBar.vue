@@ -9,7 +9,7 @@
                     </figure>
                     <section>
                         <figure>{{text ? text : locale(langKeys.GENERIC.Back)}}</figure>
-                        <figure class="subtext" v-if="subtext">{{subtext}}</figure>
+                        <!-- <figure class="subtext" v-if="subtext">{{subtext}}</figure> -->
                     </section>
                 </section>
             </transition>

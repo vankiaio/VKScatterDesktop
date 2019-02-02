@@ -27,7 +27,7 @@ export default class UpdateService {
     }
 
     static async needsUpdateNoPrompt(){
-        const {version, stringVersion, body, prerelease, name} = await fetch('https://api.github.com/repos/vankiaio/VKScatterDesktop/releases/latest').then(res => res.json()).then(x => ({
+        const {version, stringVersion, body, prerelease, name} = await fetch('https://api.github.com/repos/vankiaio/TTMCDesktop/releases/latest').then(res => res.json()).then(x => ({
 	        name:x.name,
             version:mathematicalVersion(x.tag_name),
             stringVersion:x.tag_name,

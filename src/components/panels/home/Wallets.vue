@@ -5,7 +5,7 @@
 			<section class="item" v-for="keypair in vaultEntries" @click="goToKeypair(keypair.id)">
 				<section class="details">
 					<figure class="title">{{keypair.name}}</figure>
-					<p>{{locale(langKeys.DASHBOARD.KEYS.LinkedAccounts, keypair.accounts(true).length)}}</p>
+					<!-- <p>{{locale(langKeys.DASHBOARD.KEYS.LinkedAccounts, keypair.accounts(true).length)}}</p> -->
 				</section>
 				<figure class="chevron icon-right-open-big"></figure>
 

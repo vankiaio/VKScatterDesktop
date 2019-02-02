@@ -55,7 +55,7 @@ export default class VueInitializer {
 	                blockchainName,
 	                locale:(key, args) => localized(key, args, store.getters.language),
 	                newKeypair(){ this.stopTour(); this.$router.push({name:RouteNames.NEW_KEYPAIR}); },
-	                goToApps(){ this.openInBrowser('https://get-scatter.com/Apps') },
+	                goToApps(){ this.openInBrowser('https://www.ttmc.io/Apps') },
 	                openInBrowser(url){ ElectronHelpers.openLinkInBrowser(url); },
 	                setWorkingScreen(bool){ store.dispatch(Actions.SET_WORKING_SCREEN, bool); },
 	                copyText(text){ ElectronHelpers.copy(text) },

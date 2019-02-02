@@ -3,7 +3,7 @@
 		<section>
 			<h1>{{account.sendable()}}</h1>
 			<section class="account-info">
-				<p>{{blockchainName(account.blockchain())}} - <b>{{account.network().name}}</b></p>
+				<p>{{blockchainName(account.blockchain())}}</p>
 				<!-- <p>{{totalFiatBalance}} <b>{{displayCurrency}}</b></p> -->
 				<br>
 				<br>
@@ -12,8 +12,8 @@
 				</router-link>
 			</section>
 
-			<SearchBar class="search" :placeholder="locale(langKeys.KEYPAIR.TOKENS.SearchPlaceholder)"
-			           v-on:terms="x => searchTerms = x" />
+			<!-- <SearchBar class="search" :placeholder="locale(langKeys.KEYPAIR.TOKENS.SearchPlaceholder)"
+			           v-on:terms="x => searchTerms = x" /> -->
 		</section>
 
 		<section class="tokens-list">

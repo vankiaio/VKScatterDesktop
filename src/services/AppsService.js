@@ -17,7 +17,7 @@ const storeApps = res => {
 
 const getAppsFromGithub = () => {
 	return new Promise(resolve => {
-		fetch(`https://rawgit.com/GetScatter/ScatterApps/master/apps.json?rand=${Math.random() * 10000 + 1}`).then(res => res.json()).then(result => {
+		fetch(`https://rawgit.com/ttmc/ttmcApps/master/apps.json?rand=${Math.random() * 10000 + 1}`).then(res => res.json()).then(result => {
 			storeApps(Object.keys(result).reduce((acc, blockchain) => {
 				result[blockchain].map(app => {
 					acc.push(Object.assign(app, {blockchain}));
@@ -31,7 +31,7 @@ const getAppsFromGithub = () => {
 
 const getAppsFromAPI = () => {
 	return new Promise(resolve => {
-		fetch(`https://api.get-scatter.com/v1/apps?flat=true`).then(res => res.json()).then(res => {
+		fetch(`https://api.ttmc.io/v1/apps?flat=true`).then(res => res.json()).then(res => {
 			storeApps(res);
 			resolve(true);
 		}).catch(() => resolve(false));

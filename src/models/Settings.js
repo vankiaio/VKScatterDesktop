@@ -35,7 +35,7 @@ export default class Settings {
 
         // Tokens
         this.showMainnetsOnly = true;
-        this.displayToken = 'ttmc:ttmc:TTMC';
+        this.displayToken = 'ttmc:eosio.token:ttmc';
 	    this.displayCurrency = 'USD';
 	    this.tokens = [];
 	    this.blacklistTokens = [];

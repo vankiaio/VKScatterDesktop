@@ -21,10 +21,10 @@
 			<!-- ACCOUNTS -->
 			<section class="list-container" v-if="dashState === DASH_STATES.ACCOUNTS">
 				<!-- Accounts Searchbar -->
-				<SearchBar :short="!scrollerAtTop"
+				<!-- <SearchBar :short="!scrollerAtTop"
 				           class="search" :class="{'short':!scrollerAtTop}"
 				           :placeholder="locale(langKeys.KEYPAIR.ACCOUNTS.SearchPlaceholder)"
-				           v-on:terms="x => searchTerms = x" />
+				           v-on:terms="x => searchTerms = x" /> -->
 
 				<!-- Accounts List -->
 				<section class="list accounts" :class="{'scrolled':!scrollerAtTop}" @scroll="handleScroll">
@@ -148,6 +148,9 @@
 				return this.keypair.blockchains.includes(Blockchains.TTMC);
 			},
 			filteredAccounts(){
+				if(this.keypair.accounts(true).length > 0){
+				       this.keypair.name = `TTMC-${this.keypair.accounts(true)[0].sendable()}`;
+				}
 				return this.keypair.accounts(true)
 					.filter(x => x.name.toLowerCase().match(this.searchTerms))
 					.sort((a,b) => {
@@ -175,7 +178,7 @@
 
 			if(!this.keypair.accounts().length){
 				if(this.keypair.blockchains.includes(Blockchains.TTMC)){
-					this.dashState = DASH_STATES.ADD_ACCOUNT;
+					this.dashState = DASH_STATES.ACCOUNTS;
 				}
 			}
 		},
@@ -277,11 +280,11 @@
 		overflow-x:hidden;
 
 		&.blockchains {
-			top:0;
+			top:2px;
 		}
 
 		&.accounts {
-			top:60px;
+			top:2px;
 
 			@media (min-width:1280px){
 				padding:0 10px;

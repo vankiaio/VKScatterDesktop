@@ -1,8 +1,7 @@
 <template>
     <section>
         <back-bar v-on:back="back"
-                  :text="account ? account.sendable() : null"
-                  :subtext="account ? account.network().name : null" />
+                  :text="account ? account.sendable() : null" />
 
         <section class="full-panel inner limited" v-if="token">
             <section style="display:flex; flex-direction: column; flex:1;">
@@ -57,7 +56,7 @@
                         <sel :disabled="!account" :selected="token"
                              :parser="x => x.name"
                              :items="[]" as-button="1"
-                             v-on:clicked="openTokenSelector" />
+                        />
                         <br>
 
                         <section class="custom-token" v-if="token.id === 'custom'">
@@ -286,7 +285,7 @@
                     .map(account => ({
                         id:account.unique(),
                         title:account.sendable(),
-                        description:`${account.network().name} - ${account.keypair().name}`,
+                        description:`${account.keypair().name}`,
                     }))
             },
 	        filteredTokens(){

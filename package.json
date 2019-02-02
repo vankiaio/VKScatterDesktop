@@ -1,6 +1,6 @@
 {
   "name": "ttmcwallet",
-  "version": "10.0.5",
+  "version": "0.9.0",
   "description": "TTMC Wallet Desktop Companion",
   "private": true,
   "main": "electron.js",

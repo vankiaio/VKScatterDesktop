@@ -57,7 +57,7 @@
                             <h1>2. Modification of Terms of Use</h1>
 
                             TTMC Wallet reserves the right, at its sole discretion, to modify or replace the Terms of Use at any time.
-                            The most current version of these Terms will be posted on https://get-scatter.com (the "Site"). You shall be responsible for
+                            The most current version of these Terms will be posted on https://www.ttmc.io (the "Site"). You shall be responsible for
                             reviewing and becoming familiar with any such modifications. Use of the Services by you after any modification to the Terms constitutes your acceptance
                             of the Terms of Use as modified.
 
@@ -158,10 +158,10 @@
 
                             YOU ACKNOWLEDGE AND AGREE THAT YOU ASSUME FULL RESPONSIBILITY FOR YOUR USE OF THE SITE AND SERVICE. YOU ACKNOWLEDGE AND AGREE THAT ANY INFORMATION YOU SEND OR RECEIVE
                             DURING YOUR USE OF THE SITE AND SERVICE MAY NOT BE SECURE AND MAY BE INTERCEPTED OR LATER ACQUIRED BY UNAUTHORIZED PARTIES. YOU ACKNOWLEDGE AND AGREE THAT YOUR USE OF THE
-                            SITE AND SERVICE IS AT YOUR OWN RISK. RECOGNIZING SUCH, YOU UNDERSTAND AND AGREE THAT, TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, NEITHER SCATTER NOR ITS SUPPLIERS OR
+                            SITE AND SERVICE IS AT YOUR OWN RISK. RECOGNIZING SUCH, YOU UNDERSTAND AND AGREE THAT, TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, NEITHER TTMC NOR ITS SUPPLIERS OR
                             LICENSORS WILL BE LIABLE TO YOU FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, PUNITIVE, EXEMPLARY OR OTHER DAMAGES OF ANY KIND, INCLUDING WITHOUT LIMITATION
                             DAMAGES FOR LOSS OF PROFITS, GOODWILL, USE, DATA OR OTHER TANGIBLE OR INTANGIBLE LOSSES OR ANY OTHER DAMAGES BASED ON CONTRACT, TORT, STRICT LIABILITY OR ANY OTHER THEORY
-                            (EVEN IF SCATTER HAD BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES), RESULTING FROM THE SITE OR SERVICE; THE USE OR THE INABILITY TO USE THE SITE OR SERVICE; UNAUTHORIZED
+                            (EVEN IF TTMC HAD BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES), RESULTING FROM THE SITE OR SERVICE; THE USE OR THE INABILITY TO USE THE SITE OR SERVICE; UNAUTHORIZED
                             ACCESS TO OR ALTERATION OF YOUR TRANSMISSIONS OR DATA; STATEMENTS OR CONDUCT OF ANY THIRD PARTY ON THE SITE OR SERVICE; ANY ACTIONS WE TAKE OR FAIL TO TAKE AS A RESULT OF
                             COMMUNICATIONS YOU SEND TO US; HUMAN ERRORS; TECHNICAL MALFUNCTIONS; FAILURES, INCLUDING PUBLIC UTILITY OR TELEPHONE OUTAGES; OMISSIONS, INTERRUPTIONS, LATENCY, DELETIONS OR
                             DEFECTS OF ANY DEVICE OR NETWORK, PROVIDERS, OR SOFTWARE (INCLUDING, BUT NOT LIMITED TO, THOSE THAT DO NOT PERMIT PARTICIPATION IN THE SERVICE); ANY INJURY OR DAMAGE TO COMPUTER
@@ -181,7 +181,7 @@
                             All title, ownership and intellectual property rights in and to the Service are owned by TTMC Wallet or its licensors. You acknowledge and agree that the Service contains
                             proprietary and confidential information that is protected by applicable intellectual property and other laws. Except as expressly authorized by TTMC Wallet, you agree not to copy,
                             modify, rent, lease, loan, sell, distribute, perform, display or create derivative works based on the Service, in whole or in part. TTMC Wallet issues licenses for TTMC Wallet's various code-bases,
-                            which can be found on their individual repositories. Each code-base might have a different license. You can find all official repositories at https://github.com/GetScatter.
+                            which can be found on their individual repositories. Each code-base might have a different license.
 
 
 
@@ -235,7 +235,7 @@
                             authorized to act on the copyright or intellectual property owner’s behalf.
                             <br><br>
                             TTMC Wallet’s Copyright Agent can be reached at:<br>
-                            Email: copyright [at] get-scatter [dot] com
+                            Email: copyright [at] ttmc [dot] io
 
 
                             <br><br>
@@ -276,7 +276,7 @@
                             <h2>13.4 Class Action Waiver</h2>
 
                             The parties further agree that any arbitration shall be conducted in their individual capacities only and not as a class action or other representative action,
-                            and the parties expressly waive their right to file a class action or seek relief on a class basis. YOU AND SCATTER AGREE THAT EACH MAY BRING CLAIMS AGAINST THE OTHER
+                            and the parties expressly waive their right to file a class action or seek relief on a class basis. YOU AND TTMC AGREE THAT EACH MAY BRING CLAIMS AGAINST THE OTHER
                             ONLY IN YOUR OR ITS INDIVIDUAL CAPACITY, AND NOT AS A PLAINTIFF OR CLASS MEMBER IN ANY PURPORTED CLASS OR REPRESENTATIVE PROCEEDING. If any court or arbitrator determines
                             that the class action waiver set forth in this paragraph is void or unenforceable for any reason or that an arbitration can proceed on a class basis, then the arbitration
                             provision set forth above shall be deemed null and void in its entirety and the parties shall be deemed to have not agreed to arbitrate disputes.
@@ -292,7 +292,7 @@
                             <h2>13.6 30-Day Right to Opt Out</h2>
 
                             You have the right to opt-out and not be bound by the arbitration and class action waiver provisions set forth above by sending written notice of your decision to opt-out
-                            to the following email address: legal-opt [at] get-scatter [dot] com. The notice must be sent within 30 days of
+                            to the following email address: legal-opt [at] ttmc [dot] io. The notice must be sent within 30 days of
                             your first use of the Service, otherwise you shall be bound to arbitrate disputes in accordance with the terms of those paragraphs.
                             If you opt-out of these arbitration provisions, TTMC Wallet also will not be bound by them.
 

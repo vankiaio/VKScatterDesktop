@@ -165,7 +165,7 @@
                     	return selected || b.logins - a.logins
                     })
                     .map(account => {
-	                    let description = `${account.network().name}`;
+	                    let description = ``;
 	                    let actions = [];
 	                    const actionName = alreadySelectedUniques.includes(account.unique()) ? this.locale(this.langKeys.GENERIC.Remove)
                             : neededNetworks.length === 1 ? this.locale(this.langKeys.POPOUTS.LOGIN.LoginButton)
