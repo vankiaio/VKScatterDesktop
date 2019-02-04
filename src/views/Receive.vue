@@ -17,7 +17,7 @@
             <section v-if="account">
 
                 <figure class="details">
-                    <figure class="title">You can send any type of {{blockchainName(account.blockchain())}} tokens to</figure>
+                    <figure class="title">You can send {{blockchainName(account.blockchain())}} token to</figure>
                 </figure>
                 <cin style="width:500px; margin-top:10px; margin-bottom:10px;" disabled="1" big="1"
                      :text="account.sendable()" copy="1" />

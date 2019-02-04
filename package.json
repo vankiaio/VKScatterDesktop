@@ -159,7 +159,7 @@
     "not ie <= 8"
   ],
   "build": {
-    "productName": "ttmcwallet",
+    "productName": "TTMC Wallet",
     "appId": "com.get-ttmcwallet.server",
     "artifactName": "${os}-${productName}-${version}-${arch}.${ext}",
     "asar": true,
@@ -225,7 +225,7 @@
       "desktop": {
         "Name": "TTMC Wallet",
         "GenericName": "TTMC Wallet Desktop",
-        "X-GNOME-FullName": "ttmcwallet",
+        "X-GNOME-FullName": "TTMC Wallet",
         "Comment": "TTMC Wallet desktop signature server.",
         "Type": "Application",
         "Terminal": "false",
