@@ -26,9 +26,18 @@
 				</figure>
 				<figure class="amount">
 					{{formatNumber(systemTokenBalance.amount, true)}}
-					<span v-if="systemTokenBalance.amountlocked && systemTokenBalance.availableamount && systemTokenBalance.unlockdate">Available:{{formatNumber(systemTokenBalance.availableamount, true)}} Locked:{{formatNumber(systemTokenBalance.amountlocked, true)}} Unlock period:{{systemTokenBalance.unlockdate}}</span>
+					<span v-if="systemTokenBalance.amountlocked && systemTokenBalance.availableamount && systemTokenBalance.unlockdate">
+						Available:{{formatNumber(systemTokenBalance.availableamount, true)}} Locked:{{formatNumber(systemTokenBalance.amountlocked, true)}} 
+						<br>Recent Unlock period:{{systemTokenBalance.unlockdate}}</span>
 					<!-- <span v-if="systemTokenBalance.fiatBalance()">{{formatNumber(systemTokenBalance.fiatBalance(), true)}}</span> -->
 				</figure>
+				<tbody>
+				<tr class="locked" v-for="(locked_balance,index) in systemTokenBalance.locked_balances">
+				<td class="colum1">{{index+1}}.</td>
+				<td class="colum2">{{formatNumber(locked_balance.balance, true)}}</td>
+				<td class="colum3">{{locked_balance.unlock_execute_time}}</td>
+				</tr>
+				</tbody>
 				<!-- <section class="info">
 					<figure class="system">SYSTEM TOKEN</figure>
 					<figure>{{systemTokenBalance.contract}}</figure>
@@ -227,7 +236,6 @@
 			.info {
 				flex:1;
 				text-align:right;
-
 				.system {
 					font-size: 9px;
 					font-weight: bold;
@@ -236,6 +244,32 @@
 					display:inline-block;
 					padding-bottom:5px;
 					margin-bottom:5px;
+				}
+
+				.small {
+					font-size: 11px;
+				}
+
+			}
+
+			.locked {
+				flex:1;
+                line-height:8px;
+				text-align:right;
+				.colum1 {
+					font-size: 10px;
+					color:$dark-blue;
+					padding: 1px 5px;
+				}
+				.colum2 {
+					font-size: 10px;
+					color:$dark-blue;
+					padding: 1px 5px;
+				}
+				.colum3 {
+					font-size: 10px;
+					color:$dark-blue;
+					padding: 1px 5px;
 				}
 
 				.small {

@@ -70,6 +70,7 @@ class TTMCTokenAccountAPI {
 						amountlocked:balance.amountlocked,
 						availableamount:balance.availableamount,
 						unlockdate:balance.unlockdate,
+						locked_balances:balance.locked_balances,
 						decimals:balance.decimals,
 						chainId:account.network().chainId
 					})
