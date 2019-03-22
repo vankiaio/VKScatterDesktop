@@ -327,7 +327,7 @@
 					account_name:this.accountName
 				};
 
-				const result = await fetch(`http://119.23.146.214:3030/vktapi/v1/create_vkt`, {
+				const result = await fetch(`http://ttmc_api.vankia.net:3030/vktapi/v1/create_vkt`, {
 					method: 'POST',
 					headers:{
 						'Accept': 'application/json',

@@ -12,10 +12,10 @@ import Network from "../../src/models/Network";
 import Token from "../../src/models/Token";
 
 const jungleNetwork = Network.fromJson({
-	name:'Jungle',
+	name:'TTMC Jungle',
 	blockchain:Blockchains.TTMC,
-	host:'119.23.146.214',
-	port:8888,
+	host:'ttmc_api.vankia.net',
+	port:80,
 	protocol:'http',
 	chainId:'57fca24b1ac519ca178ee44c37844fae2caffd954c4fad1fa67c9c4cceb86a60'
 });

@@ -25,7 +25,7 @@ import RecurringService from "../../services/RecurringService";
 import HardwareService from "../../services/HardwareService";
 
 
-const blockchainApiURL = 'http://119.23.146.214:3030/vktapi/v1';
+const blockchainApiURL = 'http://ttmc_api.vankia.net:3030/vktapi/v1';
 const mainnetChainId = '57fca24b1ac519ca178ee44c37844fae2caffd954c4fad1fa67c9c4cceb86a60';
 
 class TTMCTokenAccountAPI {
@@ -175,7 +175,7 @@ export default class TTMC extends Plugin {
 	recipientLabel(){ return localizedState(LANG_KEYS.GENERIC.AccountName); }
 
 	getEndorsedNetwork(){
-		return new Network('TTMC Mainnet', 'http', '119.23.146.214', 8888, Blockchains.TTMC, mainnetChainId)
+		return new Network('TTMC Mainnet', 'http', 'ttmc_api.vankia.net', 80, Blockchains.TTMC, mainnetChainId)
 	}
 
 	isEndorsedNetwork(network){
