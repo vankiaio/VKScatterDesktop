@@ -25,7 +25,7 @@ import RecurringService from "../../services/RecurringService";
 import HardwareService from "../../services/HardwareService";
 
 
-const blockchainApiURL = 'http://221.122.119.226:3030/vktapi/v1';
+const blockchainApiURL = 'http://dapi.devicexx.com:3030/vktapi/v1';
 const mainnetChainId = 'e17abdaf44e2811b452ea15a0aeb7eff6eab9c5de4452e6fb7b552c5de9ddae7';
 
 class VKTTokenAccountAPI {
@@ -171,7 +171,7 @@ export default class VKT extends Plugin {
 	recipientLabel(){ return localizedState(LANG_KEYS.GENERIC.AccountName); }
 
 	getEndorsedNetwork(){
-		return new Network('VKT Mainnet', 'http', '221.122.119.226', 8888, Blockchains.VKTIO, mainnetChainId)
+		return new Network('VKT Mainnet', 'http', 'vktapi.devicexx.com', 80, Blockchains.VKTIO, mainnetChainId)
 	}
 
 	isEndorsedNetwork(network){

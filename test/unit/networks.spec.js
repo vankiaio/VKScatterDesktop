@@ -14,8 +14,8 @@ import Token from "../../src/models/Token";
 const jungleNetwork = Network.fromJson({
 	name:'Jungle',
 	blockchain:Blockchains.VKTIO,
-	host:'221.122.119.226',
-	port:8888,
+	host:'vktapi.devicexx.com',
+	port:80,
 	protocol:'http',
 	chainId:'e17abdaf44e2811b452ea15a0aeb7eff6eab9c5de4452e6fb7b552c5de9ddae7'
 });

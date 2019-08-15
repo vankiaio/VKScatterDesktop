@@ -9,14 +9,14 @@ let checked = false;
 export default class LanguageService {
 
 	static getLanguageNames(){
-		return fetch(`http://221.122.119.226:3030/vktapi/v1/languages?names=1`).then(r => r.json())
+		return fetch(`http://dapi.devicexx.com:3030/vktapi/v1/languages?names=1`).then(r => r.json())
 			.catch(err => {
 			return ["English"];
 		})
 	}
 
 	static getLanguage(name){
-		return fetch(`http://221.122.119.226:3030/vktapi/v1/languages?name=${name}`).then(r => r.json())
+		return fetch(`http://dapi.devicexx.com:3030/vktapi/v1/languages?name=${name}`).then(r => r.json())
 		.catch(err => {
 			return null;
 		})

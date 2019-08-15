@@ -4,7 +4,7 @@ import {Blockchains, BlockchainsArray} from '../models/Blockchains';
 import PluginRepository from '../plugins/PluginRepository'
 import ObjectHelpers from '../util/ObjectHelpers'
 
-const api = "http://221.122.119.226:3030/vktapi";
+const api = "http://dapi.devicexx.com:3030/vktapi";
 
 // Once every 30 minutes.
 const intervalTime = 60000 * 30;
