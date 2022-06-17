@@ -85,7 +85,7 @@
     "cross-env": "^5.0.1",
     "cross-spawn": "^5.0.1",
     "css-loader": "^0.28.0",
-    "electron": "^2.0.10",
+    "electron": "^15.5.5",
     "electron-builder": "^20.29.0",
     "electron-rebuild": "^1.8.2",
     "eosjs": "^16.0.9",
